@@ -102,7 +102,7 @@ export default function GridCourses() {
             <div
               key={course.title}
               className="bg-card rounded-2xl overflow-hidden border border-border hover:border-primary/30 transition-colors cursor-pointer"
-              onClick={() => router.push('/modules/xxx')}
+              onClick={() => router.push('/courses/xxx')}
             >
               <div className="relative h-36 w-full bg-muted overflow-hidden">
                 <div

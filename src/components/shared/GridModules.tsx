@@ -1,4 +1,7 @@
+'use client'
+
 import { Download, FileText } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 
 type CourseItem = {
   emoji: string
@@ -21,6 +24,8 @@ const modules: CourseItem[] = [
 ]
 
 export default function GridModules() {
+  const router = useRouter()
+
   return (
     <div className="flex flex-col gap-10">
         <div>
@@ -31,7 +36,6 @@ export default function GridModules() {
                 Analisando todos os direitos constitucionais e suas implicações sociais
             </p>
         </div>
-      {/* Section 1 - Cursos Gratuitos */}
       <section className="flex flex-col gap-4">
         <div className="flex items-center justify-between">
           <div>
@@ -46,6 +50,7 @@ export default function GridModules() {
             <div
               key={course.title}
               className="bg-card rounded-2xl overflow-hidden border border-border hover:border-primary/30 transition-colors cursor-pointer"
+              onClick={() => router.push('/courses/lesson/xxx')}
             >
               <div className="relative h-36 w-full bg-muted overflow-hidden">
                 <div
