@@ -28,7 +28,7 @@ const redirectButtonItems: RedirectButtonItem[] = [
   {
     label: 'Cursos',
     description: 'Aulas gravadas e trilhas alinhadas ao seu edital.',
-    href: '/cursos',
+    href: '/courses',
     Icon: MonitorPlay,
     colorToken: '--color-accent',
     badgeCount: 3,

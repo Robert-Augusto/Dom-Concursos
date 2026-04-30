@@ -11,7 +11,7 @@ import {
 } from 'lucide-react'
 
 const navigationItems = [
-  { label: 'Início', href: '/inicio', icon: Home },
+  { label: 'Início', href: '/dashboard', icon: Home },
   { label: 'Comunidade', href: '/comunidade', icon: Users },
   { label: 'Aprovados', href: '/aprovados', icon: Trophy },
   { label: 'Assinar', href: '/assinar', icon: Star, isPro: true },
@@ -51,12 +51,12 @@ export function Sidebar() {
                 href={item.href}
                 className={`relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors ${
                   isActive
-                    ? 'bg-primary/10 text-primary'
+                    ? 'bg-gold/10 text-gold'
                     : 'text-muted-foreground hover:bg-muted hover:text-foreground'
                 }`}
               >
                 {item.isPro && (
-                  <span className="absolute left-8 top-0 -translate-y-1/2 rounded-full bg-primary px-1.5 py-0.5 text-[9px] font-bold leading-none text-primary-foreground">
+                  <span className="absolute left-8 top-0 -translate-y-1/2 rounded-full bg-gold px-1.5 py-0.5 text-[9px] font-bold leading-none text-gold-foreground">
                     PRO
                   </span>
                 )}

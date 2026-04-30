@@ -33,11 +33,11 @@ export function BottomNav() {
               key={item.href}
               href={item.href}
               className={`relative flex flex-col items-center justify-center gap-1 ${
-                isActive ? 'text-primary' : 'text-muted-foreground'
+                isActive ? 'text-gold' : 'text-muted-foreground'
               }`}
             >
               {item.isPro && (
-                <span className="absolute top-0 -translate-y-1/2 rounded-full bg-primary px-1.5 py-0.5 text-[9px] font-bold leading-none text-primary-foreground">
+                <span className="absolute top-0 -translate-y-1/2 rounded-full bg-gold px-1.5 py-0.5 text-[9px] font-bold leading-none text-gold-foreground">
                   PRO
                 </span>
               )}

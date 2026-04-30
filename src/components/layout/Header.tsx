@@ -1,7 +1,7 @@
 'use client'
 
-import { Bell } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import { NotificationsDropdown } from '@/components/shared/NotificationsDropdown'
 
 export function Header() {
   const router = useRouter();
@@ -19,13 +19,7 @@ export function Header() {
       </div>
 
       <div className="flex items-center gap-3">
-        <button
-          type="button"
-          className="flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-          aria-label="Notificações"
-        >
-          <Bell className="h-4 w-4" />
-        </button>
+        <NotificationsDropdown />
 
         <div
           onClick={() => router.push('/settings')}
