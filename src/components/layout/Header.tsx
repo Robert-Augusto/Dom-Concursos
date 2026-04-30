@@ -1,0 +1,43 @@
+'use client'
+
+import { Bell } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+
+export function Header() {
+  const router = useRouter();
+
+  return (
+    <header className="sticky top-0 z-30 flex h-18 items-center justify-between border-b border-border bg-background px-6">
+      
+      <div className="flex flex-col">
+        <h1 className="text-base font-black text-foreground font-heading">
+          Olá, Robert 👋
+        </h1>
+        <p className="text-xs text-muted-foreground">
+          Bons estudos, rumo à aprovação!
+        </p>
+      </div>
+
+      <div className="flex items-center gap-3">
+        <button
+          type="button"
+          className="flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+          aria-label="Notificações"
+        >
+          <Bell className="h-4 w-4" />
+        </button>
+
+        <div
+          onClick={() => router.push('/settings')}
+          className="relative flex h-9 w-9 cursor-pointer items-center justify-center rounded-full text-sm font-black text-primary-foreground transition-transform hover:scale-105 active:scale-95 select-none"
+          style={{
+            background: 'linear-gradient(135deg, #F0D080, #C9A84C)',
+            boxShadow: '0 0 0 2px hsl(var(--background)), 0 0 0 4px hsl(42,50%,55%,0.4)',
+          }}
+        >
+          R
+        </div>
+      </div>
+    </header>
+  )
+}

@@ -1,0 +1,141 @@
+# DOM Concursos — Agent Rules
+
+## What is this project?
+DOM Concursos is an all-in-one study platform for Brazilian public competitions (concursos públicos).
+Built with Next.js, Supabase, Tailwind CSS v4, and shadcn/ui (Radix).
+I am the sole developer. The codebase must be clean, consistent, and easy for future developers to understand.
+
+---
+
+## Tech Stack
+- **Framework:** Next.js 15 (App Router)
+- **Database & Auth:** Supabase (PostgreSQL)
+- **Styling:** Tailwind CSS v4 + shadcn/ui (Radix)
+- **Hosting:** Vercel
+- **Automation:** N8N
+- **AI:** Open AI
+- **Language:** TypeScript (strict)
+
+---
+
+## Language Rules
+- All UI text, labels, buttons, placeholders, messages, and content must be in **Portuguese (PT-BR)**
+- All code (variables, functions, components, files, types) must be in **English**
+- Database table and column names are in **English**
+- Comments in code can be in English or Portuguese — be consistent within the same file
+
+---
+
+## Folder Structure
+```
+src/
+├── app/
+│   ├── (auth)/          → login, register pages
+│   ├── (student)/       → all student-facing pages
+│   ├── (admin)/         → admin panel pages
+│   └── layout.tsx       → root layout
+├── components/
+│   ├── ui/              → base shadcn/ui components
+│   ├── layout/          → Navbar, Sidebar, Footer, etc.
+│   └── shared/          → reusable feature components
+├── lib/
+│   ├── supabase/        → supabase client, server, middleware
+│   └── utils/           → helper functions
+├── hooks/               → custom React hooks
+├── types/               → TypeScript type definitions
+└── styles/              → globals.css
+```
+
+---
+
+## Naming Conventions
+- **Files:** kebab-case → `course-card.tsx`, `use-auth.ts`
+- **Components:** PascalCase → `CourseCard`, `LessonPlayer`
+- **Functions & variables:** camelCase → `getCourses()`, `isLoading`
+- **Types & interfaces:** PascalCase → `Course`, `UserProfile`
+- **Database tables/columns:** snake_case English → `lesson_progress`, `user_id`
+- **CSS classes:** Tailwind utility classes only — no custom CSS unless absolutely necessary
+
+---
+
+## Styling Rules
+- Always use the design tokens defined in `src/app/globals.css`
+- Never use hardcoded colors like `#C9A84C` or `hsl(...)` directly in components
+- Always use semantic Tailwind classes that reference CSS variables:
+  ```tsx
+  // ✅ correct
+  className="bg-background text-foreground"
+  className="bg-card border-border"
+  className="text-primary bg-primary/10"
+
+  // ❌ wrong
+  className="bg-[#0B1220] text-[#EEF1F8]"
+  className="bg-yellow-500"
+  ```
+- The design is **dark mode by default** — `:root` already has dark colors
+- Use `bg-background`, `bg-card`, `bg-muted`, `bg-sidebar` for layered backgrounds
+- Use `text-foreground`, `text-muted-foreground` for text hierarchy
+- Use `border-border` for all borders
+- Use `bg-primary` and `text-primary` for gold accent elements (CTAs, highlights)
+- Use `bg-accent` and `text-accent` for blue accent elements (links, active states)
+- Use `bg-destructive` for errors and delete actions
+- Border radius: always use `rounded-lg` (--radius-lg) for cards, `rounded-full` for pills/badges
+- Always use icon library components (e.g. `lucide-react`) for UI icons
+- Never use inline SVG markup for icons
+- Never use Unicode symbols or emojis as UI icons
+
+---
+
+## Component Rules
+- Every component must be typed with TypeScript — no `any`
+- Add `'use client'` only when the component uses hooks, state, or browser events
+- Server components are preferred by default (no `'use client'` unless needed)
+- Always use `next/image` instead of `<img>` tags
+- Always use `next/link` instead of `<a>` tags for internal navigation
+
+---
+
+## Supabase Rules
+- Always use the server-side Supabase client for data fetching in Server Components
+- Always use the browser-side Supabase client for mutations in Client Components
+- Never expose the `SUPABASE_SERVICE_ROLE_KEY` on the client side
+- Row Level Security (RLS) must be enabled on all tables
+- Always handle Supabase errors explicitly — never silently ignore them:
+  ```ts
+  const { data, error } = await supabase.from('courses').select()
+  if (error) throw new Error(error.message) //or use toast if imported
+  ```
+
+---
+
+## Page & Route Rules
+- Student pages live under `app/(student)/`
+- Admin pages live under `app/(admin)/`
+- Auth pages live under `app/(auth)/`
+- Each route group has its own `layout.tsx` with its own navigation
+- Use loading.tsx and error.tsx files for each route segment
+- Always protect student and admin routes — check session in layout or middleware
+
+---
+
+## Platform Context
+- Target audience: Brazilian students preparing for public competitions
+- "Banca" = exam organization (CESPE, FCC, VUNESP, etc.)
+- "Simulado" = mock exam that simulates real competition
+- "Apostila" = study booklet/PDF
+- "Edital" = official competition announcement
+- "Matéria" = subject (e.g. Direito Constitucional)
+- "Assunto" = specific topic within a subject
+- Free lessons → YouTube embed
+- Premium lessons → Panda Video embed
+- Access control is via `profiles.access_level = 'free' | 'premium'`
+
+---
+
+## Code Quality Rules
+- No `console.log` in production code — use proper error handling
+- No commented-out code blocks — delete unused code
+- No hardcoded user IDs, API keys, or secrets in code — use `.env.local`
+- Keep components small and focused — if a component exceeds ~150 lines, split it
+- Reuse components from `components/shared/` before creating new ones
+- Always add loading and empty states to data-fetching components
