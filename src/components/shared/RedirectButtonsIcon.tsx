@@ -36,32 +36,11 @@ const redirectButtonItems: RedirectButtonItem[] = [
     badgeCount: 3,
   },
   {
-    label: 'Estudo Inteligente',
-    description: 'Realize seu estudo completo e pratique os apredizados.',
-    href: '/study',
-    Icon: Lightbulb,
-    colorToken: '--color-chart-2',
-  },
-  {
-    label: 'Simulado',
-    description: 'Teste seu conhecimento com um simulado personalizado.',
-    href: '/simulado',
-    Icon: ClipboardCheck,
-    colorToken: '--color-chart-5',
-  },
-  {
     label: 'Aula ao Vivo',
     description: 'Participe das transmissões ao vivo com a equipe.',
     href: '/live',
     Icon: Video,
     colorToken: '--color-destructive',
-  },
-  {
-    label: 'Comunidade',
-    description: 'Interaja na comunidade.',
-    href: '/comunity',
-    Icon: MessageCircle,
-    colorToken: '--color-sidebar-primary',
   },
   {
     label: 'Dúvidas',

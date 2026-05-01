@@ -95,9 +95,7 @@ const mockFiles = [
 ]
 
 export default function LessonPage() {
-  const [sidebarOpen, setSidebarOpen] = useState(
-    typeof window !== 'undefined' ? window.innerWidth >= 1024 : true
-  )
+  const [sidebarOpen, setSidebarOpen] = useState(true)
   const [completed, setCompleted] = useState(false)
   const [saved, setSaved] = useState(false)
   const [activeTab, setActiveTab] = useState('materiais')
@@ -117,14 +115,23 @@ export default function LessonPage() {
 
         <button
           onClick={() => setSidebarOpen(!sidebarOpen)}
-          className="flex items-center gap-2 rounded-xl border border-border bg-card px-2.5 py-2 text-xs text-muted-foreground transition-colors hover:text-foreground sm:px-3 sm:text-sm"
+          className="flex items-center gap-2 rounded-xl px-4 py-2.5 text-sm font-bold transition-all hover:opacity-90 active:scale-95"
+          style={{
+            background: sidebarOpen
+              ? 'linear-gradient(90deg, #3D7FFF, #5A9FFF)'
+              : 'linear-gradient(90deg, #C9A84C, #DDA83A)',
+            color: '#0B1220',
+            boxShadow: sidebarOpen
+              ? '0 4px 14px rgba(61,127,255,0.4)'
+              : '0 4px 14px rgba(201,168,76,0.4)',
+          }}
         >
           {sidebarOpen ? (
             <PanelRightClose className="h-4 w-4" />
           ) : (
             <PanelRight className="h-4 w-4" />
           )}
-          Aulas do modulo
+          Aulas do módulo
         </button>
       </div>
 
@@ -349,6 +356,14 @@ export default function LessonPage() {
                     : 'hover:bg-muted/30'
                 }`}
               >
+                <span
+                  className={`w-5 flex-shrink-0 text-center text-xs font-bold ${
+                    lesson.current ? 'text-primary' : 'text-muted-foreground'
+                  }`}
+                >
+                  {index + 1}
+                </span>
+
                 <div
                   className="relative flex h-12 w-16 flex-shrink-0 items-center justify-center overflow-hidden rounded-lg bg-muted"
                   style={{

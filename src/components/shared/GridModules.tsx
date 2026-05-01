@@ -1,85 +1,151 @@
 'use client'
 
-import { Download, FileText } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
 type CourseItem = {
   emoji: string
   title: string
+  lessons: string
 }
 
-const modules: CourseItem[] = [
+const freeCourses: CourseItem[] = [
   {
     emoji: '⚖️',
     title: 'Direito Constitucional - Fundamentos',
+    lessons: '32 aulas',
   },
   {
     emoji: '📖',
     title: 'Portugues para Concursos - Do Zero',
+    lessons: '28 aulas',
   },
   {
     emoji: '🧩',
     title: 'Raciocinio Logico - Iniciante',
+    lessons: '20 aulas',
+  },
+]
+
+const premiumCourses: CourseItem[] = [
+  {
+    emoji: '🏥',
+    title: 'Legislacao do SUS - Completo',
+    lessons: '20 aulas',
+  },
+  {
+    emoji: '💻',
+    title: 'Nocoes de Informatica - Todas as Bancas',
+    lessons: '18 aulas',
+  },
+  {
+    emoji: '📐',
+    title: 'Matematica para Concursos - CESPE/FCC',
+    lessons: '36 aulas',
   },
 ]
 
 export default function GridModules() {
   const router = useRouter()
 
+  function renderCard(course: CourseItem, accentGradient: string) {
+    return (
+      <div
+        key={course.title}
+        className="relative rounded-xl overflow-hidden cursor-pointer border border-border hover:border-primary/40 hover:scale-[1.03] transition-all duration-200 aspect-square"
+        onClick={() => router.push('/courses/lesson/xxx')}
+      >
+        <div
+          className="absolute inset-0"
+          style={{ background: 'linear-gradient(135deg, #1a0d38, #3a1878)' }}
+        />
+
+        <div className="absolute inset-0 flex items-center justify-center">
+          <span className="text-5xl">{course.emoji}</span>
+        </div>
+
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              'linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 50%)',
+          }}
+        />
+
+        <div
+          className="absolute bottom-0 left-0 right-0 h-0.5"
+          style={{ background: accentGradient }}
+        />
+      </div>
+    )
+  }
+
   return (
     <div className="flex flex-col gap-10">
-        <div>
-            <h2 className="font-heading font-semibold text-3xl text-foreground">
-                Direito Constitucional - Fundamentos
-            </h2>
-            <p className="text-base text-muted-foreground mt-0.5">
-                Analisando todos os direitos constitucionais e suas implicações sociais
-            </p>
-        </div>
       <section className="flex flex-col gap-4">
         <div className="flex items-center justify-between">
           <div>
             <h2 className="font-heading font-semibold text-lg text-foreground">
-                Modulo 1: Primeiro passo | Toque abaixo em tutorial ↓ ↓
+              Modulo 1: Primeiro passo | Toque abaixo em tutorial ↓ ↓
             </h2>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {modules.map((course) => (
-            <div
-              key={course.title}
-              className="bg-card rounded-2xl overflow-hidden border border-border hover:border-primary/30 transition-colors cursor-pointer"
-              onClick={() => router.push('/courses/lesson/xxx')}
-            >
-              <div className="relative h-36 w-full bg-muted overflow-hidden">
-                <div
-                  className="absolute inset-0"
-                  style={{
-                    background: 'linear-gradient(135deg, #0d2a40, #1a4060)',
-                  }}
-                />
-                <div className="absolute inset-0 flex items-center justify-center text-4xl">
-                  {course.emoji}
-                </div>
+        <div>
+          <div className="flex gap-3 overflow-x-auto pb-3 scrollbar-none snap-x snap-mandatory md:hidden">
+            {freeCourses.map((course) => (
+              <div key={course.title} className="flex-shrink-0 w-[140px] snap-start">
+                {renderCard(
+                  course,
+                  'linear-gradient(90deg, #2ECC8A, #3D7FFF)'
+                )}
+                <p className="text-[11px] text-muted-foreground text-center mt-1 line-clamp-1 w-[140px]">
+                  {course.lessons}
+                </p>
               </div>
+            ))}
+          </div>
 
-              <div className="p-4 space-y-2">
-                <h3 className="text-sm font-bold text-foreground font-heading line-clamp-2 leading-snug">
-                  {course.title}
-                </h3>
-                <div>
-                  <div className="flex justify-between text-[10px] text-muted-foreground mb-1">
-                    <span>Progresso</span>
-                    <span>0%</span>
-                  </div>
-                  <div className="h-1.5 rounded-full bg-muted overflow-hidden">
-                    <div className="h-full w-0 rounded-full bg-chart-2" />
-                  </div>
-                </div>
+          <div className="hidden md:grid grid-cols-3 lg:grid-cols-4 gap-4">
+            {freeCourses.map((course) => (
+              <div key={course.title}>
+                {renderCard(course, 'linear-gradient(90deg, #2ECC8A, #3D7FFF)')}
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="flex flex-col gap-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="font-heading font-semibold text-lg text-foreground">
+              Modulo 2: Conteudo Exclusivo | Continue seus estudos ↓ ↓
+            </h2>
+          </div>
+        </div>
+
+        <div>
+          <div className="flex gap-3 overflow-x-auto pb-3 scrollbar-none snap-x snap-mandatory md:hidden">
+            {premiumCourses.map((course) => (
+              <div key={course.title} className="flex-shrink-0 w-[140px] snap-start">
+                {renderCard(
+                  course,
+                  'linear-gradient(90deg, #C9A84C, #DDA83A)'
+                )}
+                <p className="text-[11px] text-muted-foreground text-center mt-1 line-clamp-1 w-[140px]">
+                  {course.lessons}
+                </p>
+              </div>
+            ))}
+          </div>
+
+          <div className="hidden md:grid grid-cols-3 lg:grid-cols-4 gap-4">
+            {premiumCourses.map((course) => (
+              <div key={course.title}>
+                {renderCard(course, 'linear-gradient(90deg, #C9A84C, #DDA83A)')}
+              </div>
+            ))}
+          </div>
         </div>
       </section>
     </div>

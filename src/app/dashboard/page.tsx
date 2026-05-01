@@ -16,6 +16,7 @@ export default function DashboardPage() {
           <div className="flex flex-col gap-8">
             <HeroBanner />
             <RedirectButtonsIcon />
+            <RedirectButtons />
             <SearchVideo />
           </div>
         </main>

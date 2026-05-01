@@ -101,19 +101,19 @@ function VideoThumbnail({
   const [failed, setFailed] = useState(false)
 
   return (
-    <div className="relative h-20 w-28 flex-shrink-0 overflow-hidden rounded-lg bg-muted">
+    <div className="relative aspect-video w-full overflow-hidden rounded-lg bg-muted">
       {!failed ? (
         <Image
           src={src}
           alt={alt}
           fill
           className="object-cover"
-          sizes="112px"
+          sizes="(max-width: 767px) 100vw, 50vw"
           onError={() => setFailed(true)}
         />
       ) : null}
       <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/40">
-        <Play className="h-8 w-8 text-white" aria-hidden />
+        <Play className="h-6 w-6 text-white md:h-8 md:w-8" aria-hidden />
       </div>
       <span className="pointer-events-none absolute bottom-1.5 right-1.5 rounded bg-black/80 px-1.5 py-0.5 text-[10px] font-bold text-white">
         {duration}
@@ -191,7 +191,7 @@ export function SearchVideo() {
             key={video.id}
             role="button"
             tabIndex={0}
-            className="flex cursor-pointer flex-row gap-3 rounded-xl border border-border bg-card p-3 transition-colors hover:border-primary/30"
+            className="flex cursor-pointer flex-col gap-2 rounded-xl border border-border bg-card p-2.5 transition-colors hover:border-primary/30 md:gap-3 md:p-3"
           >
             <VideoThumbnail
               src={video.thumbnail}
@@ -200,24 +200,24 @@ export function SearchVideo() {
             />
             <div className="flex min-w-0 flex-1 flex-col gap-1">
               <span
-                className={`inline-flex self-start rounded-full px-2 py-0.5 text-[9px] font-black tracking-wider uppercase ${tagClassName(video.tag)}`}
+                className={`inline-flex self-start rounded-full px-2 py-0.5 text-[8px] font-black tracking-wider uppercase md:text-[9px] ${tagClassName(video.tag)}`}
               >
                 {video.tag}
               </span>
-              <p className="line-clamp-2 text-sm leading-snug font-semibold text-foreground">
+              <p className="line-clamp-2 text-xs leading-snug font-semibold text-foreground md:text-sm">
                 {video.title}
               </p>
-              <div className="mt-auto flex items-center gap-3">
-                <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                  <Eye className="h-3 w-3 shrink-0" aria-hidden />
+              <div className="mt-auto flex items-center gap-2.5 md:gap-3">
+                <span className="flex items-center gap-1 text-[11px] text-muted-foreground md:text-xs">
+                  <Eye className="h-2.5 w-2.5 shrink-0 md:h-3 md:w-3" aria-hidden />
                   {video.views}
                 </span>
-                <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                  <ThumbsUp className="h-3 w-3 shrink-0" aria-hidden />
+                <span className="flex items-center gap-1 text-[11px] text-muted-foreground md:text-xs">
+                  <ThumbsUp className="h-2.5 w-2.5 shrink-0 md:h-3 md:w-3" aria-hidden />
                   {video.likes}
                 </span>
-                <span className="flex items-center gap-1 text-xs text-muted-foreground">
-                  <MessageCircle className="h-3 w-3 shrink-0" aria-hidden />
+                <span className="flex items-center gap-1 text-[11px] text-muted-foreground md:text-xs">
+                  <MessageCircle className="h-2.5 w-2.5 shrink-0 md:h-3 md:w-3" aria-hidden />
                   {video.comments}
                 </span>
               </div>
