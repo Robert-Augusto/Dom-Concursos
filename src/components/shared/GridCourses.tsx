@@ -1,6 +1,6 @@
 'use client'
 
-import { Download, FileText } from 'lucide-react'
+import { ChevronsRight, Download, FileText } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
 type CourseItem = {
@@ -92,19 +92,20 @@ export default function GridCourses() {
               Acesso livre para todos os alunos
             </p>
           </div>
-          <button className="text-xs text-accent font-semibold hover:underline">
-            Ver todos -&gt;
-          </button>
         </div>
-
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        
+        <div className="flex gap-4 overflow-x-auto scrollbar-none snap-x snap-mandatory pb-2">
           {freeCourses.map((course) => (
             <div
               key={course.title}
-              className="bg-card rounded-2xl overflow-hidden border border-border hover:border-primary/30 transition-colors cursor-pointer"
+              className="group bg-card rounded-2xl overflow-hidden border border-border hover:border-primary/30 transition-colors cursor-pointer"
+              style={{ width: '320px', minWidth: '270px' }}
               onClick={() => router.push('/courses/xxx')}
             >
-              <div className="relative h-36 w-full bg-muted overflow-hidden">
+              <div 
+                className="relative h-36 w-full bg-muted overflow-hidden"
+                style={{ height: '180px' }}
+              >
                 <div
                   className="absolute inset-0"
                   style={{
@@ -126,9 +127,6 @@ export default function GridCourses() {
                 <h3 className="text-sm font-black text-foreground font-heading line-clamp-2 leading-snug">
                   {course.title}
                 </h3>
-                <p className="text-xs text-muted-foreground line-clamp-1">
-                  {course.subject}
-                </p>
 
                 <div>
                   <div className="flex justify-between text-[10px] text-muted-foreground mb-1">
@@ -140,13 +138,26 @@ export default function GridCourses() {
                   </div>
                 </div>
 
-                <button className="w-full mt-2 py-2 rounded-xl text-xs font-bold bg-muted text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors">
+                <button className="invisible group-hover:visible w-full mt-2 py-2 rounded-xl text-xs font-bold bg-muted text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors">
                   Acessar curso
                 </button>
               </div>
             </div>
           ))}
         </div>
+
+        <div className="flex flex-col items-center gap-1 pt-1">
+          <div className="flex items-center justify-center gap-1.5">
+            <div className="h-1 w-6 rounded-full bg-primary" />
+            <div className="h-1 w-3 rounded-full bg-muted" />
+            <div className="h-1 w-3 rounded-full bg-muted" />
+          </div>
+          <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+            <ChevronsRight className="h-3.5 w-3.5 shrink-0 text-accent" />
+            <span>Deslize para ver mais cursos</span>
+          </div>
+        </div>
+       
       </section>
 
       {/* Section 2 - Cursos Exclusivos */}
@@ -160,18 +171,19 @@ export default function GridCourses() {
               Conteudo exclusivo para assinantes
             </p>
           </div>
-          <button className="text-xs text-accent font-semibold hover:underline">
-            Ver todos -&gt;
-          </button>
         </div>
 
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="flex gap-4 overflow-x-auto scrollbar-none snap-x snap-mandatory pb-2">
           {premiumCourses.map((course) => (
             <div
               key={course.title}
-              className="bg-card rounded-2xl overflow-hidden border border-border hover:border-primary/30 transition-colors cursor-pointer"
+              className="group bg-card rounded-2xl overflow-hidden border border-border hover:border-primary/30 transition-colors cursor-pointer"
+              style={{ width: '320px', minWidth: '270px' }}
             >
-              <div className="relative h-36 w-full bg-muted overflow-hidden">
+              <div 
+                className="relative h-36 w-full bg-muted overflow-hidden"
+                style={{ height: '180px' }}
+              >
                 <div
                   className="absolute inset-0"
                   style={{
@@ -193,9 +205,6 @@ export default function GridCourses() {
                 <h3 className="text-sm font-black text-foreground font-heading line-clamp-2 leading-snug">
                   {course.title}
                 </h3>
-                <p className="text-xs text-muted-foreground line-clamp-1">
-                  {course.subject}
-                </p>
 
                 <div>
                   <div className="flex justify-between text-[10px] text-muted-foreground mb-1">
@@ -219,6 +228,18 @@ export default function GridCourses() {
             </div>
           ))}
         </div>
+
+        <div className="flex flex-col items-center gap-1 pt-1">
+          <div className="flex items-center justify-center gap-1.5">
+            <div className="h-1 w-6 rounded-full bg-primary" />
+            <div className="h-1 w-3 rounded-full bg-muted" />
+            <div className="h-1 w-3 rounded-full bg-muted" />
+          </div>
+          <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+            <ChevronsRight className="h-3.5 w-3.5 shrink-0 text-accent" />
+            <span>Deslize para ver mais cursos</span>
+          </div>
+        </div>
       </section>
 
       {/* Section 3 - Apostilas & PDFs */}
@@ -232,9 +253,6 @@ export default function GridCourses() {
               Materiais para baixar e estudar offline
             </p>
           </div>
-          <button className="text-xs text-accent font-semibold hover:underline">
-            Ver todos -&gt;
-          </button>
         </div>
 
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">

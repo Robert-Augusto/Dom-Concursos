@@ -139,3 +139,38 @@ src/
 - Keep components small and focused — if a component exceeds ~150 lines, split it
 - Reuse components from `components/shared/` before creating new ones
 - Always add loading and empty states to data-fetching components
+
+---
+
+## Width and Height Rules
+
+Due to a Tailwind v4 issue with arbitrary values, never use 
+Tailwind classes for fixed widths and heights.
+
+ALWAYS use inline style for:
+- Fixed widths: style={{ width: '280px', minWidth: '280px' }}
+- Fixed heights: style={{ height: '300px' }}
+- Both together: style={{ width: '280px', height: '300px' }}
+
+NEVER use these Tailwind classes:
+- w-[280px], h-[300px], min-w-[280px], max-w-[280px]
+- Any arbitrary value with brackets for width or height
+
+Use Tailwind ONLY for:
+- Colors: bg-card, text-foreground, border-border
+- Spacing: p-4, px-5, py-3, gap-4, m-2
+- Border radius: rounded-xl, rounded-2xl
+- Flex/Grid: flex, grid, flex-col, items-center, justify-between
+- Hover/transitions: hover:border-primary/40, transition-colors
+- Typography: text-sm, font-bold, line-clamp-2
+
+Examples:
+
+CORRECT:
+<div
+  style={{ width: '280px', minWidth: '280px', height: '300px' }}
+  className="bg-card rounded-2xl border border-border p-4"
+>
+
+WRONG:
+<div className="w-[280px] min-w-[280px] h-[300px] bg-card rounded-2xl">

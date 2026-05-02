@@ -512,7 +512,10 @@ export default function StudySession({
       <div className="fixed bottom-0 left-0 right-0 p-4 bg-background/95 backdrop-blur-sm border-t border-border z-20">
         <button
           type="button"
-          onClick={() => onFinish(answers)}
+          onClick={() => {
+            onFinish(answers)
+            window.scrollTo({ top: 0, behavior: 'smooth' })
+          }}
           className="w-full max-w-3xl mx-auto py-4 rounded-2xl font-black text-base flex items-center justify-center gap-2 text-white transition-all hover:opacity-90"
           style={{
             background: 'linear-gradient(90deg, #3D7FFF, #8B5CF6)',

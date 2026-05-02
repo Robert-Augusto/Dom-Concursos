@@ -1,6 +1,10 @@
 'use client'
 
+import { useRouter } from "next/navigation"
+
 export function HeroBanner() {
+  const router = useRouter()
+
   return (
     <div className="relative flex min-h-[260px] items-center gap-5 overflow-hidden rounded-2xl px-6 py-5 sm:min-h-[300px] sm:px-8 md:min-h-[340px] md:px-10">
       <div
@@ -102,6 +106,7 @@ export function HeroBanner() {
 
         <div className="mt-2 flex items-center gap-3.5">
           <button
+            onClick={() => router.push('tutorial')}
             type="button"
             className="relative inline-flex items-center gap-2 rounded-full px-5 py-2 text-[12px] font-black tracking-wide md:px-6 md:py-2.5 md:text-[14px]"
             style={{

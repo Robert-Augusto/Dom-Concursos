@@ -1,6 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
+import {ChevronsRight} from 'lucide-react'
 
 type CourseItem = {
   emoji: string
@@ -26,58 +27,8 @@ const freeCourses: CourseItem[] = [
   },
 ]
 
-const premiumCourses: CourseItem[] = [
-  {
-    emoji: '🏥',
-    title: 'Legislacao do SUS - Completo',
-    lessons: '20 aulas',
-  },
-  {
-    emoji: '💻',
-    title: 'Nocoes de Informatica - Todas as Bancas',
-    lessons: '18 aulas',
-  },
-  {
-    emoji: '📐',
-    title: 'Matematica para Concursos - CESPE/FCC',
-    lessons: '36 aulas',
-  },
-]
-
 export default function GridModules() {
   const router = useRouter()
-
-  function renderCard(course: CourseItem, accentGradient: string) {
-    return (
-      <div
-        key={course.title}
-        className="relative rounded-xl overflow-hidden cursor-pointer border border-border hover:border-primary/40 hover:scale-[1.03] transition-all duration-200 aspect-square"
-        onClick={() => router.push('/courses/lesson/xxx')}
-      >
-        <div
-          className="absolute inset-0"
-          style={{ background: 'linear-gradient(135deg, #1a0d38, #3a1878)' }}
-        />
-
-        <div className="absolute inset-0 flex items-center justify-center">
-          <span className="text-5xl">{course.emoji}</span>
-        </div>
-
-        <div
-          className="absolute inset-0"
-          style={{
-            background:
-              'linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 50%)',
-          }}
-        />
-
-        <div
-          className="absolute bottom-0 left-0 right-0 h-0.5"
-          style={{ background: accentGradient }}
-        />
-      </div>
-    )
-  }
 
   return (
     <div className="flex flex-col gap-10">
@@ -91,62 +42,34 @@ export default function GridModules() {
         </div>
 
         <div>
-          <div className="flex gap-3 overflow-x-auto pb-3 scrollbar-none snap-x snap-mandatory md:hidden">
+          <div className="flex gap-4 overflow-x-auto scrollbar-none snap-x snap-mandatory px-2 py-2">
             {freeCourses.map((course) => (
-              <div key={course.title} className="flex-shrink-0 w-[140px] snap-start">
-                {renderCard(
-                  course,
-                  'linear-gradient(90deg, #2ECC8A, #3D7FFF)'
-                )}
-                <p className="text-[11px] text-muted-foreground text-center mt-1 line-clamp-1 w-[140px]">
-                  {course.lessons}
-                </p>
+              <div
+                key={course.title}
+                className="group bg-chart-5 rounded-2xl overflow-hidden border border-border hover:border-primary/30 transition-colors cursor-pointer flex items-center justify-center"
+                style={{ width: '220px', height: '280px', minWidth: '220px' }}
+                onClick={() => router.push('/courses/lesson/xxx')}
+              >
+              <div className="text-4xl">
+                {course.emoji}
               </div>
-            ))}
-          </div>
-
-          <div className="hidden md:grid grid-cols-3 lg:grid-cols-4 gap-4">
-            {freeCourses.map((course) => (
-              <div key={course.title}>
-                {renderCard(course, 'linear-gradient(90deg, #2ECC8A, #3D7FFF)')}
-              </div>
+            </div>
             ))}
           </div>
         </div>
-      </section>
 
-      <section className="flex flex-col gap-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="font-heading font-semibold text-lg text-foreground">
-              Modulo 2: Conteudo Exclusivo | Continue seus estudos ↓ ↓
-            </h2>
+        <div className="flex flex-col items-center gap-1 pt-1">
+          <div className="flex items-center justify-center gap-1.5">
+            <div className="h-1 w-6 rounded-full bg-primary" />
+            <div className="h-1 w-3 rounded-full bg-muted" />
+            <div className="h-1 w-3 rounded-full bg-muted" />
+          </div>
+          <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+            <ChevronsRight className="h-3.5 w-3.5 shrink-0 text-accent" />
+            <span>Deslize para ver mais cursos</span>
           </div>
         </div>
 
-        <div>
-          <div className="flex gap-3 overflow-x-auto pb-3 scrollbar-none snap-x snap-mandatory md:hidden">
-            {premiumCourses.map((course) => (
-              <div key={course.title} className="flex-shrink-0 w-[140px] snap-start">
-                {renderCard(
-                  course,
-                  'linear-gradient(90deg, #C9A84C, #DDA83A)'
-                )}
-                <p className="text-[11px] text-muted-foreground text-center mt-1 line-clamp-1 w-[140px]">
-                  {course.lessons}
-                </p>
-              </div>
-            ))}
-          </div>
-
-          <div className="hidden md:grid grid-cols-3 lg:grid-cols-4 gap-4">
-            {premiumCourses.map((course) => (
-              <div key={course.title}>
-                {renderCard(course, 'linear-gradient(90deg, #C9A84C, #DDA83A)')}
-              </div>
-            ))}
-          </div>
-        </div>
       </section>
     </div>
   )

@@ -213,7 +213,10 @@ export default function SimuladoSession({
       <div className="fixed bottom-0 left-0 right-0 z-20 bg-background/95 backdrop-blur-sm border-t border-border p-4">
         <button
           type="button"
-          onClick={() => onFinish(answers, seconds)}
+          onClick={() => {
+            onFinish(answers, seconds)
+            window.scrollTo({ top: 0, behavior: 'smooth' })
+          }}
           className="w-full max-w-3xl mx-auto py-4 rounded-2xl font-black text-base text-white flex items-center justify-center gap-2 transition-all hover:opacity-90 block"
           style={{
             background: 'linear-gradient(90deg, #2ECC8A, #0D9488)',

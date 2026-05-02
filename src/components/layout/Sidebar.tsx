@@ -4,18 +4,20 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
   Home,
-  LayoutDashboard,
-  Star,
-  Trophy,
+  TvMinimalPlay,
+  ChartNoAxesCombined,
   Users,
+  NotebookPen,
+  BookCheck
 } from 'lucide-react'
 
 const navigationItems = [
   { label: 'Início', href: '/dashboard', icon: Home },
-  { label: 'Comunidade', href: '/comunidade', icon: Users },
-  { label: 'Aprovados', href: '/aprovados', icon: Trophy },
-  { label: 'Assinar', href: '/assinar', icon: Star, isPro: true },
-  { label: 'Painel', href: '/painel', icon: LayoutDashboard },
+  { label: 'Cursos', href: '/courses', icon: TvMinimalPlay },
+  { label: 'Estudo Inteligente', href: '/study', icon: NotebookPen },
+  { label: 'Simulado', href: '/simulado', icon: BookCheck },
+  { label: 'Comunidade', href: '/comunity', icon: Users },
+  { label: 'Desempenho', href: '/score', icon: ChartNoAxesCombined },
 ]
 
 export function Sidebar() {
@@ -55,11 +57,6 @@ export function Sidebar() {
                     : 'text-muted-foreground hover:bg-muted hover:text-foreground'
                 }`}
               >
-                {item.isPro && (
-                  <span className="absolute left-8 top-0 -translate-y-1/2 rounded-full bg-gold px-1.5 py-0.5 text-[9px] font-bold leading-none text-gold-foreground">
-                    PRO
-                  </span>
-                )}
                 <Icon className="h-4 w-4" />
                 <span>{item.label}</span>
               </Link>

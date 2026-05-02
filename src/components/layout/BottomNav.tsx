@@ -4,18 +4,19 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
   Home,
-  LayoutDashboard,
-  Star,
-  Trophy,
+  TvMinimalPlay,
+  ChartNoAxesCombined,
   Users,
+  NotebookPen,
+  BookCheck
 } from 'lucide-react'
 
 const navigationItems = [
-  { label: 'Início', href: '/inicio', icon: Home },
-  { label: 'Comunidade', href: '/comunidade', icon: Users },
-  { label: 'Aprovados', href: '/aprovados', icon: Trophy },
-  { label: 'Assinar', href: '/assinar', icon: Star, isPro: true },
-  { label: 'Painel', href: '/painel', icon: LayoutDashboard },
+  { label: 'Início', href: '/dashboard', icon: Home },
+  { label: 'Cursos', href: '/courses', icon: TvMinimalPlay },
+  { label: 'Estudo', href: '/study', icon: NotebookPen },
+  { label: 'Simulado', href: '/simulado', icon: BookCheck },
+  { label: 'Desempenho', href: '/score', icon: ChartNoAxesCombined },
 ]
 
 export function BottomNav() {
@@ -36,11 +37,6 @@ export function BottomNav() {
                 isActive ? 'text-gold' : 'text-muted-foreground'
               }`}
             >
-              {item.isPro && (
-                <span className="absolute top-0 -translate-y-1/2 rounded-full bg-gold px-1.5 py-0.5 text-[9px] font-bold leading-none text-gold-foreground">
-                  PRO
-                </span>
-              )}
               <Icon className="h-4 w-4" />
               <span className="text-[11px] leading-none">{item.label}</span>
             </Link>
