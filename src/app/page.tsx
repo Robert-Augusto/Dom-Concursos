@@ -5,7 +5,7 @@ export default function Home() {
 
         {/* Header */}
         <div className="space-y-1">
-          <h1 className="text-3xl font-bold text-primary">DOM Concursos</h1>
+          <h1 className="text-3xl font-bold text-primary">DOM Concursos - Pedro Testando</h1>
           <p className="text-muted-foreground">Design System Showcase</p>
         </div>
 
