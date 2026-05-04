@@ -273,7 +273,7 @@ export default function SimuladoConfig({ onStart }: SimuladoConfigProps) {
                 <span className="text-lg shrink-0">{subject.emoji}</span>
                 <span className="text-sm font-semibold text-foreground">{subject.label}</span>
               </span>
-              {selected && row && (
+              {/*{selected && row && (
                 <span
                   className="flex items-center gap-1 shrink-0"
                   onClick={(e) => e.stopPropagation()}
@@ -296,7 +296,7 @@ export default function SimuladoConfig({ onStart }: SimuladoConfigProps) {
                     </button>
                   ))}
                 </span>
-              )}
+              )}*/}
             </button>
           )
         })}
@@ -329,7 +329,7 @@ export default function SimuladoConfig({ onStart }: SimuladoConfigProps) {
                 <span className="text-lg shrink-0">{subject.emoji}</span>
                 <span className="text-sm font-semibold text-foreground">{subject.label}</span>
               </span>
-              {selected && row && (
+              {/*{selected && row && (
                 <span
                   className="flex items-center gap-1 shrink-0"
                   onClick={(e) => e.stopPropagation()}
@@ -352,7 +352,7 @@ export default function SimuladoConfig({ onStart }: SimuladoConfigProps) {
                     </button>
                   ))}
                 </span>
-              )}
+              )}*/}
             </button>
           )
         })}
