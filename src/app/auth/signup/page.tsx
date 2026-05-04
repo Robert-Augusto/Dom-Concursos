@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import {
   CheckSquare,
@@ -13,6 +14,7 @@ import {
   User,
   Users,
 } from 'lucide-react'
+import { Signup } from '@/lib/auth'
 
 function formatWhatsapp(value: string) {
   const digits = value.replace(/\D/g, '').slice(0, 13)
@@ -51,6 +53,7 @@ function formatWhatsapp(value: string) {
 }
 
 export default function SignupPage() {
+  const router = useRouter()
   const [showPassword, setShowPassword] = useState(false)
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
@@ -59,15 +62,34 @@ export default function SignupPage() {
   const [error, setError] = useState('')
   const [shake, setShake] = useState(false)
 
-  function handleSignup() {
+  async function handleSignup(event: React.FormEvent) {
+    event.preventDefault()
+
     if (!name || !email || !whatsapp || !password) {
       setError('Preencha todos os campos para continuar.')
       setShake(true)
       setTimeout(() => setShake(false), 400)
       return
     }
+
+    if(password.length < 8){
+      setError('A senha deve conter no mínimo 8 caracteres.')
+      setShake(true)
+      setTimeout(() => setShake(false), 400)
+      return
+    }
+
     setError('')
-    // TODO: Supabase auth
+
+    const {error} = await Signup(name, password, email, whatsapp)
+    if (error) {
+      setError(error.message)
+      setShake(true)
+      setTimeout(() => setShake(false), 400)
+      return
+    }
+
+    router.push('/dashboard')
   }
 
   function handleWhatsappChange(value: string) {

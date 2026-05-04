@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter } from 'next/router'
+import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import {
   CheckSquare,
@@ -13,6 +13,8 @@ import {
   Smile,
   Users,
 } from 'lucide-react'
+import {Login} from '@/lib/auth'
+
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
@@ -20,10 +22,11 @@ export default function LoginPage() {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [shake, setShake] = useState(false)
+  const router = useRouter()
 
-  //const router = useRouter()
+  async function handleLogin(event: React.FormEvent) {
+    event.preventDefault()
 
-  function handleLogin() {
     if (!email || !password) {
       setError('Preencha e-mail e senha para continuar.')
       setShake(true)
@@ -31,7 +34,18 @@ export default function LoginPage() {
       return
     }
     setError('')
-    // TODO: Supabase auth
+
+    const {error} = await Login(email, password)
+    
+    if (error) {
+      setError(error)
+      setShake(true)
+      setTimeout(() => setShake(false), 400)
+      return
+    }
+
+    router.push('/dashboard')
+
   }
 
   return (

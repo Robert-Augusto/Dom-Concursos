@@ -4,7 +4,10 @@ import { useRef, useState } from 'react'
 import { BottomNav } from '@/components/layout/BottomNav'
 import { Header } from '@/components/layout/Header'
 import { Sidebar } from '@/components/layout/Sidebar'
-import { Camera, ImageOff, Lock, Mail, Save, User } from 'lucide-react'
+import { Camera, ImageOff, Lock, Mail, Save, User, LogOut } from 'lucide-react'
+import { Logout } from '@/lib/auth'
+import { toast } from 'sonner'
+import { useRouter } from 'next/navigation'
 
 const sectionShell =
   'rounded-2xl border border-border bg-card p-6 shadow-sm'
@@ -15,6 +18,17 @@ const saveBtn =
 export default function SettingsPage() {
   const fileRef = useRef<HTMLInputElement>(null)
   const [preview, setPreview] = useState<string | null>(null)
+  const router = useRouter()
+
+  async function handleLogout(){
+    const {error} = await Logout()
+    if (error) {
+      toast.error(error.message)
+      return
+    }
+
+    router.push('/auth/login')
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -204,6 +218,27 @@ export default function SettingsPage() {
                 </button>
               </div>
             </section>
+            
+            {/* Logout */}
+            <section className={sectionShell}>
+              <div className="mb-5">
+                <h2 className="font-heading text-base font-black tracking-tight text-foreground">
+                  Sair da conta
+                </h2>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Você será desconectado de todos os dispositivos.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={handleLogout}
+                className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-destructive/10 border border-destructive/30 text-destructive text-sm font-bold hover:bg-destructive/20 transition-colors"
+              >
+                <LogOut className="h-4 w-4" />
+                Sair da conta
+              </button>
+            </section>
+
           </div>
         </main>
       </div>

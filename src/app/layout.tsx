@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Syne, DM_Sans, Sora } from 'next/font/google'
 import "./globals.css";
+import { Toaster } from 'sonner'
 
 const syne = Syne({
   subsets: ['latin'],
@@ -38,7 +39,7 @@ export default function RootLayout({
       lang="en"
       className={`${syne.variable} ${dmSans.variable} ${sora.variable}`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">{children} <Toaster richColors position="top-right" /></body>
     </html>
   );
 }
