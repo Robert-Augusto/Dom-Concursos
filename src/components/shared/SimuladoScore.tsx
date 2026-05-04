@@ -13,7 +13,7 @@ import {
   Zap,
 } from 'lucide-react'
 import { getSimuladoQuestionPaper } from './SimuladoSession'
-
+import { SimuladoQuestion } from './SimuladoSession'
 export type SimuladoDifficulty = 'facil' | 'medio' | 'dificil'
 
 export interface SimuladoState {
