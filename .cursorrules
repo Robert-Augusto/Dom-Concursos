@@ -174,3 +174,6 @@ CORRECT:
 
 WRONG:
 <div className="w-[280px] min-w-[280px] h-[300px] bg-card rounded-2xl">
+
+## Database
+Always read src/lib/supabase/schema.md to understand the current database schema

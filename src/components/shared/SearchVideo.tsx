@@ -1,151 +1,140 @@
 'use client'
 
-import Image from 'next/image'
+import { usePathname } from 'next/navigation'
 import { useMemo, useState } from 'react'
+import { ModalLesson } from './ModalLesson'
+import { ModalLessonDelete } from './ModalLessonDelete'
 import {
-  Eye,
-  MessageCircle,
-  Play,
+  Pencil,
+  Plus,
   Search,
-  ThumbsUp,
+  Trash2
 } from 'lucide-react'
+import { Lessons, Subjects } from '@/types'
 
-const FILTER_PILLS = [
-  'Tudo',
-  'Questões de Bancas',
-  'Português',
-  'Matemática',
-  'Informática',
-  'Legislação do SUS',
-  'Raciocínio Lógico',
-  'Dir. Constitucional',
-  'Dir. Administrativo',
-  'Atualidades',
-] as const
+const DEFAULT_FILTER_PILLS = ['Tudo'] as const
 
-const videos = [
-  {
-    id: 'a',
-    thumbnail: '/thumbs/video-a.jpg',
-    duration: '1:15:20',
-    tag: 'CONHECIMENTOS GERAIS',
-    title: 'Município de Contagem – Concurso Prefeitura 2025',
-    views: '42 mil',
-    likes: '1,3 mil',
-    comments: '69',
-    category: 'Tudo',
-  },
-  {
-    id: 'b',
-    thumbnail: '/thumbs/video-b.jpg',
-    duration: '1:32:35',
-    tag: 'INFORMÁTICA',
-    title: 'Concurso Contagem/MG 2026 – Noções Essenciais',
-    views: '1,6 mil',
-    likes: '103',
-    comments: '4',
-    category: 'Informática',
-  },
-  {
-    id: 'c',
-    thumbnail: '/thumbs/video-c.jpg',
-    duration: '1:18:51',
-    tag: 'LEGISLAÇÃO DO SUS',
-    title: 'SESA Paraná – Questões Banca FAFIPA – Aula 2',
-    views: '13 mil',
-    likes: '579',
-    comments: '82',
-    category: 'Tudo',
-  },
-  {
-    id: 'd',
-    thumbnail: '/thumbs/video-d.jpg',
-    duration: '15:00',
-    tag: 'PROVA DE TÍTULOS',
-    title: 'Como Enviar – Concurso Prefeitura Contagem (31/03)',
-    views: '1,5 mil',
-    likes: '98',
-    comments: '12',
-    category: 'Tudo',
-  },
-] as const
-
-function tagClassName(tag: string): string {
-  switch (tag) {
-    case 'CONHECIMENTOS GERAIS':
-      return 'bg-blue-500/20 text-blue-400'
-    case 'INFORMÁTICA':
-      return 'bg-red-500/20 text-red-400'
-    case 'LEGISLAÇÃO DO SUS':
-      return 'bg-green-500/20 text-green-400'
-    case 'PROVA DE TÍTULOS':
-      return 'bg-yellow-500/20 text-yellow-400'
-    case 'PORTUGUÊS':
-      return 'bg-purple-500/20 text-purple-400'
-    case 'MATEMÁTICA':
-      return 'bg-orange-500/20 text-orange-400'
-    default:
-      return 'bg-muted text-muted-foreground'
+function getYoutubeEmbedUrl(url: string): string | null {
+  try {
+    const parsed = new URL(url)
+    if (parsed.hostname.includes('youtu.be')) {
+      const id = parsed.pathname.replace('/', '')
+      return id ? `https://www.youtube.com/embed/${id}` : null
+    }
+    if (parsed.hostname.includes('youtube.com')) {
+      const videoId = parsed.searchParams.get('v')
+      if (videoId) return `https://www.youtube.com/embed/${videoId}`
+      if (parsed.pathname.includes('/shorts/')) {
+        const shortId = parsed.pathname.split('/shorts/')[1]
+        return shortId ? `https://www.youtube.com/embed/${shortId}` : null
+      }
+    }
+    return null
+  } catch {
+    return null
   }
 }
 
-function VideoThumbnail({
-  src,
-  alt,
-  duration,
-}: {
-  src: string
-  alt: string
-  duration: string
-}) {
-  const [failed, setFailed] = useState(false)
-
-  return (
-    <div className="relative aspect-video w-full overflow-hidden rounded-lg bg-muted">
-      {!failed ? (
-        <Image
-          src={src}
-          alt={alt}
-          fill
-          className="object-cover"
-          sizes="(max-width: 767px) 100vw, 50vw"
-          onError={() => setFailed(true)}
-        />
-      ) : null}
-      <div className="pointer-events-none absolute inset-0 flex items-center justify-center bg-black/40">
-        <Play className="h-6 w-6 text-white md:h-8 md:w-8" aria-hidden />
-      </div>
-      <span className="pointer-events-none absolute bottom-1.5 right-1.5 rounded bg-black/80 px-1.5 py-0.5 text-[10px] font-bold text-white">
-        {duration}
-      </span>
-    </div>
-  )
+function formatDuration(secondsValue: string): string {
+  const totalSeconds = Number.parseInt(secondsValue, 10)
+  if (Number.isNaN(totalSeconds) || totalSeconds <= 0) return '--:--'
+  const hours = Math.floor(totalSeconds / 3600)
+  const minutes = Math.floor((totalSeconds % 3600) / 60)
+  const seconds = totalSeconds % 60
+  if (hours > 0) {
+    return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
+  }
+  return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
 }
 
-export function SearchVideo() {
+type SearchVideoProps = {
+  lessonsData?: Lessons[] | null
+  subjectsData?: Subjects[] | null
+}
+
+export function SearchVideo({
+  lessonsData = [],
+  subjectsData = [],
+}: SearchVideoProps) {
+  const pathname = usePathname()
+  const isAdminPage = pathname === '/admin'
   const [search, setSearch] = useState('')
   const [activeFilter, setActiveFilter] = useState<string>('Tudo')
+  const [isModalOpen, setIsModalOpen] = useState(false)
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
+  const [modalMode, setModalMode] = useState<'create' | 'edit'>('create')
+  const [selectedVideo, setSelectedVideo] = useState<Lessons | null>(null)
+  const [modalSession, setModalSession] = useState(0)
+
+  const subjectNameById = useMemo(() => {
+    const map = new Map<string, string>()
+    ;(subjectsData ?? []).forEach((subject) => {
+      map.set(subject.id, subject.name)
+    })
+    return map
+  }, [subjectsData])
+
+  const filterPills = useMemo(() => {
+    const names = new Set<string>()
+    ;(subjectsData ?? []).forEach((subject) => {
+      if (subject.name) names.add(subject.name)
+    })
+    return [...DEFAULT_FILTER_PILLS, ...Array.from(names)]
+  }, [subjectsData])
 
   const filteredVideos = useMemo(() => {
     const q = search.trim().toLowerCase()
-    return videos.filter((video) => {
-      const matchesFilter =
-        activeFilter === 'Tudo' || video.category === activeFilter
+    return (lessonsData ?? []).filter((lesson) => {
+      const subjectName = subjectNameById.get(lesson.subject_id) ?? 'Sem matéria'
+      const matchesFilter = activeFilter === 'Tudo' || subjectName === activeFilter
       const matchesSearch =
-        q === '' || video.title.toLowerCase().includes(q)
+        q === '' ||
+        lesson.title.toLowerCase().includes(q) ||
+        lesson.description.toLowerCase().includes(q)
       return matchesFilter && matchesSearch
     })
-  }, [search, activeFilter])
+  }, [search, activeFilter, lessonsData, subjectNameById])
+
+  function openCreateModal() {
+    setModalMode('create')
+    setSelectedVideo(null)
+    setModalSession((prev) => prev + 1)
+    setIsModalOpen(true)
+  }
+
+  function openEditModal(lesson: Lessons) {
+    setModalMode('edit')
+    setSelectedVideo(lesson)
+    setModalSession((prev) => prev + 1)
+    setIsModalOpen(true)
+  }
+
+  function openDeleteModal(lesson: Lessons) {
+    setSelectedVideo(lesson)
+    setIsDeleteModalOpen(true)
+  }
 
   return (
     <section className="flex flex-col gap-4">
-        <div className="flex flex-col gap-1">
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex flex-col gap-1">
             <h2 className="text-lg font-black text-foreground font-heading">
                 Buscar Aulas
             </h2>
             <p className="text-sm text-muted-foreground">
                 Procure suas aulas de interesse
             </p>
+          </div>
+          {isAdminPage ? (
+            <button
+              type="button"
+              onClick={openCreateModal}
+              className="inline-flex items-center gap-1.5 rounded-full border border-primary bg-primary px-3 py-1.5 text-xs font-semibold text-primary-foreground transition-colors hover:opacity-90"
+            >
+              <Plus className="h-3.5 w-3.5" aria-hidden />
+              Criar aula
+            </button>
+          ) : null}
         </div>
       <div className="relative max-w-[700px]">
         <Search
@@ -162,7 +151,7 @@ export function SearchVideo() {
       </div>
 
       <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
-        {FILTER_PILLS.map((label) => {
+        {filterPills.map((label) => {
           const active = activeFilter === label
           return (
             <button
@@ -186,45 +175,93 @@ export function SearchVideo() {
       </p>
 
       <div className="flex flex-col gap-3 md:grid md:grid-cols-2 md:gap-4">
-        {filteredVideos.map((video) => (
+        {filteredVideos.map((video) => {
+          const embedUrl = getYoutubeEmbedUrl(video.video_url)
+          const subjectName = subjectNameById.get(video.subject_id) ?? 'Sem matéria'
+          return (
           <div
             key={video.id}
             role="button"
             tabIndex={0}
             className="flex cursor-pointer flex-col gap-2 rounded-xl border border-border bg-card p-2.5 transition-colors hover:border-primary/30 md:gap-3 md:p-3"
           >
-            <VideoThumbnail
-              src={video.thumbnail}
-              alt={video.title}
-              duration={video.duration}
-            />
+            <div className="relative aspect-video w-full overflow-hidden rounded-lg bg-muted">
+              {embedUrl ? (
+                <iframe
+                  className="h-full w-full"
+                  src={embedUrl}
+                  title={video.title}
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                  referrerPolicy="strict-origin-when-cross-origin"
+                  allowFullScreen
+                />
+              ) : (
+                <div className="flex h-full w-full items-center justify-center text-xs font-semibold text-muted-foreground">
+                  URL do YouTube inválida
+                </div>
+              )}
+              <span className="pointer-events-none absolute bottom-1.5 right-1.5 rounded bg-black/80 px-1.5 py-0.5 text-[10px] font-bold text-white">
+                {formatDuration(video.duration_seconds)}
+              </span>
+            </div>
             <div className="flex min-w-0 flex-1 flex-col gap-1">
               <span
-                className={`inline-flex self-start rounded-full px-2 py-0.5 text-[8px] font-black tracking-wider uppercase md:text-[9px] ${tagClassName(video.tag)}`}
+                className="inline-flex self-start rounded-full bg-primary/20 px-2 py-0.5 text-[8px] font-black tracking-wider text-primary uppercase md:text-[9px]"
               >
-                {video.tag}
+                {subjectName}
               </span>
-              <p className="line-clamp-2 text-xs leading-snug font-semibold text-foreground md:text-sm">
-                {video.title}
-              </p>
-              <div className="mt-auto flex items-center gap-2.5 md:gap-3">
-                <span className="flex items-center gap-1 text-[11px] text-muted-foreground md:text-xs">
-                  <Eye className="h-2.5 w-2.5 shrink-0 md:h-3 md:w-3" aria-hidden />
-                  {video.views}
-                </span>
-                <span className="flex items-center gap-1 text-[11px] text-muted-foreground md:text-xs">
-                  <ThumbsUp className="h-2.5 w-2.5 shrink-0 md:h-3 md:w-3" aria-hidden />
-                  {video.likes}
-                </span>
-                <span className="flex items-center gap-1 text-[11px] text-muted-foreground md:text-xs">
-                  <MessageCircle className="h-2.5 w-2.5 shrink-0 md:h-3 md:w-3" aria-hidden />
-                  {video.comments}
-                </span>
+              <div className="flex items-center gap-3">
+                {/* Left — title + description */}
+                <div className="flex flex-col gap-1 flex-1">
+                  <p className="line-clamp-2 text-xs leading-snug font-semibold text-foreground md:text-sm">
+                    {video.title}
+                  </p>
+                  <p className="line-clamp-2 text-[11px] text-muted-foreground md:text-xs">
+                    {video.description}
+                  </p>
+                </div>
+
+                {/* Right — button */}
+                {isAdminPage ? (
+                  <div className='flex'>
+                    <button
+                      type="button"
+                      onClick={() => openEditModal(video)}
+                      className="inline-flex items-center gap-1.5 rounded-xl border border-border px-3 py-2 text-xs font-bold text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground flex-shrink-0"
+                    >
+                      <Pencil className="h-3.5 w-3.5" aria-hidden />
+                      Editar
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => openDeleteModal(video)}
+                      className="inline-flex items-center gap-1.5 rounded-xl border border-border px-3 py-2 text-xs font-bold text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground flex-shrink-0"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" aria-hidden />
+                      Deletar
+                    </button>
+                  </div>
+                ) : null}
               </div>
             </div>
           </div>
-        ))}
+        )})}
       </div>
+      <ModalLesson
+        key={modalSession}
+        open={isModalOpen}
+        mode={modalMode}
+        lessonsData={selectedVideo}
+        onClose={() => setIsModalOpen(false)}
+        subjectsData={subjectsData}
+      />
+      <ModalLessonDelete
+        open={isDeleteModalOpen}
+        lessonName={selectedVideo?.title ?? ''}
+        lessonId={selectedVideo?.id ?? ''}
+        onClose={() => setIsDeleteModalOpen(false)}
+      />
     </section>
   )
 }

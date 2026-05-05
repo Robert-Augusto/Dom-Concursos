@@ -2,16 +2,18 @@
 
 import { useRouter } from 'next/navigation'
 import { NotificationsDropdown } from '@/components/shared/NotificationsDropdown'
+import { useProfile } from '@/context/ProfileContext'
 
 export function Header() {
   const router = useRouter();
+  const { profile, loading } = useProfile()
 
   return (
     <header className="sticky top-0 z-30 flex h-18 items-center justify-between border-b border-border bg-background px-6">
       
       <div className="flex flex-col">
         <h1 className="text-base font-black text-foreground font-heading">
-          Olá, Robert 👋
+          Olá, {profile?.name} 👋
         </h1>
         <p className="text-xs text-muted-foreground">
           Bons estudos, rumo à aprovação!
@@ -29,7 +31,7 @@ export function Header() {
             boxShadow: '0 0 0 2px hsl(var(--background)), 0 0 0 4px hsl(42,50%,55%,0.4)',
           }}
         >
-          R
+          {profile?.name?.charAt(0).toUpperCase()}
         </div>
       </div>
     </header>

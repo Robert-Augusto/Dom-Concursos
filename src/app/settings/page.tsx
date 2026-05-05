@@ -4,10 +4,12 @@ import { useRef, useState } from 'react'
 import { BottomNav } from '@/components/layout/BottomNav'
 import { Header } from '@/components/layout/Header'
 import { Sidebar } from '@/components/layout/Sidebar'
-import { Camera, ImageOff, Lock, Mail, Save, User, LogOut } from 'lucide-react'
+import Link from 'next/link'
+import { Camera, ChevronRight, ImageOff, Lock, LogOut, Mail, Save, Star, User } from 'lucide-react'
 import { Logout } from '@/lib/auth'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
+import { useProfile } from '@/context/ProfileContext'
 
 const sectionShell =
   'rounded-2xl border border-border bg-card p-6 shadow-sm'
@@ -19,6 +21,7 @@ export default function SettingsPage() {
   const fileRef = useRef<HTMLInputElement>(null)
   const [preview, setPreview] = useState<string | null>(null)
   const router = useRouter()
+  const { profile, loading } = useProfile()
 
   async function handleLogout(){
     const {error} = await Logout()
@@ -46,6 +49,37 @@ export default function SettingsPage() {
           </div>
 
           <div className="flex flex-col gap-6">
+            {!loading && profile?.role === 'admin' && (
+              <Link
+                href="/admin"
+                className="group flex items-center gap-4 rounded-2xl border border-primary/80 bg-[hsl(226,24%,8%)] p-4 pr-5 shadow-[0_0_0_1px_color-mix(in_oklab,var(--color-primary)_25%,transparent)] transition hover:border-primary hover:bg-[hsl(226,24%,10%)]"
+              >
+                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-primary">
+                  <Star
+                    className="h-7 w-7 text-white"
+                    strokeWidth={2}
+                    fill="none"
+                    aria-hidden
+                  />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <span className="inline-block rounded-full border border-primary px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-primary">
+                    Exclusivo admin
+                  </span>
+                  <p className="font-heading mt-2 text-lg font-black tracking-tight text-foreground">
+                    Painel do Administrador
+                  </p>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    Edite tudo do site: aulas, vídeos, IA, simulados
+                  </p>
+                </div>
+                <ChevronRight
+                  className="h-5 w-5 shrink-0 text-muted-foreground transition group-hover:text-foreground"
+                  aria-hidden
+                />
+              </Link>
+            )}
+
             {/* Foto de perfil */}
             <section className={sectionShell}>
                 <div className="mb-5">
@@ -118,7 +152,7 @@ export default function SettingsPage() {
                     </div>
 
                     {/* Save button — full width below */}
-                    <button type="button" className={saveBtn+" self-end"}>
+                    <button type="button" className={`${saveBtn} self-end`}>
                     <Save className="h-4 w-4" />
                     Salvar foto
                     </button>
@@ -146,7 +180,7 @@ export default function SettingsPage() {
                     className="w-full rounded-xl border border-border bg-background py-3.5 pl-10 pr-4 text-sm text-foreground placeholder:text-muted-foreground outline-none transition-colors focus:border-accent/60"
                   />
                 </div>
-                <button type="button" className={saveBtn+" self-end"}>
+                <button type="button" className={`${saveBtn} self-end`}>
                   <Save className="h-4 w-4" />
                   Salvar nome
                 </button>
@@ -174,7 +208,7 @@ export default function SettingsPage() {
                     className="w-full rounded-xl border border-border bg-background py-3.5 pl-10 pr-4 text-sm text-foreground placeholder:text-muted-foreground outline-none transition-colors focus:border-accent/60"
                   />
                 </div>
-                <button type="button" className={saveBtn+" self-end"}>
+                <button type="button" className={`${saveBtn} self-end`}>
                   <Save className="h-4 w-4" />
                   Salvar e-mail
                 </button>
@@ -212,13 +246,13 @@ export default function SettingsPage() {
                     className="w-full rounded-xl border border-border bg-background py-3.5 pl-10 pr-4 text-sm text-foreground placeholder:text-muted-foreground outline-none transition-colors focus:border-accent/60"
                   />
                 </div>
-                <button type="button" className={saveBtn+" self-end"}>
+                <button type="button" className={`${saveBtn} self-end`}>
                   <Save className="h-4 w-4" />
-                  Salvar e-mail
+                  Salvar senha
                 </button>
               </div>
             </section>
-            
+
             {/* Logout */}
             <section className={sectionShell}>
               <div className="mb-5">
@@ -232,7 +266,7 @@ export default function SettingsPage() {
               <button
                 type="button"
                 onClick={handleLogout}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-destructive/10 border border-destructive/30 text-destructive text-sm font-bold hover:bg-destructive/20 transition-colors"
+                className="self-end flex items-center gap-2 px-5 py-2.5 rounded-xl bg-destructive/10 border border-destructive/30 text-destructive text-sm font-bold hover:bg-destructive/20 transition-colors"
               >
                 <LogOut className="h-4 w-4" />
                 Sair da conta

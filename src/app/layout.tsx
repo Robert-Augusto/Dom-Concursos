@@ -1,7 +1,11 @@
 import type { Metadata } from "next";
-import { Syne, DM_Sans, Sora } from 'next/font/google'
+import { Syne, DM_Sans, Sora, Geist } from 'next/font/google'
 import "./globals.css";
 import { Toaster } from 'sonner'
+import { cn } from "@/lib/utils";
+import { ProfileProvider } from '@/context/ProfileContext'
+
+const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
 const syne = Syne({
   subsets: ['latin'],
@@ -35,11 +39,13 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="en"
-      className={`${syne.variable} ${dmSans.variable} ${sora.variable}`}
-    >
-      <body className="min-h-full flex flex-col">{children} <Toaster richColors position="top-right" /></body>
-    </html>
+    <ProfileProvider>
+      <html
+        lang="en"
+        className={cn(syne.variable, dmSans.variable, sora.variable, "font-sans", geist.variable)}
+      >
+        <body className="min-h-full flex flex-col">{children} <Toaster richColors position="top-right" /></body>
+      </html>
+    </ProfileProvider>
   );
 }
