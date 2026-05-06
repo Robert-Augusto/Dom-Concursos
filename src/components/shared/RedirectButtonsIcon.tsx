@@ -1,9 +1,7 @@
 import Link from 'next/link'
+import type { MouseEvent } from 'react'
 import {
   CircleHelp,
-  MessageCircle,
-  Lightbulb,
-  ClipboardCheck,
   type LucideIcon,
   MonitorPlay,
   Video,
@@ -51,7 +49,21 @@ const redirectButtonItems: RedirectButtonItem[] = [
   },
 ]
 
-export function RedirectButtonsIcon() {
+type RedirectButtonsIconProps = {
+  isAuthenticated: boolean
+  onRequireSignup: () => void
+}
+
+export function RedirectButtonsIcon({
+  isAuthenticated,
+  onRequireSignup,
+}: RedirectButtonsIconProps) {
+  const handleFeatureClick = (event: MouseEvent<HTMLAnchorElement>) => {
+    if (isAuthenticated) return
+    event.preventDefault()
+    onRequireSignup()
+  }
+
   return (
     <section>
       <div className="flex gap-4 overflow-x-auto p-2 scrollbar-none lg:grid lg:grid-cols-2 lg:overflow-visible xl:grid-cols-4 lg:gap-4">
@@ -60,6 +72,7 @@ export function RedirectButtonsIcon() {
             <Link
               key={label}
               href={href}
+              onClick={handleFeatureClick}
               className="group relative flex w-[4.5rem] flex-shrink-0 flex-col items-center gap-1.5 rounded-xl border border-transparent transition-colors hover:opacity-95 lg:w-auto lg:flex-row lg:items-start lg:gap-4 lg:border-border lg:bg-card/60 lg:p-4 lg:shadow-sm lg:hover:bg-card"
             >
               {badgeCount ? (

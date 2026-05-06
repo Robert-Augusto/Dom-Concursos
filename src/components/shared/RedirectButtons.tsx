@@ -1,9 +1,10 @@
 import Link from 'next/link'
+import type { MouseEvent } from 'react'
 import {
-    MessageCircle,
-    Lightbulb,
-    ClipboardCheck,
-    type LucideIcon
+  ClipboardCheck,
+  Lightbulb,
+  MessageCircle,
+  type LucideIcon,
 } from 'lucide-react'
 
 type RedirectButtonItem = {
@@ -19,26 +20,41 @@ const redirectButtonItems: RedirectButtonItem[] = [
   { label: 'Simulador de Prova', href: '/simulado', Icon: ClipboardCheck, colorToken: '--color-accent' },
 ]
 
-export function RedirectButtons() {
+type RedirectButtonsProps = {
+  isAuthenticated: boolean
+  onRequireSignup: () => void
+}
+
+export function RedirectButtons({
+  isAuthenticated,
+  onRequireSignup,
+}: RedirectButtonsProps) {
+  const handleFeatureClick = (event: MouseEvent<HTMLAnchorElement>) => {
+    if (isAuthenticated) return
+    event.preventDefault()
+    onRequireSignup()
+  }
+
   return (
     <section>
-  <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-none">
-    {redirectButtonItems.map(({ label, href, Icon, colorToken }) => (
-      <Link
-        key={label}
-        href={href}
-        className="group relative flex-shrink-0 flex items-center gap-2 px-4 py-2.5 rounded-full transition-opacity hover:opacity-90"
-        style={{
-          background: `var(${colorToken})`,
-        }}
-      >
-        <Icon className="h-4 w-4 text-white flex-shrink-0" />
-        <span className="text-[11px] font-black tracking-widest uppercase text-white whitespace-nowrap">
-          {label}
-        </span>
-      </Link>
-    ))}
-  </div>
-</section>
+      <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-none">
+        {redirectButtonItems.map(({ label, href, Icon, colorToken }) => (
+          <Link
+            key={label}
+            href={href}
+            onClick={handleFeatureClick}
+            className="group relative flex-shrink-0 flex items-center gap-2 rounded-full px-4 py-2.5 transition-opacity hover:opacity-90"
+            style={{
+              background: `var(${colorToken})`,
+            }}
+          >
+            <Icon className="h-4 w-4 flex-shrink-0 text-white" />
+            <span className="whitespace-nowrap text-[11px] font-black uppercase tracking-widest text-white">
+              {label}
+            </span>
+          </Link>
+        ))}
+      </div>
+    </section>
   )
 }

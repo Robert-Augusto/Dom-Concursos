@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useMemo, useState } from 'react'
 import { ModalLesson } from './ModalLesson'
@@ -48,11 +49,13 @@ function formatDuration(secondsValue: string): string {
 type SearchVideoProps = {
   lessonsData?: Lessons[] | null
   subjectsData?: Subjects[] | null
+  isAuthenticated?: boolean
 }
 
 export function SearchVideo({
   lessonsData = [],
   subjectsData = [],
+  isAuthenticated = true,
 }: SearchVideoProps) {
   const pathname = usePathname()
   const isAdminPage = pathname === '/admin'
@@ -285,8 +288,21 @@ export function SearchVideo({
         {activeFilterLabel}
       </p>
 
-      <div className="flex flex-col gap-3 md:grid md:grid-cols-2 md:gap-4">
-        {filteredVideos.map((video) => {
+      {!isAuthenticated ? (
+        <div className="flex flex-col items-center justify-center gap-3 rounded-xl border border-border bg-card px-6 py-10 text-center">
+          <p className="max-w-md text-sm text-muted-foreground">
+            Você precisa criar uma conta para assistir as aulas.
+          </p>
+          <Link
+            href="/auth/signup"
+            className="inline-flex items-center rounded-full border border-primary bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
+          >
+            Criar conta
+          </Link>
+        </div>
+      ) : (
+        <div className="flex flex-col gap-3 md:grid md:grid-cols-2 md:gap-4">
+          {filteredVideos.map((video) => {
           const embedUrl = getYoutubeEmbedUrl(video.video_url)
           const subjectName = subjectNameById.get(video.subject_id) ?? 'Sem matéria'
           return (
@@ -357,8 +373,9 @@ export function SearchVideo({
               </div>
             </div>
           </div>
-        )})}
-      </div>
+          )})}
+        </div>
+      )}
       <ModalLesson
         key={modalSession}
         open={isModalOpen}
