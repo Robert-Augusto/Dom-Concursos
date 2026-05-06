@@ -25,6 +25,7 @@ export interface Subjects {
     id: string
     created_at: Date
     name: string
+    subject_id: string | null
     type: SubjectType 
 }
 

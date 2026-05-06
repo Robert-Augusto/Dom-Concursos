@@ -28,8 +28,7 @@ export default function DashboardPage() {
 
       const {data: subjectsData} = await supabase
         .from('subjects')
-        .select()
-        .not('subject_id','is',null)
+        .select('*')
 
       if (lessonsData) setLessons(lessonsData)
       if (subjectsData) setSubjects(subjectsData)

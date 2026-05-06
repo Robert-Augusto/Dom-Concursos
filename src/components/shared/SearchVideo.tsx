@@ -12,8 +12,6 @@ import {
 } from 'lucide-react'
 import { Lessons, Subjects } from '@/types'
 
-const DEFAULT_FILTER_PILLS = ['Tudo'] as const
-
 function getYoutubeEmbedUrl(url: string): string | null {
   try {
     const parsed = new URL(url)
@@ -59,7 +57,9 @@ export function SearchVideo({
   const pathname = usePathname()
   const isAdminPage = pathname === '/admin'
   const [search, setSearch] = useState('')
-  const [activeFilter, setActiveFilter] = useState<string>('Tudo')
+  const [subjectFilterSearch, setSubjectFilterSearch] = useState('')
+  const [selectedRootFilter, setSelectedRootFilter] = useState('')
+  const [selectedRelatedFilter, setSelectedRelatedFilter] = useState('')
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false)
   const [modalMode, setModalMode] = useState<'create' | 'edit'>('create')
@@ -74,26 +74,65 @@ export function SearchVideo({
     return map
   }, [subjectsData])
 
-  const filterPills = useMemo(() => {
-    const names = new Set<string>()
-    ;(subjectsData ?? []).forEach((subject) => {
-      if (subject.name) names.add(subject.name)
-    })
-    return [...DEFAULT_FILTER_PILLS, ...Array.from(names)]
+  const rootSubjects = useMemo(() => {
+    return (subjectsData ?? []).filter((subject) => subject.subject_id === null)
   }, [subjectsData])
+
+  const relatedSubjects = useMemo(() => {
+    return (subjectsData ?? []).filter((subject) => subject.subject_id !== null)
+  }, [subjectsData])
+
+  const filteredRootSubjects = useMemo(() => {
+    const query = subjectFilterSearch.trim().toLowerCase()
+    if (!query) return rootSubjects
+    return rootSubjects.filter((subject) =>
+      subject.name.toLowerCase().includes(query)
+    )
+  }, [rootSubjects, subjectFilterSearch])
+
+  const filteredRelatedSubjects = useMemo(() => {
+    if (!selectedRootFilter) return []
+    const query = subjectFilterSearch.trim().toLowerCase()
+    const rootChildren = relatedSubjects.filter(
+      (subject) => subject.subject_id === selectedRootFilter
+    )
+    if (!query) return rootChildren
+    return rootChildren.filter((subject) =>
+      subject.name.toLowerCase().includes(query)
+    )
+  }, [relatedSubjects, selectedRootFilter, subjectFilterSearch])
+
+  const activeFilterLabel = useMemo(() => {
+    if (!selectedRootFilter) return 'Tudo'
+    if (selectedRelatedFilter) {
+      return subjectNameById.get(selectedRelatedFilter) ?? 'Tudo'
+    }
+    return subjectNameById.get(selectedRootFilter) ?? 'Tudo'
+  }, [selectedRootFilter, selectedRelatedFilter, subjectNameById])
 
   const filteredVideos = useMemo(() => {
     const q = search.trim().toLowerCase()
+    const relatedIdsFromRoot = selectedRootFilter
+      ? new Set(
+          relatedSubjects
+            .filter((subject) => subject.subject_id === selectedRootFilter)
+            .map((subject) => subject.id)
+        )
+      : null
+
     return (lessonsData ?? []).filter((lesson) => {
-      const subjectName = subjectNameById.get(lesson.subject_id) ?? 'Sem matéria'
-      const matchesFilter = activeFilter === 'Tudo' || subjectName === activeFilter
+      const matchesFilter = selectedRelatedFilter
+        ? lesson.subject_id === selectedRelatedFilter
+        : selectedRootFilter
+          ? relatedIdsFromRoot?.has(lesson.subject_id) ?? false
+          : true
       const matchesSearch =
         q === '' ||
         lesson.title.toLowerCase().includes(q) ||
         lesson.description.toLowerCase().includes(q)
       return matchesFilter && matchesSearch
     })
-  }, [search, activeFilter, lessonsData, subjectNameById])
+  }, [search, lessonsData, selectedRootFilter, selectedRelatedFilter, relatedSubjects])
 
   function openCreateModal() {
     setModalMode('create')
@@ -136,6 +175,98 @@ export function SearchVideo({
             </button>
           ) : null}
         </div>
+      <div className="space-y-2 rounded-lg border border-border bg-card p-3">
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => {
+              setSelectedRootFilter('')
+              setSelectedRelatedFilter('')
+            }}
+            className={`rounded-full border px-3 py-1 text-xs font-semibold transition-colors ${
+              !selectedRootFilter
+                ? 'border-primary bg-primary text-primary-foreground'
+                : 'border-border bg-transparent text-muted-foreground hover:border-primary/40 hover:text-foreground'
+            }`}
+          >
+            Tudo
+          </button>
+          <input
+            value={subjectFilterSearch}
+            onChange={(e) => setSubjectFilterSearch(e.target.value)}
+            className="h-8 flex-1 rounded-full border border-border bg-background px-3 text-xs text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-primary/50"
+            placeholder={
+              selectedRootFilter
+                ? 'Pesquisar matéria relacionada...'
+                : 'Pesquisar matéria principal...'
+            }
+          />
+        </div>
+
+        <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+          1. Matéria principal
+        </p>
+        <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
+          {filteredRootSubjects.map((subject) => {
+            const active = selectedRootFilter === subject.id
+            return (
+            <button
+              key={subject.id}
+              type="button"
+              onClick={() => {
+                setSelectedRootFilter(subject.id)
+                setSelectedRelatedFilter('')
+              }}
+              className={`rounded-full border mb-2 px-4 py-1.5 text-xs font-semibold whitespace-nowrap transition-colors ${
+                active
+                  ? 'border-primary bg-primary text-primary-foreground'
+                  : 'border-border bg-transparent text-muted-foreground hover:border-primary/40 hover:text-foreground'
+              }`}
+            >
+              {subject.name}
+            </button>
+          )
+        })}
+          {filteredRootSubjects.length === 0 ? (
+            <p className="text-xs text-muted-foreground">
+              Nenhuma matéria principal encontrada.
+            </p>
+          ) : null}
+        </div>
+
+        {selectedRootFilter ? (
+          <>
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+              2. Matéria relacionada
+            </p>
+            <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
+              {filteredRelatedSubjects.map((subject) => {
+                const active = selectedRelatedFilter === subject.id
+                return (
+                  <button
+                    key={subject.id}
+                    type="button"
+                    onClick={() => setSelectedRelatedFilter(subject.id)}
+                    className={`rounded-full border mb-2 px-4 py-1.5 text-xs font-semibold whitespace-nowrap transition-colors ${
+                      active
+                        ? 'border-primary bg-primary text-primary-foreground'
+                        : 'border-border bg-transparent text-muted-foreground hover:border-primary/40 hover:text-foreground'
+                    }`}
+                  >
+                    {subject.name}
+                  </button>
+                )
+              })}
+              {filteredRelatedSubjects.length === 0 ? (
+                <p className="text-xs text-muted-foreground">
+                  Nenhuma matéria relacionada para essa principal.
+                </p>
+              ) : null}
+            </div>
+          </>
+        ) : null}
+      </div>
+
       <div className="relative max-w-[700px]">
         <Search
           className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
@@ -150,28 +281,8 @@ export function SearchVideo({
         />
       </div>
 
-      <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
-        {filterPills.map((label) => {
-          const active = activeFilter === label
-          return (
-            <button
-              key={label}
-              type="button"
-              onClick={() => setActiveFilter(label)}
-              className={`rounded-full border mb-2 px-4 py-1.5 text-xs font-semibold whitespace-nowrap transition-colors ${
-                active
-                  ? 'border-primary bg-primary text-primary-foreground'
-                  : 'border-border bg-transparent text-muted-foreground hover:border-primary/40 hover:text-foreground'
-              }`}
-            >
-              {label}
-            </button>
-          )
-        })}
-      </div>
-
       <p className="pt-2 text-xs font-bold tracking-widest text-muted-foreground uppercase">
-        {activeFilter}
+        {activeFilterLabel}
       </p>
 
       <div className="flex flex-col gap-3 md:grid md:grid-cols-2 md:gap-4">
