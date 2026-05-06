@@ -17,21 +17,16 @@ import {
 import { Signup } from '@/lib/auth'
 
 function formatWhatsapp(value: string) {
-  const digits = value.replace(/\D/g, '').slice(0, 13)
-  const country = digits.slice(0, 2)
-  const area = digits.slice(2, 4)
-  const ninth = digits.slice(4, 5)
-  const first = digits.slice(5, 9)
-  const second = digits.slice(9, 13)
+  const digits = value.replace(/\D/g, '').slice(0, 11)
+  const area = digits.slice(0, 2)
+  const ninth = digits.slice(2, 3)
+  const first = digits.slice(3, 7)
+  const second = digits.slice(7, 11)
 
   let formatted = ''
 
-  if (country) {
-    formatted += `+${country}`
-  }
-
   if (area) {
-    formatted += ` (${area}`
+    formatted += `(${area}`
     if (area.length === 2) {
       formatted += ')'
     }
@@ -192,7 +187,7 @@ export default function SignupPage() {
             </div>
             <input
               type="tel"
-              placeholder="+00 (00) 0 0000-0000"
+              placeholder="(00) 0 0000-0000"
               value={whatsapp}
               onChange={(e) => handleWhatsappChange(e.target.value)}
               className="w-full bg-card border border-border rounded-xl py-3.5 pl-10 pr-4 text-foreground text-sm placeholder:text-muted-foreground outline-none transition-colors focus:border-primary/50"
@@ -238,23 +233,18 @@ export default function SignupPage() {
           >
             Criar Conta
           </button>
+
+          <div className="relative z-10 flex flex-col items-center gap-2 px-7 pb-8 pt-4">
+            <p className="text-sm text-muted-foreground text-center">
+              Já tem conta?{' '}
+              <Link href="/auth/login" className="text-primary font-bold hover:underline text-sm">
+                Entrar
+              </Link>
+            </p>
+          </div>
+
         </div>
       </div>
-
-      {/* Bottom */}
-      <div className="relative z-10 flex flex-col items-center gap-2 px-7 pb-8 pt-4">
-        <p className="text-xs text-muted-foreground text-center">
-          Já tem conta?{' '}
-          <Link href="/auth/login" className="text-primary font-bold hover:underline">
-            Entrar
-          </Link>
-        </p>
-        <p className="text-[10px] text-muted-foreground text-center leading-relaxed">
-          Ao se cadastrar, você concorda com os<br />
-          Termos de Uso e Política de Privacidade
-        </p>
-      </div>
-
       {/* Shake animation */}
       <style>{`
         @keyframes shake {

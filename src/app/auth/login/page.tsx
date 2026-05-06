@@ -154,21 +154,15 @@ export default function LoginPage() {
           >
             Entrar na Plataforma
           </button>
+          <div className="relative z-10 flex flex-col items-center gap-2 px-7 pb-8 pt-4">
+            <p className="text-sm text-muted-foreground text-center">
+              Não tem conta?{' '}
+              <Link href="/auth/signup" className="text-primary font-bold hover:underline text-sm">
+                Cadastre-se grátis
+              </Link>
+            </p>
+          </div>
         </div>
-      </div>
-
-      {/* Bottom */}
-      <div className="relative z-10 flex flex-col items-center gap-2 px-7 pb-8 pt-4">
-        <p className="text-xs text-muted-foreground text-center">
-          Não tem conta?{' '}
-          <Link href="/auth/signup" className="text-primary font-bold hover:underline">
-            Cadastre-se grátis
-          </Link>
-        </p>
-        <p className="text-[10px] text-muted-foreground text-center leading-relaxed">
-          Ao entrar, você concorda com os<br />
-          Termos de Uso e Política de Privacidade
-        </p>
       </div>
 
       {/* Shake animation */}

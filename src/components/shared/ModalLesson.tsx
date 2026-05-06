@@ -32,16 +32,36 @@ export function ModalLesson({
 
   const [isPublished, setIsPublished] = useState(true)
   const [subjectSearch, setSubjectSearch] = useState('')
+  const [selectedRootSubject, setSelectedRootSubject] = useState('')
   const [selectedSubject, setSelectedSubject] = useState('')
 
-  const filteredSubjects = useMemo(() => {
+  const rootSubjects = useMemo(() => {
+    return (subjectsData ?? []).filter((subject) => subject.subject_id === null)
+  }, [subjectsData])
+
+  const relatedSubjects = useMemo(() => {
+    return (subjectsData ?? []).filter((subject) => subject.subject_id !== null)
+  }, [subjectsData])
+
+  const filteredRootSubjects = useMemo(() => {
     const query = subjectSearch.trim().toLowerCase()
-    const source = subjectsData ?? []
+    if (!query) return rootSubjects
+    return rootSubjects.filter((subject) =>
+      subject.name.toLowerCase().includes(query)
+    )
+  }, [subjectSearch, rootSubjects])
+
+  const filteredRelatedSubjects = useMemo(() => {
+    if (!selectedRootSubject) return []
+    const query = subjectSearch.trim().toLowerCase()
+    const source = relatedSubjects.filter(
+      (subject) => subject.subject_id === selectedRootSubject
+    )
     if (!query) return source
     return source.filter((subject) =>
       subject.name.toLowerCase().includes(query)
     )
-  }, [subjectSearch, subjectsData])
+  }, [subjectSearch, relatedSubjects, selectedRootSubject])
 
   useEffect(() => {
     if (lessonsData) {
@@ -52,8 +72,12 @@ export function ModalLesson({
       setAccessLevel(lessonsData.access_level)
       setIsPublished(lessonsData.is_published)
       setSelectedSubject(lessonsData.subject_id)
+      const selectedChild = (subjectsData ?? []).find(
+        (subject) => subject.id === lessonsData.subject_id
+      )
+      setSelectedRootSubject(selectedChild?.subject_id ?? '')
     }
-  }, [lessonsData])
+  }, [lessonsData, subjectsData])
   
   async function handleCreateLesson(event: React.FormEvent){
     event.preventDefault()
@@ -136,9 +160,10 @@ export function ModalLesson({
 
         <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
           <label className="flex flex-col gap-1 md:col-span-2">
-            <span className="text-xs font-semibold text-muted-foreground">
-              Título da aula
-            </span>
+          <span className="text-xs font-semibold text-muted-foreground">
+            Título da aula <span className="text-destructive text-xs">*</span>
+            <span className="text-xs font-normal text-destructive/70 ml-1">obrigatório</span>
+          </span>
             <input
               value={title}
               onChange={(e) => setTitle(e.target.value)}
@@ -193,7 +218,8 @@ export function ModalLesson({
 
           <label className="flex flex-col gap-1 md:col-span-2">
             <span className="text-xs font-semibold text-muted-foreground">
-              URL do vídeo
+              URL do vídeo <span className="text-destructive text-xs">*</span>
+              <span className="text-xs font-normal text-destructive/70 ml-1">obrigatório</span>
             </span>
             <input
               value={videoUrl}
@@ -205,36 +231,94 @@ export function ModalLesson({
 
           <label className="flex flex-col gap-1 md:col-span-2">
             <span className="text-xs font-semibold text-muted-foreground">
-              Buscar matéria da aula
+              Buscar matéria da aula <span className="text-destructive text-xs">*</span>
+              <span className="text-xs font-normal text-destructive/70 ml-1">obrigatório</span>
             </span>
             <input
               value={subjectSearch}
               onChange={(e) => setSubjectSearch(e.target.value)}
               className="rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-primary/50"
-              placeholder="Pesquise e selecione a matéria"
+              placeholder={
+                selectedRootSubject
+                  ? 'Pesquise a matéria relacionada'
+                  : 'Pesquise a matéria principal'
+              }
             />
-            <div className="mt-1 flex max-h-28 flex-wrap gap-2 overflow-y-auto rounded-lg border border-border bg-background p-2">
-              {filteredSubjects.map((subject) => {
-                const selected = selectedSubject === subject.id
-                return (
-                  <button
-                    key={subject.id}
-                    type="button"
-                    onClick={() => setSelectedSubject(subject.id)}
-                    className={`rounded-full border px-3 py-1 text-xs font-semibold transition-colors ${
-                      selected
-                        ? 'border-primary bg-primary text-primary-foreground'
-                        : 'border-border text-muted-foreground hover:border-primary/40 hover:text-foreground'
-                    }`}
-                  >
-                    {subject.name}
-                  </button>
-                )
-              })}
-              {filteredSubjects.length === 0 ? (
-                <p className="text-xs text-muted-foreground">
-                  Nenhuma matéria encontrada.
+            <div className="mt-1 space-y-2 rounded-lg border border-border bg-background p-2">
+              <div className="flex items-center justify-between">
+                <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                  1. Matéria principal
                 </p>
+                {selectedRootSubject ? (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedRootSubject('')
+                      setSelectedSubject('')
+                    }}
+                    className="text-[11px] font-semibold text-primary hover:opacity-80"
+                  >
+                    Trocar
+                  </button>
+                ) : null}
+              </div>
+              <div className="flex max-h-24 flex-wrap gap-2 overflow-y-auto">
+                {filteredRootSubjects.map((subject) => {
+                  const selected = selectedRootSubject === subject.id
+                  return (
+                    <button
+                      key={subject.id}
+                      type="button"
+                      onClick={() => {
+                        setSelectedRootSubject(subject.id)
+                        setSelectedSubject('')
+                      }}
+                      className={`rounded-full border px-3 py-1 text-xs font-semibold transition-colors ${
+                        selected
+                          ? 'border-primary bg-primary text-primary-foreground'
+                          : 'border-border text-muted-foreground hover:border-primary/40 hover:text-foreground'
+                      }`}
+                    >
+                      {subject.name}
+                    </button>
+                  )
+                })}
+                {filteredRootSubjects.length === 0 ? (
+                  <p className="text-xs text-muted-foreground">
+                    Nenhuma matéria principal encontrada.
+                  </p>
+                ) : null}
+              </div>
+              {selectedRootSubject ? (
+                <>
+                  <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                    2. Matéria relacionada
+                  </p>
+                  <div className="flex max-h-24 flex-wrap gap-2 overflow-y-auto">
+                    {filteredRelatedSubjects.map((subject) => {
+                      const selected = selectedSubject === subject.id
+                      return (
+                        <button
+                          key={subject.id}
+                          type="button"
+                          onClick={() => setSelectedSubject(subject.id)}
+                          className={`rounded-full border px-3 py-1 text-xs font-semibold transition-colors ${
+                            selected
+                              ? 'border-primary bg-primary text-primary-foreground'
+                              : 'border-border text-muted-foreground hover:border-primary/40 hover:text-foreground'
+                          }`}
+                        >
+                          {subject.name}
+                        </button>
+                      )
+                    })}
+                    {filteredRelatedSubjects.length === 0 ? (
+                      <p className="text-xs text-muted-foreground">
+                        Nenhuma matéria relacionada encontrada para essa principal.
+                      </p>
+                    ) : null}
+                  </div>
+                </>
               ) : null}
             </div>
           </label>
