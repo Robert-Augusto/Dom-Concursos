@@ -1,9 +1,25 @@
 'use client'
 
+import { useState } from 'react'
 import { useRouter } from "next/navigation"
+import { createClient } from '@/lib/supabase/client'
+import { ModalSignup } from '@/components/shared/ModalSignup'
 
 export function HeroBanner() {
   const router = useRouter()
+  const [openSignupModal, setOpenSignupModal] = useState(false)
+
+  async function handleStartNow() {
+    const supabase = createClient()
+    const { data } = await supabase.auth.getUser()
+
+    if (!data.user) {
+      setOpenSignupModal(true)
+      return
+    }
+
+    router.push('/tutorial')
+  }
 
   return (
     <div className="relative flex min-h-[260px] items-center gap-5 overflow-hidden rounded-2xl px-6 py-5 sm:min-h-[300px] sm:px-8 md:min-h-[340px] md:px-10">
@@ -106,7 +122,7 @@ export function HeroBanner() {
 
         <div className="mt-2 flex items-center gap-3.5">
           <button
-            onClick={() => router.push('tutorial')}
+            onClick={handleStartNow}
             type="button"
             className="relative inline-flex items-center gap-2 rounded-full px-5 py-2 text-[12px] font-black tracking-wide md:px-6 md:py-2.5 md:text-[14px]"
             style={{
@@ -212,6 +228,8 @@ export function HeroBanner() {
         }
         .sp-emblem { animation: spRotate 30s linear infinite; }
       `}</style>
+
+      <ModalSignup open={openSignupModal} onClose={() => setOpenSignupModal(false)} />
     </div>
   )
 }

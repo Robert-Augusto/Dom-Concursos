@@ -1,5 +1,6 @@
 'use client'
 
+import { type MouseEvent, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
@@ -10,6 +11,8 @@ import {
   NotebookPen,
   BookCheck
 } from 'lucide-react'
+import { ModalSignup } from '@/components/shared/ModalSignup'
+import { createClient } from '@/lib/supabase/client'
 
 const navigationItems = [
   { label: 'Início', href: '/dashboard', icon: Home },
@@ -22,10 +25,31 @@ const navigationItems = [
 
 export function Sidebar() {
   const pathname = usePathname()
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [isModalOpen, setIsModalOpen] = useState(false)
+
+  useEffect(() => {
+    const supabase = createClient()
+
+    async function checkAuth() {
+      const { data } = await supabase.auth.getUser()
+      setIsAuthenticated(Boolean(data.user))
+    }
+
+    checkAuth()
+  }, [])
+
+  function handleNavClick(event: MouseEvent<HTMLAnchorElement>) {
+    if (isAuthenticated) return
+
+    event.preventDefault()
+    setIsModalOpen(true)
+  }
 
   return (
-    <aside className="hidden lg:block fixed left-0 top-0 z-40 h-screen w-[240px] bg-sidebar border-r border-border">
-      <div className="flex h-full flex-col p-4">
+    <>
+      <aside className="hidden lg:block fixed left-0 top-0 z-40 h-screen w-[240px] bg-sidebar border-r border-border">
+        <div className="flex h-full flex-col p-4">
         <div className="mb-6 flex items-center gap-3 px-2 py-3">
           <div
             className="h-9 w-9 rounded-lg"
@@ -51,6 +75,7 @@ export function Sidebar() {
               <Link
                 key={item.href}
                 href={item.href}
+                onClick={handleNavClick}
                 className={`relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors ${
                   isActive
                     ? 'bg-gold/10 text-gold'
@@ -65,5 +90,7 @@ export function Sidebar() {
         </nav>
       </div>
     </aside>
+    <ModalSignup open={isModalOpen} onClose={() => setIsModalOpen(false)} />
+  </>
   )
 }

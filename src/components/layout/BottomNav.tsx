@@ -1,15 +1,17 @@
 'use client'
 
+import { type MouseEvent, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
   Home,
   TvMinimalPlay,
   ChartNoAxesCombined,
-  Users,
   NotebookPen,
   BookCheck
 } from 'lucide-react'
+import { ModalSignup } from '@/components/shared/ModalSignup'
+import { createClient } from '@/lib/supabase/client'
 
 const navigationItems = [
   { label: 'Início', href: '/dashboard', icon: Home },
@@ -21,28 +23,52 @@ const navigationItems = [
 
 export function BottomNav() {
   const pathname = usePathname()
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [isModalOpen, setIsModalOpen] = useState(false)
+
+  useEffect(() => {
+    const supabase = createClient()
+
+    async function checkAuth() {
+      const { data } = await supabase.auth.getUser()
+      setIsAuthenticated(Boolean(data.user))
+    }
+
+    checkAuth()
+  }, [])
+
+  function handleNavClick(event: MouseEvent<HTMLAnchorElement>) {
+    if (isAuthenticated) return
+
+    event.preventDefault()
+    setIsModalOpen(true)
+  }
 
   return (
-    <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 border-t border-border bg-sidebar">
-      <div className="grid h-16 grid-cols-5">
-        {navigationItems.map((item) => {
-          const isActive = pathname === item.href
-          const Icon = item.icon
+    <>
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 border-t border-border bg-sidebar">
+        <div className="grid h-16 grid-cols-5">
+          {navigationItems.map((item) => {
+            const isActive = pathname === item.href
+            const Icon = item.icon
 
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={`relative flex flex-col items-center justify-center gap-1 ${
-                isActive ? 'text-gold' : 'text-muted-foreground'
-              }`}
-            >
-              <Icon className="h-4 w-4" />
-              <span className="text-[11px] leading-none">{item.label}</span>
-            </Link>
-          )
-        })}
-      </div>
-    </nav>
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                onClick={handleNavClick}
+                className={`relative flex flex-col items-center justify-center gap-1 ${
+                  isActive ? 'text-gold' : 'text-muted-foreground'
+                }`}
+              >
+                <Icon className="h-4 w-4" />
+                <span className="text-[11px] leading-none">{item.label}</span>
+              </Link>
+            )
+          })}
+        </div>
+      </nav>
+      <ModalSignup open={isModalOpen} onClose={() => setIsModalOpen(false)} />
+    </>
   )
 }
