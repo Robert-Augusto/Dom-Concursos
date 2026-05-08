@@ -31,7 +31,12 @@ type FormData = {
   fullName: string;
   email: string;
   instagram: string;
-  fullAddress: string;
+  street: string;
+  addressNumber: string;
+  district: string;
+  city: string;
+  cep: string;
+  complement: string;
   approvedExam: string;
   roleName: string;
   approvalStatus: ApprovalStatus | '';
@@ -47,7 +52,12 @@ const initialFormData: FormData = {
   fullName: '',
   email: '',
   instagram: '',
-  fullAddress: '',
+  street: '',
+  addressNumber: '',
+  district: '',
+  city: '',
+  cep: '',
+  complement: '',
   approvedExam: '',
   roleName: '',
   approvalStatus: '',
@@ -164,7 +174,11 @@ export default function ApprovedStudentsFormPage() {
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
       nextErrors.email = 'Informe um e-mail válido.';
     }
-    if (!formData.fullAddress.trim()) nextErrors.fullAddress = requiredErrorMessage;
+    if (!formData.street.trim()) nextErrors.street = requiredErrorMessage;
+    if (!formData.addressNumber.trim()) nextErrors.addressNumber = requiredErrorMessage;
+    if (!formData.district.trim()) nextErrors.district = requiredErrorMessage;
+    if (!formData.city.trim()) nextErrors.city = requiredErrorMessage;
+    if (!formData.cep.trim()) nextErrors.cep = requiredErrorMessage;
     if (!formData.approvedExam.trim()) nextErrors.approvedExam = requiredErrorMessage;
     if (!formData.roleName.trim()) nextErrors.roleName = requiredErrorMessage;
     if (!formData.approvalStatus) nextErrors.approvalStatus = requiredErrorMessage;
@@ -216,13 +230,24 @@ export default function ApprovedStudentsFormPage() {
         return
     }
 
+    const completeAddress = [
+      `Rua: ${formData.street.trim()}`,
+      `Nº: ${formData.addressNumber.trim()}`,
+      `Bairro: ${formData.district.trim()}`,
+      `Cidade: ${formData.city.trim()}`,
+      `CEP: ${formData.cep.trim()}`,
+      formData.complement.trim() ? `Complemento: ${formData.complement.trim()}` : null,
+    ]
+      .filter(Boolean)
+      .join(', ');
+
     const {error: formError} = await supabase
         .from('approved_form')
         .insert({
             fullName: formData.fullName,
             email: formData.email,
             instagram: formData.instagram,
-            fullAddress: formData.fullAddress,
+            fullAddress: completeAddress,
             approvedExam: formData.approvedExam,
             roleName: formData.roleName,
             approvalStatus: formData.approvalStatus,
@@ -301,13 +326,13 @@ export default function ApprovedStudentsFormPage() {
           className="space-y-6 rounded-2xl border border-border bg-card p-5 sm:p-8"
         >
           <section className="space-y-4">
-            <p className="text-xs font-semibold uppercase tracking-wider text-accent">
+            <p className="text-lg font-semibold uppercase tracking-wider text-accent">
               Seus dados
             </p>
 
             <div>
-              <label htmlFor="fullName" className="mb-2 block text-sm font-semibold">
-                Nome completo *
+              <label htmlFor="fullName" className="mb-2 block text-base font-medium">
+                1. Nome completo *
               </label>
               <input
                 id="fullName"
@@ -321,9 +346,8 @@ export default function ApprovedStudentsFormPage() {
             </div>
 
             <div>
-              <label htmlFor="email" className="mb-2 flex items-center gap-2 text-sm font-semibold">
-                <Mail className="h-4 w-4 text-muted-foreground" />
-                E-mail *
+              <label htmlFor="email" className="mb-2 flex items-center gap-2 text-base font-medium">
+                2. E-mail *
               </label>
               <input
                 id="email"
@@ -337,8 +361,8 @@ export default function ApprovedStudentsFormPage() {
             </div>
 
             <div>
-              <label htmlFor="instagram" className="mb-2 block text-sm font-semibold">
-                Instagram
+              <label htmlFor="instagram" className="mb-2 block text-base font-medium">
+                3. Instagram
               </label>
               <input
                 id="instagram"
@@ -351,28 +375,93 @@ export default function ApprovedStudentsFormPage() {
             </div>
 
             <div>
-              <label htmlFor="fullAddress" className="mb-2 block text-sm font-semibold">
-                Endereço completo para envio do presente *
+              <label className="mb-3 block text-base font-medium">
+                4. Endereço completo para envio do presente *
               </label>
-              <textarea
-                id="fullAddress"
-                value={formData.fullAddress}
-                onChange={handleTextChange('fullAddress')}
-                placeholder="Rua, Nº, Bairro, Cidade, CEP, Complemento"
-                className={textAreaBaseClass}
-              />
-              {renderFieldError('fullAddress')}
+
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <div className="sm:col-span-2">
+                  <input
+                    id="street"
+                    type="text"
+                    value={formData.street}
+                    onChange={handleTextChange('street')}
+                    placeholder="Rua"
+                    className={inputBaseClass}
+                  />
+                  {renderFieldError('street')}
+                </div>
+
+                <div>
+                  <input
+                    id="addressNumber"
+                    type="text"
+                    value={formData.addressNumber}
+                    onChange={handleTextChange('addressNumber')}
+                    placeholder="Número"
+                    className={inputBaseClass}
+                  />
+                  {renderFieldError('addressNumber')}
+                </div>
+
+                <div>
+                  <input
+                    id="district"
+                    type="text"
+                    value={formData.district}
+                    onChange={handleTextChange('district')}
+                    placeholder="Bairro"
+                    className={inputBaseClass}
+                  />
+                  {renderFieldError('district')}
+                </div>
+
+                <div>
+                  <input
+                    id="city"
+                    type="text"
+                    value={formData.city}
+                    onChange={handleTextChange('city')}
+                    placeholder="Cidade"
+                    className={inputBaseClass}
+                  />
+                  {renderFieldError('city')}
+                </div>
+
+                <div>
+                  <input
+                    id="cep"
+                    type="text"
+                    value={formData.cep}
+                    onChange={handleTextChange('cep')}
+                    placeholder="CEP"
+                    className={inputBaseClass}
+                  />
+                  {renderFieldError('cep')}
+                </div>
+
+                <div className="sm:col-span-2">
+                  <input
+                    id="complement"
+                    type="text"
+                    value={formData.complement}
+                    onChange={handleTextChange('complement')}
+                    placeholder="Complemento"
+                    className={inputBaseClass}
+                  />
+                </div>
+              </div>
             </div>
           </section>
 
           <section className="space-y-4 border-t border-border pt-6">
-            <p className="text-xs font-semibold uppercase tracking-wider text-accent">
+            <p className="text-lg font-semibold uppercase tracking-wider text-accent">
               Sobre sua aprovação
             </p>
 
             <div>
-              <label htmlFor="approvedExam" className="mb-2 block text-sm font-semibold">
-                Em qual concurso você foi aprovado(a)? *
+              <label htmlFor="approvedExam" className="mb-2 block text-base font-medium">
+                5. Em qual concurso você foi aprovado(a)? *
               </label>
               <input
                 id="approvedExam"
@@ -386,8 +475,8 @@ export default function ApprovedStudentsFormPage() {
             </div>
 
             <div>
-              <label htmlFor="roleName" className="mb-2 block text-sm font-semibold">
-                Qual foi o cargo? *
+              <label htmlFor="roleName" className="mb-2 block text-base font-medium">
+                6. Qual foi o cargo? *
               </label>
               <input
                 id="roleName"
@@ -401,7 +490,7 @@ export default function ApprovedStudentsFormPage() {
             </div>
 
             <fieldset>
-              <legend className="mb-2 text-sm font-semibold">Você ficou: *</legend>
+              <legend className="mb-2 text-base font-medium">7. Você ficou: *</legend>
               <div className="space-y-2">
                 {approvalOptions.map((option) => (
                   <label
@@ -424,8 +513,8 @@ export default function ApprovedStudentsFormPage() {
             </fieldset>
 
             <div>
-              <label htmlFor="score" className="mb-2 block text-sm font-semibold">
-                Qual foi sua nota ou pontuação?
+              <label htmlFor="score" className="mb-2 block text-base font-medium">
+                8. Qual foi sua nota ou pontuação?
               </label>
               <input
                 id="score"
@@ -438,8 +527,8 @@ export default function ApprovedStudentsFormPage() {
             </div>
 
             <fieldset>
-              <legend className="mb-2 text-sm font-semibold">
-                Você estudou com o Dom Concursos por quanto tempo? *
+              <legend className="mb-2 text-base font-medium">
+                9. Você estudou com o Dom Concursos por quanto tempo? *
               </legend>
               <div className="space-y-2">
                 {studyTimeOptions.map((option) => (
@@ -464,13 +553,13 @@ export default function ApprovedStudentsFormPage() {
           </section>
 
           <section className="space-y-4 border-t border-border pt-6">
-            <p className="text-xs font-semibold uppercase tracking-wider text-accent">
+            <p className="text-lg font-semibold uppercase tracking-wider text-accent">
               Seu depoimento
             </p>
 
             <div>
-              <label htmlFor="bestSupport" className="mb-2 block text-sm font-semibold">
-                O que mais te ajudou durante os estudos e sua preparação? *
+              <label htmlFor="bestSupport" className="mb-2 block text-base font-medium">
+                10. O que mais te ajudou durante os estudos e sua preparação? *
               </label>
               <textarea
                 id="bestSupport"
@@ -483,8 +572,8 @@ export default function ApprovedStudentsFormPage() {
             </div>
 
             <div>
-              <label htmlFor="emotionMoment" className="mb-2 block text-sm font-semibold">
-                Como foi o momento em que você viu seu nome na lista? O que você sentiu? *
+              <label htmlFor="emotionMoment" className="mb-2 block text-base font-medium">
+                11. Como foi o momento em que você viu seu nome na lista? O que você sentiu? *
               </label>
               <textarea
                 id="emotionMoment"
@@ -497,8 +586,8 @@ export default function ApprovedStudentsFormPage() {
             </div>
 
             <div>
-              <label htmlFor="motivationMessage" className="mb-2 block text-sm font-semibold">
-                O que você diria para quem está estudando agora e pensa em desistir? *
+              <label htmlFor="motivationMessage" className="mb-2 block text-base font-medium">
+                12. O que você diria para quem está estudando agora e pensa em desistir? *
               </label>
               <textarea
                 id="motivationMessage"
@@ -512,13 +601,13 @@ export default function ApprovedStudentsFormPage() {
           </section>
 
           <section className="space-y-4 border-t border-border pt-6">
-            <p className="text-xs font-semibold uppercase tracking-wider text-accent">
+            <p className="text-lg font-semibold uppercase tracking-wider text-accent">
               Mídia e autorização
             </p>
 
             <div>
-              <label htmlFor="videoFile" className="mb-2 block text-sm font-semibold">
-                Upload de vídeo *
+              <label htmlFor="videoFile" className="mb-2 block text-base font-medium">
+                13. Upload de vídeo *
               </label>
               <p className="mb-2 text-xs text-muted-foreground">
                 Instruções: gravar na vertical, boa iluminação, entre 30 segundos e 1 minuto.
@@ -540,8 +629,8 @@ export default function ApprovedStudentsFormPage() {
             </div>
 
             <div>
-              <label htmlFor="photoFile" className="mb-2 block text-sm font-semibold">
-                Upload de foto *
+              <label htmlFor="photoFile" className="mb-2 block text-base font-medium">
+                14. Upload de foto *
               </label>
               <p className="mb-2 text-xs text-muted-foreground">
                 De preferência na posse, no trabalho com uniforme, ou foto de perfil.
