@@ -1,4 +1,4 @@
-// LESSONS
+// lessons
 export type VideoType = 'youtube' | 'panda'
 
 export type AccessLevel = 'free' | 'plus' | 'premium'
@@ -18,7 +18,7 @@ export interface Lessons {
     subject_id: string
 }
 
-// SUBJECTS
+// subjects
 export type SubjectType = 'basic' | 'specific'
 
 export interface Subjects {
@@ -29,7 +29,7 @@ export interface Subjects {
     type: SubjectType 
 }
 
-// PROFILE
+// profile
 export type ProfileRole = 'admin' | 'teacher' | 'student'
 
 export interface Profile {
@@ -41,4 +41,23 @@ export interface Profile {
     access_level: AccessLevel
     avatar_url: string
     whatsapp: string
+}
+
+// study_materials
+
+export interface StudyMaterials {
+    id: string
+    created_at: Date
+    subjects_id: string
+    content: string
+    file_url: string
+}
+
+// study_flashcards
+export interface StudyFlashcards { 
+    id: string
+    created_at: Date
+    subjects_id: string
+    front: string
+    back: string
 }

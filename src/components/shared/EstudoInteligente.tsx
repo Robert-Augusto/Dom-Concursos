@@ -1,55 +1,30 @@
 'use client'
 
-import { useMemo, useState } from 'react'
-import { Subjects } from '@/types'
+import { useState, useEffect } from 'react'
+import { Subjects, StudyFlashcards, StudyMaterials } from '@/types'
 import { BookText, Image as ImageIcon, Layers, Pencil, Trash2 } from 'lucide-react'
 import { ModalFlashcard } from '@/components/shared/ModalFlashcard'
-import { ModalImageMaterial } from '@/components/shared/ModalImageMaterial'
-import { ModalTextMaterial } from '@/components/shared/ModalTextMaterial'
+import { ModalStudyMaterial } from '@/components/shared/ModalStudyMaterial'
+import { SubjectFilterGroup } from '@/components/shared/SubjectFilterGroup'
+import { CreateStudyMaterial, GetStudyMaterialsBySubject } from '@/lib/study_material'
+import { toast } from 'sonner'
+import { CreateFlashcard, GetFlashcardsBySubject } from '@/lib/flashcards'
 
 const SMART_ACTION_CARDS = [
-    {
-      id: 'theory',
-      title: 'Texto Teórico',
-      description: 'Crie e organize um conteúdo teórico resumido para a matéria selecionada.',
-      buttonLabel: 'Abrir editor',
-      icon: BookText,
-    },
-    {
-      id: 'support-image',
-      title: 'Imagem de Apoio',
-      description: 'Adicione uma imagem para reforçar visualmente o estudo do assunto.',
-      buttonLabel: 'Selecionar imagem',
-      icon: ImageIcon,
-    },
-    {
-      id: 'flashcards',
-      title: 'Flashcards',
-      description: 'Cadastre perguntas e respostas rápidas para revisão ativa da matéria.',
-      buttonLabel: 'Criar flashcard',
-      icon: Layers,
-    },
-  ] as const
-
-const FLASHCARDS_MOCK = [
-    {
-      id: 'fc-1',
-      subjectId: 'placeholder',
-      front: 'Qual é o objetivo principal do controle de constitucionalidade?',
-      back: 'Garantir a supremacia da Constituição sobre as demais normas.',
-    },
-    {
-      id: 'fc-2',
-      subjectId: 'placeholder',
-      front: 'No Windows, qual comando abre o Gerenciador de Tarefas?',
-      back: 'Ctrl + Shift + Esc.',
-    },
-    {
-      id: 'fc-3',
-      subjectId: 'placeholder',
-      front: 'O que significa RLS no Supabase?',
-      back: 'Row Level Security, regras de acesso por linha.',
-    },
+  {
+    id: 'theory',
+    title: 'Texto Teórico',
+    description: 'Crie e organize um conteúdo teórico resumido para a matéria selecionada.',
+    buttonLabel: 'Abrir editor',
+    icon: BookText,
+  },
+  {
+    id: 'flashcards',
+    title: 'Flashcards',
+    description: 'Cadastre perguntas e respostas rápidas para revisão ativa da matéria.',
+    buttonLabel: 'Criar flashcard',
+    icon: Layers,
+  },
 ] as const
 
 type EstudoInteligenteProps = {
@@ -66,78 +41,72 @@ type FlashcardItem = {
 export default function EstudoInteligente({
     subjectsData = [],
 }: EstudoInteligenteProps){
-    const allSubjects = subjectsData ?? []
-
-    const [selectedSmartSubjectId, setSelectedSmartSubjectId] = useState<string | null>(null)
+    const [selectedSmartSubject, setSelectedSmartSubjectId] = useState<Subjects | null>(null)
     const [subjectFilterSearch, setSubjectFilterSearch] = useState('')
     const [selectedRootFilter, setSelectedRootFilter] = useState('')
     const [selectedRelatedFilter, setSelectedRelatedFilter] = useState('')
     const [isTextMaterialModalOpen, setIsTextMaterialModalOpen] = useState(false)
-    const [isImageMaterialModalOpen, setIsImageMaterialModalOpen] = useState(false)
     const [isFlashcardModalOpen, setIsFlashcardModalOpen] = useState(false)
     const [editingFlashcardId, setEditingFlashcardId] = useState<string | null>(null)
-    const [savedTheoryHtml, setSavedTheoryHtml] = useState('')
+    const [editingFlashcardMode, setEditingFlashcardMode] = useState('')
     const [flashcardsBySubjectMap, setFlashcardsBySubjectMap] = useState<Record<string, FlashcardItem[]>>({})
     
-    const selectedSmartSubject = useMemo(() => {
-    if (!selectedSmartSubjectId) return null
-    return allSubjects.find((subject) => subject.id === selectedSmartSubjectId) ?? null
-    }, [selectedSmartSubjectId, allSubjects])
+    const [materials, setMaterials] = useState<StudyMaterials | null>(null);
+    const [flashcards, setFlashcards] = useState<StudyFlashcards[]>([]);
+    const [isLoadingMaterials, setIsLoadingMaterials] = useState(false);
 
-    const flashcardsBySubject = useMemo(() => {
-      if (!selectedSmartSubjectId) return []
-
-      const existingFlashcards = flashcardsBySubjectMap[selectedSmartSubjectId]
-      if (existingFlashcards) return existingFlashcards
-
-      return FLASHCARDS_MOCK.map((flashcard, index) => ({
-        ...flashcard,
-        id: `${selectedSmartSubjectId}-${index}`,
-        subjectId: selectedSmartSubjectId,
-      }))
-    }, [selectedSmartSubjectId, flashcardsBySubjectMap])
-
-    const editingFlashcard = useMemo(() => {
-      if (!editingFlashcardId) return null
-      return flashcardsBySubject.find((flashcard) => flashcard.id === editingFlashcardId) ?? null
-    }, [editingFlashcardId, flashcardsBySubject])
-
-    const subjectNameById = useMemo(() => {
-        const map = new Map<string, string>()
-        allSubjects.forEach((subject) => {
-          map.set(subject.id, subject.name)
-        })
-        return map
-      }, [allSubjects])
+    useEffect(() => {
+      const subjectId = selectedSmartSubject?.id;
+      if (!subjectId) {
+        setMaterials(null);
+        setFlashcards([]);
+        return;
+      }
     
-      const rootSubjects = useMemo(() => {
-        return allSubjects.filter((subject) => subject.subject_id === null)
-      }, [allSubjects])
+      async function loadSubjectData() {
+        setIsLoadingMaterials(true);
+      
+        const [materialsRes, flashcardsRes] = await Promise.all([
+          GetStudyMaterialsBySubject(String(subjectId)),
+          GetFlashcardsBySubject(String(subjectId)),
+        ]);
+      
+        if (materialsRes.error) {
+          toast.info("Ainda não há materiais de estudo cadastrados para esse conteúdo!!")
+        } else {
+          setMaterials(materialsRes.data);
+        }
+      
+        if (flashcardsRes.error) {
+          toast.info("Ainda não há flashcards cadastrados para esse conteúdo!!")
+        } else {
+          setFlashcards(flashcardsRes.data);
+        }
+      
+        setIsLoadingMaterials(false);
+      }
     
-      const relatedSubjects = useMemo(() => {
-        return allSubjects.filter((subject) => subject.subject_id !== null)
-      }, [allSubjects])
-    
-      const filteredRootSubjects = useMemo(() => {
-        const query = subjectFilterSearch.trim().toLowerCase()
-        if (!query) return rootSubjects
-        return rootSubjects.filter((subject) =>
-          subject.name.toLowerCase().includes(query)
-        )
-      }, [rootSubjects, subjectFilterSearch])
+      loadSubjectData();
+    }, [selectedSmartSubject?.id]);
 
-      const filteredRelatedSubjects = useMemo(() => {
-        if (!selectedRootFilter) return []
-        const query = subjectFilterSearch.trim().toLowerCase()
-        const rootChildren = relatedSubjects.filter(
-          (subject) => subject.subject_id === selectedRootFilter
-        )
-        if (!query) return rootChildren
-        return rootChildren.filter((subject) =>
-          subject.name.toLowerCase().includes(query)
-        )
-      }, [relatedSubjects, selectedRootFilter, subjectFilterSearch])
+    async function handleCreateMaterial(html: string, path: string){
+      const {error} = await CreateStudyMaterial(String(selectedSmartSubject?.id), html, path)
+      if(error){
+        toast.error(error.message)
+        return
+      }
+      toast.success("Conteúdo salvo com sucesso !!")
+    }
 
+    async function handleCreateFlashcard(front: string, back: string){
+      const {error} = await CreateFlashcard(String(selectedSmartSubject?.id),front, back)
+      if(error){
+        toast.error(error.message)
+        return
+      }
+      setIsFlashcardModalOpen(false)
+      toast.success("Flashcard criado com sucesso!!")
+    }
 
     return (
         <div>
@@ -152,103 +121,20 @@ export default function EstudoInteligente({
                     </p>
                   </div>
 
-                  <div className="space-y-2 rounded-lg border border-border bg-card p-3">
-                    <div className="flex items-center gap-2">
-                    <button
-                        type="button"
-                        onClick={() => {
-                        setSelectedRootFilter('')
-                        setSelectedRelatedFilter('')
-                        setSelectedSmartSubjectId(null)
-                        }}
-                        className={`rounded-full border px-3 py-1 text-xs font-semibold transition-colors ${
-                        !selectedRootFilter
-                            ? 'border-primary bg-primary text-primary-foreground'
-                            : 'border-border bg-transparent text-muted-foreground hover:border-primary/40 hover:text-foreground'
-                        }`}
-                    >
-                        Tudo
-                    </button>
-                    <input
-                        value={subjectFilterSearch}
-                        onChange={(e) => setSubjectFilterSearch(e.target.value)}
-                        className="h-8 flex-1 rounded-full border border-border bg-background px-3 text-xs text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-primary/50"
-                        placeholder={
-                        selectedRootFilter
-                            ? 'Pesquisar matéria relacionada...'
-                            : 'Pesquisar matéria principal...'
-                        }
-                    />
-                    </div>
-
-                    <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                    1. Matéria principal
-                    </p>
-                    <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
-                    {filteredRootSubjects.map((subject) => {
-                        const active = selectedRootFilter === subject.id
-                        return (
-                        <button
-                        key={subject.id}
-                        type="button"
-                        onClick={() => {
-                            setSelectedRootFilter(subject.id)
-                            setSelectedRelatedFilter('')
-                            setSelectedSmartSubjectId(null)
-                        }}
-                        className={`rounded-full border mb-2 px-4 py-1.5 text-xs font-semibold whitespace-nowrap transition-colors ${
-                            active
-                            ? 'border-primary bg-primary text-primary-foreground'
-                            : 'border-border bg-transparent text-muted-foreground hover:border-primary/40 hover:text-foreground'
-                        }`}
-                        >
-                        {subject.name}
-                        </button>
-                    )
-                    })}
-                    {filteredRootSubjects.length === 0 ? (
-                        <p className="text-xs text-muted-foreground">
-                        Nenhuma matéria principal encontrada.
-                        </p>
-                    ) : null}
-                    </div>
-
-                    {selectedRootFilter ? (
-                    <>
-                        <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                        2. Matéria relacionada
-                        </p>
-                        <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
-                        {filteredRelatedSubjects.map((subject) => {
-                            const active = selectedRelatedFilter === subject.id
-                            return (
-                            <button
-                                key={subject.id}
-                                type="button"
-                                onClick={() => {
-                                  setSelectedRelatedFilter(subject.id)
-                                  setSelectedSmartSubjectId(subject.id)
-                                }}
-                                className={`rounded-full border mb-2 px-4 py-1.5 text-xs font-semibold whitespace-nowrap transition-colors ${
-                                active
-                                    ? 'border-primary bg-primary text-primary-foreground'
-                                    : 'border-border bg-transparent text-muted-foreground hover:border-primary/40 hover:text-foreground'
-                                }`}
-                            >
-                                {subject.name}
-                            </button>
-                            )
-                        })}
-                        {filteredRelatedSubjects.length === 0 ? (
-                            <p className="text-xs text-muted-foreground">
-                            Nenhuma matéria relacionada para essa principal.
-                            </p>
-                        ) : null}
-                        </div>
-                    </>
-                    ) : null}
-                </div>
-                  
+                  <SubjectFilterGroup
+                    subjectsData={subjectsData}
+                    subjectFilterSearch={subjectFilterSearch}
+                    onSubjectFilterSearchChange={setSubjectFilterSearch}
+                    selectedRootFilter={selectedRootFilter}
+                    selectedRelatedFilter={selectedRelatedFilter}
+                    onSelectedRootFilterChange={setSelectedRootFilter}
+                    onSelectedRelatedFilterChange={setSelectedSmartSubjectId}
+                    onAfterClear={() => setSelectedSmartSubjectId(null)}
+                    onAfterRootSelect={() => setSelectedSmartSubjectId(null)}
+                    onAfterRelatedSelect={(relatedId) =>
+                      setSelectedSmartSubjectId(relatedId)
+                    }
+                  />
                 </div>
 
                 {selectedSmartSubject ? (
@@ -280,12 +166,10 @@ export default function EstudoInteligente({
                                 if (card.id === 'theory') {
                                   setIsTextMaterialModalOpen(true)
                                 }
-                                if (card.id === 'support-image') {
-                                  setIsImageMaterialModalOpen(true)
-                                }
                                 if (card.id === 'flashcards') {
                                   setEditingFlashcardId(null)
                                   setIsFlashcardModalOpen(true)
+                                  setEditingFlashcardMode('create')
                                 }
                               }}
                               className="mt-auto inline-flex items-center justify-center rounded-full border border-primary bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground transition-opacity hover:opacity-90"
@@ -302,7 +186,7 @@ export default function EstudoInteligente({
                         Flashcards da matéria
                       </h3>
                       <div className="flex flex-col gap-2">
-                        {flashcardsBySubject.map((flashcard) => (
+                        {flashcards.map((flashcard) => (
                           <article
                             key={flashcard.id}
                             className="grid gap-3 rounded-xl border border-border bg-card p-4 md:grid-cols-[1fr_1fr_auto]"
@@ -329,6 +213,7 @@ export default function EstudoInteligente({
                                 onClick={() => {
                                   setEditingFlashcardId(flashcard.id)
                                   setIsFlashcardModalOpen(true)
+                                  setEditingFlashcardMode('update')
                                 }}
                                 className="inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-xs font-semibold text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground"
                               >
@@ -347,6 +232,7 @@ export default function EstudoInteligente({
                         ))}
                       </div>
                     </section>
+
                   </div>
                 ) : (
                   <div className="rounded-xl border border-border bg-card px-5 py-8 text-center">
@@ -355,68 +241,23 @@ export default function EstudoInteligente({
                     </p>
                   </div>
                 )}
-              <ModalTextMaterial
+              <ModalStudyMaterial
                 open={isTextMaterialModalOpen}
                 onOpenChange={setIsTextMaterialModalOpen}
                 subjectName={selectedSmartSubject?.name}
-                initialContent={savedTheoryHtml}
-                onSave={setSavedTheoryHtml}
+                initialContent={materials ?? null}
+                onSave={handleCreateMaterial}
               />
-              <ModalImageMaterial
-                open={isImageMaterialModalOpen}
-                onClose={() => setIsImageMaterialModalOpen(false)}
-                subjectName={selectedSmartSubject?.name}
-              />
+
               <ModalFlashcard
                 open={isFlashcardModalOpen}
-                mode={editingFlashcard ? 'edit' : 'create'}
+                mode={editingFlashcardMode ? 'edit' : 'create'}
                 subjectName={selectedSmartSubject?.name}
-                initialFront={editingFlashcard?.front}
-                initialBack={editingFlashcard?.back}
                 onClose={() => {
                   setIsFlashcardModalOpen(false)
                   setEditingFlashcardId(null)
                 }}
-                onSave={(front, back) => {
-                  if (!selectedSmartSubjectId) return
-
-                  setFlashcardsBySubjectMap((currentMap) => {
-                    const currentSubjectFlashcards =
-                      currentMap[selectedSmartSubjectId] ??
-                      FLASHCARDS_MOCK.map((flashcard, index) => ({
-                        ...flashcard,
-                        id: `${selectedSmartSubjectId}-${index}`,
-                        subjectId: selectedSmartSubjectId,
-                      }))
-
-                    if (editingFlashcardId) {
-                      return {
-                        ...currentMap,
-                        [selectedSmartSubjectId]: currentSubjectFlashcards.map((flashcard) =>
-                          flashcard.id === editingFlashcardId
-                            ? { ...flashcard, front, back }
-                            : flashcard
-                        ),
-                      }
-                    }
-
-                    return {
-                      ...currentMap,
-                      [selectedSmartSubjectId]: [
-                        ...currentSubjectFlashcards,
-                        {
-                          id: `${selectedSmartSubjectId}-${Date.now()}`,
-                          subjectId: selectedSmartSubjectId,
-                          front,
-                          back,
-                        },
-                      ],
-                    }
-                  })
-
-                  setIsFlashcardModalOpen(false)
-                  setEditingFlashcardId(null)
-                }}
+                onSave={handleCreateFlashcard}
               />
               </section>
         </div>
