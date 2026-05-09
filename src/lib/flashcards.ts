@@ -23,4 +23,27 @@ export async function GetFlashcardsBySubject(subjectId: string) {
       .eq("subjects_id", subjectId)
       .order("created_at", { ascending: false });
     return { data: (data as StudyFlashcards[] | null) ?? [], error };
-  }
+}
+
+// update
+export async function UpdateFlashcard(flashcardId: string, front: string, back: string){
+    const supabase = createClient()
+    const {error} = await supabase
+        .from('study_flashcards')
+        .update({
+            front: front,
+            back: back
+        })
+        .eq('id', flashcardId)
+    return {error}
+}
+
+// delete
+export async function DeleteFLashcard(id: string){
+    const supabase = createClient()
+    const {error} = await supabase
+        .from('study_flashcards')
+        .delete()
+        .eq('id', id)
+    return {error}
+}

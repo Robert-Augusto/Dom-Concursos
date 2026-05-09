@@ -2,42 +2,46 @@
 
 import { useEffect, useState } from 'react'
 import { X } from 'lucide-react'
-
-type ModalFlashcardMode = 'create' | 'edit'
+import { StudyFlashcards } from '@/types'
+import { toast } from 'sonner'
 
 type ModalFlashcardProps = {
   open: boolean
-  mode: ModalFlashcardMode
+  mode: string
   subjectName?: string
-  initialFront?: string
-  initialBack?: string
+  flashcardSelected: StudyFlashcards | null
   onClose: () => void
-  onSave: (front: string, back: string) => void
+  onSave: (front: string, back: string, mode: string) => void
 }
 
 export function ModalFlashcard({
   open,
   mode,
   subjectName,
-  initialFront = '',
-  initialBack = '',
+  flashcardSelected,
   onClose,
   onSave,
 }: ModalFlashcardProps) {
-  const [front, setFront] = useState(initialFront)
-  const [back, setBack] = useState(initialBack)
+  const [front, setFront] = useState('')
+  const [back, setBack] = useState('')
 
   useEffect(() => {
     if (!open) return
-    setFront(initialFront)
-    setBack(initialBack)
-  }, [open, initialFront, initialBack])
+    setFront(flashcardSelected?.front ?? '')
+    setBack(flashcardSelected?.back ?? '')
+  }, [open, flashcardSelected])
 
   const handleSave = () => {
+    
+    if(!front || !back){
+      toast.error("Preencha os campos!!")
+      return
+    }
+
     const trimmedFront = front.trim()
     const trimmedBack = back.trim()
     if (!trimmedFront || !trimmedBack) return
-    onSave(trimmedFront, trimmedBack)
+    onSave(trimmedFront, trimmedBack, mode)
   }
 
   if (!open) return null
@@ -97,7 +101,6 @@ export function ModalFlashcard({
           <button
             type="button"
             onClick={handleSave}
-            disabled={!front.trim() || !back.trim()}
             className="rounded-full border border-primary bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:opacity-90 disabled:opacity-50"
           >
             {mode === 'create' ? 'Criar flashcard' : 'Salvar alterações'}

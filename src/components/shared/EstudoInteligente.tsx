@@ -6,15 +6,16 @@ import { BookText, Image as ImageIcon, Layers, Pencil, Trash2 } from 'lucide-rea
 import { ModalFlashcard } from '@/components/shared/ModalFlashcard'
 import { ModalStudyMaterial } from '@/components/shared/ModalStudyMaterial'
 import { SubjectFilterGroup } from '@/components/shared/SubjectFilterGroup'
-import { CreateStudyMaterial, GetStudyMaterialsBySubject } from '@/lib/study_material'
+import { CreateStudyMaterial, GetStudyMaterialsBySubject, UpdateStudyMaterial } from '@/lib/study_material'
 import { toast } from 'sonner'
-import { CreateFlashcard, GetFlashcardsBySubject } from '@/lib/flashcards'
+import { CreateFlashcard, GetFlashcardsBySubject, UpdateFlashcard, DeleteFLashcard } from '@/lib/flashcards'
+import { createClient } from '@/lib/supabase/client'
 
 const SMART_ACTION_CARDS = [
   {
     id: 'theory',
-    title: 'Texto Teórico',
-    description: 'Crie e organize um conteúdo teórico resumido para a matéria selecionada.',
+    title: 'Material de Estudo',
+    description: 'Crie e organize os materiais teóricos de estudo para a matéria selecionada.',
     buttonLabel: 'Abrir editor',
     icon: BookText,
   },
@@ -44,19 +45,22 @@ export default function EstudoInteligente({
     const [selectedSmartSubject, setSelectedSmartSubjectId] = useState<Subjects | null>(null)
     const [subjectFilterSearch, setSubjectFilterSearch] = useState('')
     const [selectedRootFilter, setSelectedRootFilter] = useState('')
-    const [selectedRelatedFilter, setSelectedRelatedFilter] = useState('')
     const [isTextMaterialModalOpen, setIsTextMaterialModalOpen] = useState(false)
     const [isFlashcardModalOpen, setIsFlashcardModalOpen] = useState(false)
-    const [editingFlashcardId, setEditingFlashcardId] = useState<string | null>(null)
-    const [editingFlashcardMode, setEditingFlashcardMode] = useState('')
+    const [editingFlashcardMode, setEditingFlashcardMode] = useState<'create' | 'update' | ''>('')
     const [flashcardsBySubjectMap, setFlashcardsBySubjectMap] = useState<Record<string, FlashcardItem[]>>({})
     
     const [materials, setMaterials] = useState<StudyMaterials | null>(null);
     const [flashcards, setFlashcards] = useState<StudyFlashcards[]>([]);
+    const [flashcardSelected, setFlashcardSelected] = useState<StudyFlashcards | null>(null)
     const [isLoadingMaterials, setIsLoadingMaterials] = useState(false);
+    const hasStudyMaterial = Boolean(
+      materials && (materials.content.trim() !== '' || materials.file_url.trim() !== '')
+    )
 
     useEffect(() => {
       const subjectId = selectedSmartSubject?.id;
+      const supabase = createClient()
       if (!subjectId) {
         setMaterials(null);
         setFlashcards([]);
@@ -82,30 +86,89 @@ export default function EstudoInteligente({
         } else {
           setFlashcards(flashcardsRes.data);
         }
-      
         setIsLoadingMaterials(false);
       }
     
       loadSubjectData();
+
+      const channel = supabase
+        .channel(`study_materials_flashcards_${subjectId}`)
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'study_materials',
+            filter: `subjects_id=eq.${subjectId}`,
+          },
+          () => {
+            loadSubjectData()
+          }
+        )
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'study_flashcards',
+            filter: `subjects_id=eq.${subjectId}`,
+          },
+          () => {
+            loadSubjectData()
+          }
+        )
+        .subscribe()
+
+      return () => {
+        supabase.removeChannel(channel)
+      }
     }, [selectedSmartSubject?.id]);
 
-    async function handleCreateMaterial(html: string, path: string){
-      const {error} = await CreateStudyMaterial(String(selectedSmartSubject?.id), html, path)
-      if(error){
-        toast.error(error.message)
-        return
+    async function handleCreateMaterial(html: string, path: string, mode: string){
+      if (mode === 'create'){
+        const {error} = await CreateStudyMaterial(String(selectedSmartSubject?.id), html, path)
+        if(error){
+          toast.error(error.message)
+          return
+        }
+        toast.success("Conteúdo salvo com sucesso !!")
+      } else if (mode === 'update'){
+        const {error} = await UpdateStudyMaterial(html, path, String(materials?.id))
+        if (error) {
+          toast.error(error.message)
+          return
+        }
+        toast.success("Conteúdo atualizado com sucesso!!")
       }
-      toast.success("Conteúdo salvo com sucesso !!")
     }
 
-    async function handleCreateFlashcard(front: string, back: string){
-      const {error} = await CreateFlashcard(String(selectedSmartSubject?.id),front, back)
+    async function handleCreateFlashcard(front: string, back: string, mode: string){
+      if (mode === 'create'){
+        const {error} = await CreateFlashcard(String(selectedSmartSubject?.id),front, back)
+        if(error){
+          toast.error(error.message)
+          return
+        }
+        setIsFlashcardModalOpen(false)
+        toast.success("Flashcard criado com sucesso!!")
+      } else if (mode === 'update'){
+        const {error} = await UpdateFlashcard(String(flashcardSelected?.id), front, back)
+        if(error){
+          toast.error(error.message)
+          return
+        }
+        setIsFlashcardModalOpen(false)
+        toast.success("Flashcard atualizado com sucesso!!")
+      }
+    }
+
+    async function handleDeleteFlashcard(flashcardDeleteId: string){
+      const {error} = await DeleteFLashcard(flashcardDeleteId)
       if(error){
         toast.error(error.message)
         return
       }
-      setIsFlashcardModalOpen(false)
-      toast.success("Flashcard criado com sucesso!!")
+      toast.success("Flashcard deletado com sucesso!!")
     }
 
     return (
@@ -126,7 +189,7 @@ export default function EstudoInteligente({
                     subjectFilterSearch={subjectFilterSearch}
                     onSubjectFilterSearchChange={setSubjectFilterSearch}
                     selectedRootFilter={selectedRootFilter}
-                    selectedRelatedFilter={selectedRelatedFilter}
+                    selectedRelatedFilter={selectedSmartSubject?.id ?? ''}
                     onSelectedRootFilterChange={setSelectedRootFilter}
                     onSelectedRelatedFilterChange={setSelectedSmartSubjectId}
                     onAfterClear={() => setSelectedSmartSubjectId(null)}
@@ -146,10 +209,25 @@ export default function EstudoInteligente({
                     <div className="grid gap-4 md:grid-cols-3">
                       {SMART_ACTION_CARDS.map((card) => {
                         const Icon = card.icon
+                        const isTheoryCard = card.id === 'theory'
+                        const theoryNeedsCreation = isTheoryCard && !hasStudyMaterial
+
+                        const cardDescription = theoryNeedsCreation
+                          ? 'Nenhum material cadastrado ainda. Crie o conteúdo em texto (obrigatório); a imagem de apoio é opcional.'
+                          : card.description
+
+                        const cardButtonLabel = isTheoryCard
+                          ? (hasStudyMaterial ? 'Editar material' : 'Criar material')
+                          : card.buttonLabel
+
                         return (
                           <article
                             key={card.id}
-                            className="flex flex-col gap-3 rounded-xl border border-border bg-card p-4"
+                            className={`flex flex-col gap-3 rounded-xl border p-4 ${
+                              theoryNeedsCreation
+                                ? 'border-primary/40 bg-primary/5'
+                                : 'border-border bg-card'
+                            }`}
                           >
                             <div className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-border bg-muted">
                               <Icon className="h-4 w-4 text-foreground" aria-hidden />
@@ -158,8 +236,13 @@ export default function EstudoInteligente({
                               {card.title}
                             </h3>
                             <p className="text-sm text-muted-foreground">
-                              {card.description}
+                              {cardDescription}
                             </p>
+                            {theoryNeedsCreation ? (
+                              <p className="text-xs font-semibold uppercase tracking-wider text-primary">
+                                Material pendente
+                              </p>
+                            ) : null}
                             <button
                               type="button"
                               onClick={() => {
@@ -167,14 +250,14 @@ export default function EstudoInteligente({
                                   setIsTextMaterialModalOpen(true)
                                 }
                                 if (card.id === 'flashcards') {
-                                  setEditingFlashcardId(null)
-                                  setIsFlashcardModalOpen(true)
+                                  setFlashcardSelected(null)
                                   setEditingFlashcardMode('create')
+                                  setIsFlashcardModalOpen(true)
                                 }
                               }}
                               className="mt-auto inline-flex items-center justify-center rounded-full border border-primary bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground transition-opacity hover:opacity-90"
                             >
-                              {card.buttonLabel}
+                              {cardButtonLabel}
                             </button>
                           </article>
                         )
@@ -211,7 +294,7 @@ export default function EstudoInteligente({
                               <button
                                 type="button"
                                 onClick={() => {
-                                  setEditingFlashcardId(flashcard.id)
+                                  setFlashcardSelected(flashcard)
                                   setIsFlashcardModalOpen(true)
                                   setEditingFlashcardMode('update')
                                 }}
@@ -223,6 +306,7 @@ export default function EstudoInteligente({
                               <button
                                 type="button"
                                 className="inline-flex items-center gap-1.5 rounded-full border border-destructive/40 px-3 py-1.5 text-xs font-semibold text-destructive transition-colors hover:bg-destructive/10"
+                                onClick={() => handleDeleteFlashcard(flashcard.id)}
                               >
                                 <Trash2 className="h-3.5 w-3.5" aria-hidden />
                                 Excluir
@@ -247,15 +331,17 @@ export default function EstudoInteligente({
                 subjectName={selectedSmartSubject?.name}
                 initialContent={materials ?? null}
                 onSave={handleCreateMaterial}
+                mode={hasStudyMaterial ? 'update' : 'create'}
               />
 
               <ModalFlashcard
                 open={isFlashcardModalOpen}
-                mode={editingFlashcardMode ? 'edit' : 'create'}
+                mode={editingFlashcardMode}
                 subjectName={selectedSmartSubject?.name}
+                flashcardSelected={flashcardSelected ?? null}
                 onClose={() => {
                   setIsFlashcardModalOpen(false)
-                  setEditingFlashcardId(null)
+                  setFlashcardSelected(null)
                 }}
                 onSave={handleCreateFlashcard}
               />

@@ -158,7 +158,9 @@ export function SearchVideo({
         selectedRootFilter={selectedRootFilter}
         selectedRelatedFilter={selectedRelatedFilter}
         onSelectedRootFilterChange={setSelectedRootFilter}
-        onSelectedRelatedFilterChange={setSelectedRelatedFilter}
+        onSelectedRelatedFilterChange={(subject) =>
+          setSelectedRelatedFilter(subject?.id ?? '')
+        }
       />
 
       <div className="relative max-w-[700px]">

@@ -18,7 +18,8 @@ export type ModalStudyMaterialProps = {
   onOpenChange: (open: boolean) => void
   subjectName?: string
   initialContent?: StudyMaterials | null
-  onSave?: (html: string, path: string) => void
+  onSave?: (html: string, path: string, mode: string) => void
+  mode: 'create' | 'update'
 }
 
 function EditorToolbar({ editor }: { editor: Editor }) {
@@ -126,6 +127,7 @@ export function ModalStudyMaterial({
   subjectName,
   initialContent,
   onSave,
+  mode
 }: ModalStudyMaterialProps) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
 
@@ -151,6 +153,14 @@ export function ModalStudyMaterial({
     return URL.createObjectURL(selectedFile)
   }, [selectedFile])
 
+  const currentImageUrl = previewUrl || initialContent?.file_url || ''
+
+  useEffect(() => {
+    if (!open) {
+      setSelectedFile(null)
+    }
+  }, [open])
+
   useEffect(() => {
     return () => {
       if (previewUrl) URL.revokeObjectURL(previewUrl)
@@ -164,29 +174,48 @@ export function ModalStudyMaterial({
   }
 
   async function handleSave() {
-    const supabase = createClient()
-
-    if (!selectedFile || !editor) {
-      toast.error('Insira os materiais de texto e imagem!!')
+    if (!editor) {
+      toast.error('Carregando editor…')
       return
     }
 
-    const { error: bucketError, data: imageUpload } = await supabase.storage
-      .from('study_materials_images')
-      .upload(`image/${Date.now()}-${selectedFile.name}`, selectedFile)
-
-    if (bucketError) {
-      toast.error(bucketError.message)
+    const html = editor.getHTML()
+    const textOnly = editor.getText().trim()
+    if (textOnly === '') {
+      toast.error('Insira o conteúdo em texto.')
       return
     }
-    onSave?.(editor.getHTML(), imageUpload.path)
+
+    let fileUrl = initialContent?.file_url?.trim() ?? ''
+
+    if (selectedFile) {
+      const supabase = createClient()
+      const { error: bucketError, data: imageUpload } = await supabase.storage
+        .from('study_materials_images')
+        .upload(`image/${Date.now()}-${selectedFile.name}`, selectedFile)
+
+      if (bucketError) {
+        toast.error(bucketError.message)
+        return
+      }
+
+      const {
+        data: { publicUrl },
+      } = supabase.storage
+        .from('study_materials_images')
+        .getPublicUrl(imageUpload.path)
+
+      fileUrl = publicUrl
+    }
+
+    onSave?.(html, fileUrl, mode)
     onOpenChange(false)
   }
 
   const title =
     subjectName != null && subjectName !== ''
-      ? `Texto Teórico — ${subjectName}`
-      : 'Texto Teórico'
+      ? `Material de Estudo — ${subjectName}`
+      : 'Material de Estudo'
 
   if (!open) return null
 
@@ -200,8 +229,7 @@ export function ModalStudyMaterial({
               {title}
             </h3>
             <p className="text-sm text-muted-foreground">
-              Use a barra de formatação para negrito, itálico, listas e título
-              (nível 2).
+              O texto é obrigatório. A imagem de apoio é opcional.
             </p>
           </div>
           <button
@@ -235,7 +263,7 @@ export function ModalStudyMaterial({
                 Imagem de apoio
               </h4>
               <p className="text-xs text-muted-foreground">
-                Selecione uma imagem para complementar o texto teórico desta matéria.
+                Opcional: envie uma imagem para complementar o material desta matéria.
               </p>
             </div>
 
@@ -252,10 +280,10 @@ export function ModalStudyMaterial({
               </label>
 
               <div className="overflow-hidden rounded-lg border border-border bg-background">
-                {previewUrl ? (
+                {currentImageUrl ? (
                   <div className="relative w-full" style={{ height: '240px' }}>
                     <Image
-                      src={previewUrl}
+                      src={currentImageUrl}
                       alt="Pré-visualização da imagem selecionada"
                       fill
                       className="object-contain"
