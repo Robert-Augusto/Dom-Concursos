@@ -22,7 +22,7 @@ export function HeroBanner() {
   }
 
   return (
-    <div className="relative flex min-h-[260px] items-center gap-5 overflow-hidden rounded-2xl px-6 py-5 sm:min-h-[300px] sm:px-8 md:min-h-[340px] md:px-10">
+    <div className="relative flex w-full min-h-[260px] items-center gap-5 overflow-hidden rounded-b-2xl px-5 py-5 sm:min-h-[300px] sm:px-8 lg:rounded-2xl md:min-h-[340px] md:px-10">
       <div
         className="absolute inset-0 pointer-events-none"
         style={{
@@ -95,7 +95,7 @@ export function HeroBanner() {
         </div>
 
         <h2
-          className="font-heading text-[32px] font-black leading-[1.05] tracking-tight text-white sm:text-[38px] md:text-[48px]"
+          className="font-heading text-[26px] font-black leading-[1.08] tracking-tight text-white sm:text-[34px] md:text-[48px]"
           style={{ textShadow: '0 2px 12px rgba(0,0,0,0.4)' }}
         >
           Um pouco{' '}
@@ -113,7 +113,7 @@ export function HeroBanner() {
         </h2>
 
         <p
-          className="line-clamp-3 max-w-[85%] text-[13px] font-medium leading-relaxed sm:max-w-[80%] sm:text-[14px] md:max-w-[72%] md:text-[19px]"
+          className="line-clamp-3 max-w-[90%] text-[13px] font-medium leading-relaxed sm:max-w-[85%] sm:text-[14px] md:max-w-[72%] md:text-[18px]"
           style={{ color: 'rgba(255,255,255,0.7)' }}
         >
           Aulas curtas, revisão inteligente e questões diárias. Pequenos passos,
@@ -124,7 +124,7 @@ export function HeroBanner() {
           <button
             onClick={handleStartNow}
             type="button"
-            className="relative inline-flex items-center gap-2 rounded-full px-5 py-2 text-[12px] font-black tracking-wide md:px-6 md:py-2.5 md:text-[14px]"
+            className="relative inline-flex items-center gap-1.5 rounded-full px-4 py-1.5 text-[11px] font-black tracking-wide sm:gap-2 sm:px-5 sm:py-2 sm:text-[12px] md:px-6 md:py-2.5 md:text-[14px]"
             style={{
               background: 'linear-gradient(90deg, #C9A84C, #DDA83A)',
               color: '#0B1220',
@@ -136,7 +136,7 @@ export function HeroBanner() {
             <svg
               viewBox="0 0 64 64"
               xmlns="http://www.w3.org/2000/svg"
-              className="sp-cta-tap h-[26px] w-[26px]"
+              className="sp-cta-tap h-[22px] w-[22px] sm:h-[26px] sm:w-[26px]"
             >
               <g stroke="#ffffff" strokeWidth="3.2" strokeLinecap="round" fill="none">
                 <path d="M26 4 L26 11" />
@@ -162,7 +162,7 @@ export function HeroBanner() {
           </button>
 
           <p
-            className="text-[11px] font-bold tracking-widest md:text-[13px]"
+            className="text-[12px] font-bold tracking-widest md:text-[13px]"
             style={{ color: '#F0D080' }}
           >
             ★★★★★{' '}
@@ -216,11 +216,17 @@ export function HeroBanner() {
         }
         .sp-cta-tap {
           position: absolute;
-          right: -14px; bottom: -10px;
-          width: 26px; height: 26px;
+          right: -12px; bottom: -8px;
+          width: 22px; height: 22px;
           pointer-events: none;
           animation: spTapIn 1.8s ease-in-out infinite;
           filter: drop-shadow(0 2px 4px rgba(0,0,0,0.35));
+        }
+        @media (min-width: 640px) {
+          .sp-cta-tap {
+            right: -14px; bottom: -10px;
+            width: 26px; height: 26px;
+          }
         }
 
         @keyframes spRotate {

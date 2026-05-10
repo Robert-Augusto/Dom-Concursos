@@ -11,17 +11,7 @@ export function Header() {
   return (
     <header className="sticky top-0 z-30 flex h-18 items-center justify-between border-b border-border bg-background px-6">
       
-      <div className="flex flex-col">
-        <h1 className="text-base font-black text-foreground font-heading">
-          Olá, {profile?.name} 👋
-        </h1>
-        <p className="text-xs text-muted-foreground">
-          Bons estudos, rumo à aprovação!
-        </p>
-      </div>
-
       <div className="flex items-center gap-3">
-        <NotificationsDropdown />
 
         <div
           onClick={() => router.push('/settings')}
@@ -33,6 +23,19 @@ export function Header() {
         >
           {profile?.name?.charAt(0).toUpperCase()}
         </div>
+
+        <div className="flex flex-col">
+          <h1 className="text-base font-black text-foreground font-heading">
+            Olá, {profile?.name} 👋
+          </h1>
+          <p className="text-xs text-muted-foreground">
+            Bons estudos, rumo à aprovação!
+          </p>
+        </div>
+      </div>
+
+      <div className="flex items-center gap-3">
+        <NotificationsDropdown />
       </div>
     </header>
   )
