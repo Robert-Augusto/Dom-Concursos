@@ -4,8 +4,9 @@ import React, { useEffect, useMemo, useState } from 'react'
 import { X } from 'lucide-react'
 import { toast } from 'sonner'
 import { CreateLesson, UpdateLesson } from '@/lib/lessons'
-import { VideoType, AccessLevel, Subjects, Lessons } from '@/types'
+import { VideoType, AccessLevel, Subjects, Lessons, SubjectType } from '@/types'
 import { Switch } from '@/components/ui/switch'
+import { CreateSubject } from '@/lib/lib-subjects'
 
 type ModalLessonMode = 'create' | 'edit'
 
@@ -31,37 +32,37 @@ export function ModalLesson({
   const [accessLevel, setAccessLevel] = useState<AccessLevel>('free')
 
   const [isPublished, setIsPublished] = useState(true)
-  const [subjectSearch, setSubjectSearch] = useState('')
-  const [selectedRootSubject, setSelectedRootSubject] = useState('')
   const [selectedSubject, setSelectedSubject] = useState('')
+
+  const [showCreateRootPanel, setShowCreateRootPanel] = useState(false)
+  const [newRootSubjectName, setNewRootSubjectName] = useState('')
+  const [subjectLevel, setSubjectLevel] = useState<SubjectType>('basic')
 
   const rootSubjects = useMemo(() => {
     return (subjectsData ?? []).filter((subject) => subject.subject_id === null)
   }, [subjectsData])
 
-  const relatedSubjects = useMemo(() => {
-    return (subjectsData ?? []).filter((subject) => subject.subject_id !== null)
-  }, [subjectsData])
+  function closeCreateRootPanel() {
+    setShowCreateRootPanel(false)
+    setNewRootSubjectName('')
+  }
 
-  const filteredRootSubjects = useMemo(() => {
-    const query = subjectSearch.trim().toLowerCase()
-    if (!query) return rootSubjects
-    return rootSubjects.filter((subject) =>
-      subject.name.toLowerCase().includes(query)
-    )
-  }, [subjectSearch, rootSubjects])
+  function toggleCreateRootPanel() {
+    setShowCreateRootPanel((open) => !open)
+  }
 
-  const filteredRelatedSubjects = useMemo(() => {
-    if (!selectedRootSubject) return []
-    const query = subjectSearch.trim().toLowerCase()
-    const source = relatedSubjects.filter(
-      (subject) => subject.subject_id === selectedRootSubject
-    )
-    if (!query) return source
-    return source.filter((subject) =>
-      subject.name.toLowerCase().includes(query)
-    )
-  }, [subjectSearch, relatedSubjects, selectedRootSubject])
+  async function handleSaveNewRoot() {
+    const name = newRootSubjectName.trim()
+    if (!name) return
+    const { error, data } = await CreateSubject(name, subjectLevel, null)
+    if (error) {
+      toast.error(error.message)
+      return
+    }
+    toast.success('Matéria criada com sucesso!!')
+    closeCreateRootPanel()
+    if (data?.id) setSelectedSubject(data.id)
+  }
 
   useEffect(() => {
     if (lessonsData) {
@@ -71,11 +72,17 @@ export function ModalLesson({
       setVideoUrl(lessonsData.video_url)
       setAccessLevel(lessonsData.access_level)
       setIsPublished(lessonsData.is_published)
-      setSelectedSubject(lessonsData.subject_id)
-      const selectedChild = (subjectsData ?? []).find(
+      const row = (subjectsData ?? []).find(
         (subject) => subject.id === lessonsData.subject_id
       )
-      setSelectedRootSubject(selectedChild?.subject_id ?? '')
+      const rootId =
+        row == null
+          ? lessonsData.subject_id
+          : row.subject_id === null
+            ? row.id
+            : row.subject_id
+      setSelectedSubject(rootId)
+      setShowCreateRootPanel(false)
     }
   }, [lessonsData, subjectsData])
   
@@ -229,99 +236,128 @@ export function ModalLesson({
             />
           </label>
 
-          <label className="flex flex-col gap-1 md:col-span-2">
+          <div className="flex flex-col gap-1 md:col-span-2">
             <span className="text-xs font-semibold text-muted-foreground">
-              Buscar matéria da aula <span className="text-destructive text-xs">*</span>
-              <span className="text-xs font-normal text-destructive/70 ml-1">obrigatório</span>
+              Matéria da aula <span className="text-destructive text-xs">*</span>
+              <span className="text-xs font-normal text-destructive/70 ml-1">
+                obrigatório
+              </span>
             </span>
-            <input
-              value={subjectSearch}
-              onChange={(e) => setSubjectSearch(e.target.value)}
-              className="rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-primary/50"
-              placeholder={
-                selectedRootSubject
-                  ? 'Pesquise a matéria relacionada'
-                  : 'Pesquise a matéria principal'
-              }
-            />
-            <div className="mt-1 space-y-2 rounded-lg border border-border bg-background p-2">
-              <div className="flex items-center justify-between">
-                <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                  1. Matéria principal
-                </p>
-                {selectedRootSubject ? (
+            <div className="space-y-2 rounded-lg border border-border bg-card p-3">
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                Matéria principal
+              </p>
+              <div className="flex flex-col gap-3">
+                <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
                   <button
                     type="button"
-                    onClick={() => {
-                      setSelectedRootSubject('')
-                      setSelectedSubject('')
-                    }}
-                    className="text-[11px] font-semibold text-primary hover:opacity-80"
+                    onClick={toggleCreateRootPanel}
+                    aria-expanded={showCreateRootPanel}
+                    className={`mb-2 shrink-0 rounded-full border border-dashed px-4 py-1.5 text-xs font-semibold whitespace-nowrap transition-colors ${
+                      showCreateRootPanel
+                        ? 'border-primary bg-primary/15 text-primary'
+                        : 'border-primary/60 bg-primary/5 text-primary hover:border-primary hover:bg-primary/10'
+                    }`}
                   >
-                    Trocar
+                    + Criar Matéria
                   </button>
-                ) : null}
-              </div>
-              <div className="flex max-h-24 flex-wrap gap-2 overflow-y-auto">
-                {filteredRootSubjects.map((subject) => {
-                  const selected = selectedRootSubject === subject.id
-                  return (
-                    <button
-                      key={subject.id}
-                      type="button"
-                      onClick={() => {
-                        setSelectedRootSubject(subject.id)
-                        setSelectedSubject('')
-                      }}
-                      className={`rounded-full border px-3 py-1 text-xs font-semibold transition-colors ${
-                        selected
-                          ? 'border-primary bg-primary text-primary-foreground'
-                          : 'border-border text-muted-foreground hover:border-primary/40 hover:text-foreground'
-                      }`}
-                    >
-                      {subject.name}
-                    </button>
-                  )
-                })}
-                {filteredRootSubjects.length === 0 ? (
-                  <p className="text-xs text-muted-foreground">
-                    Nenhuma matéria principal encontrada.
-                  </p>
-                ) : null}
-              </div>
-              {selectedRootSubject ? (
-                <>
-                  <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-                    2. Matéria relacionada
-                  </p>
-                  <div className="flex max-h-24 flex-wrap gap-2 overflow-y-auto">
-                    {filteredRelatedSubjects.map((subject) => {
-                      const selected = selectedSubject === subject.id
-                      return (
-                        <button
-                          key={subject.id}
-                          type="button"
-                          onClick={() => setSelectedSubject(subject.id)}
-                          className={`rounded-full border px-3 py-1 text-xs font-semibold transition-colors ${
-                            selected
-                              ? 'border-primary bg-primary text-primary-foreground'
-                              : 'border-border text-muted-foreground hover:border-primary/40 hover:text-foreground'
-                          }`}
-                        >
-                          {subject.name}
-                        </button>
-                      )
-                    })}
-                    {filteredRelatedSubjects.length === 0 ? (
-                      <p className="text-xs text-muted-foreground">
-                        Nenhuma matéria relacionada encontrada para essa principal.
-                      </p>
-                    ) : null}
+                  {rootSubjects.map((subject) => {
+                    const active = selectedSubject === subject.id
+                    return (
+                      <button
+                        key={subject.id}
+                        type="button"
+                        onClick={() => {
+                          setSelectedSubject(subject.id)
+                          setShowCreateRootPanel(false)
+                        }}
+                        className={`mb-2 rounded-full border px-4 py-1.5 text-xs font-semibold whitespace-nowrap transition-colors ${
+                          active
+                            ? 'border-primary bg-primary text-primary-foreground'
+                            : 'border-border bg-transparent text-muted-foreground hover:border-primary/40 hover:text-foreground'
+                        }`}
+                      >
+                        {subject.name}
+                      </button>
+                    )
+                  })}
+                  {rootSubjects.length === 0 ? (
+                    <p className="text-xs text-muted-foreground">
+                      Nenhuma matéria principal cadastrada.
+                    </p>
+                  ) : null}
+                </div>
+
+                {showCreateRootPanel ? (
+                  <div className="rounded-xl border border-primary/25 bg-gradient-to-b from-primary/5 to-background p-4 shadow-sm ring-1 ring-primary/10">
+                    <div className="mb-3 flex items-start gap-2">
+                      <span
+                        className="mt-1 h-8 w-1 shrink-0 rounded-full bg-primary"
+                        aria-hidden
+                      />
+                      <div>
+                        <h4 className="text-sm font-bold text-foreground">
+                          Nova matéria principal
+                        </h4>
+                        <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground">
+                          Digite o nome da matéria (ex.: Português, Matemática).
+                          Ela aparecerá na lista para você organizar assuntos
+                          depois.
+                        </p>
+                      </div>
+                    </div>
+
+                    <label className="mb-4 flex flex-col gap-1.5">
+                      <span className="text-xs font-semibold text-muted-foreground">
+                        Nome da matéria
+                      </span>
+                      <input
+                        id="modal-lesson-new-root-name"
+                        type="text"
+                        value={newRootSubjectName}
+                        onChange={(e) => setNewRootSubjectName(e.target.value)}
+                        placeholder="Ex.: Legislação"
+                        className="rounded-lg border border-border bg-background px-3 py-2.5 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-primary/60 focus:ring-2 focus:ring-primary/20"
+                      />
+                    </label>
+
+                    <label className="mb-4 flex flex-col gap-1">
+                      <span className="text-xs font-semibold text-muted-foreground">
+                        Nível da matéria
+                      </span>
+                      <select
+                        value={subjectLevel}
+                        onChange={(e) =>
+                          setSubjectLevel(e.target.value as SubjectType)
+                        }
+                        className="rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none transition-colors focus:border-primary/50"
+                      >
+                        <option value="basic">básico</option>
+                        <option value="specific">específico</option>
+                      </select>
+                    </label>
+
+                    <div className="flex flex-wrap items-center justify-end gap-2">
+                      <button
+                        type="button"
+                        onClick={closeCreateRootPanel}
+                        className="rounded-full border border-border bg-transparent px-4 py-2 text-xs font-semibold text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground"
+                      >
+                        Cancelar
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => void handleSaveNewRoot()}
+                        className="rounded-full border border-primary bg-primary px-4 py-2 text-xs font-semibold text-primary-foreground shadow-sm transition-opacity hover:opacity-90"
+                      >
+                        Salvar
+                      </button>
+                    </div>
                   </div>
-                </>
-              ) : null}
+                ) : null}
+              </div>
             </div>
-          </label>
+          </div>
 
           <div className="md:col-span-2 flex items-center justify-between rounded-xl border border-border bg-background px-3 py-2.5">
             <span className="text-sm font-medium text-foreground">

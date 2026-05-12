@@ -4,6 +4,7 @@ import "./globals.css";
 import { Toaster } from 'sonner'
 import { cn } from "@/lib/utils";
 import { ProfileProvider } from '@/context/ProfileContext'
+import { ScrollToTopButton } from '@/components/shared/ScrollToTopButton'
 
 const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
@@ -44,7 +45,11 @@ export default function RootLayout({
         lang="en"
         className={cn(syne.variable, dmSans.variable, sora.variable, "font-sans", geist.variable)}
       >
-        <body className="min-h-full flex flex-col">{children} <Toaster richColors position="top-right" /></body>
+        <body className="min-h-full flex flex-col">
+          {children}
+          <ScrollToTopButton />
+          <Toaster richColors position="top-right" />
+        </body>
       </html>
     </ProfileProvider>
   );

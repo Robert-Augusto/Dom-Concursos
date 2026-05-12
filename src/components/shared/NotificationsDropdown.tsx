@@ -7,6 +7,7 @@ import {
   Lightbulb,
   Star,
   Video,
+  X,
   type LucideIcon,
 } from 'lucide-react'
 
@@ -181,21 +182,35 @@ export function NotificationsDropdown() {
       </button>
 
       {open && (
-        <div className="absolute right-0 top-12 z-50 w-80 overflow-hidden rounded-2xl border border-border bg-card shadow-xl md:w-96">
-          <div className="flex items-center justify-between border-b border-border px-4 py-3">
-            <h3 className="font-heading text-sm font-black text-foreground">
-              Notificações
-            </h3>
+        <div
+          className="absolute right-0 top-12 z-50 w-[min(100vw-1.5rem,20rem)] overflow-hidden rounded-2xl border border-border/90 bg-popover text-popover-foreground shadow-[0_0_0_1px_rgba(255,255,255,0.06),0_16px_48px_-8px_rgba(0,0,0,0.55),0_32px_64px_-16px_rgba(0,0,0,0.35)] backdrop-blur-xl supports-[backdrop-filter]:bg-popover/95 md:w-96 md:max-w-none"
+          role="region"
+          aria-label="Notificações"
+        >
+          <div className="relative border-b border-border/80 bg-muted/20 px-4 py-3 pr-11">
             <button
               type="button"
-              className="text-xs text-accent hover:underline"
-              onClick={markAllAsRead}
+              className="absolute right-2 top-1/2 flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              aria-label="Fechar notificações"
+              onClick={() => setOpen(false)}
             >
-              Marcar todas como lidas
+              <X className="h-4 w-4" aria-hidden />
             </button>
+            <div className="flex min-w-0 items-center justify-between gap-2">
+              <h3 className="min-w-0 truncate font-heading text-sm font-black text-foreground">
+                Notificações
+              </h3>
+              <button
+                type="button"
+                className="shrink-0 text-xs text-accent hover:underline"
+                onClick={markAllAsRead}
+              >
+                Marcar todas como lidas
+              </button>
+            </div>
           </div>
 
-          <div className="max-h-[480px] overflow-y-auto">
+          <div className="max-h-[min(480px,70dvh)] overflow-y-auto">
             {notifications.length === 0 || unreadCount === 0 ? (
               <div className="flex flex-col items-center justify-center gap-3 py-12">
                 <Bell className="h-10 w-10 text-muted-foreground/30" />
@@ -213,7 +228,7 @@ export function NotificationsDropdown() {
 
                 return (
                   <div key={group}>
-                    <div className="bg-background/50 px-4 py-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">
+                    <div className="border-b border-border/50 bg-muted/30 px-4 py-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">
                       {group}
                     </div>
 

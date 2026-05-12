@@ -333,27 +333,28 @@ export default function LessonPage() {
         </div>
 
         <div
-          className={`absolute right-0 top-0 z-20 h-full border-l border-border bg-sidebar transition-all duration-300 lg:relative lg:z-auto lg:flex-shrink-0 lg:overflow-y-auto ${
+          className={`absolute right-0 top-0 z-20 h-full border-l border-sidebar-border bg-popover text-popover-foreground ring-1 ring-inset ring-sidebar-border/40 transition-all duration-300 lg:relative lg:z-auto lg:flex-shrink-0 lg:overflow-y-auto ${
             sidebarOpen
               ? 'w-80 overflow-y-auto'
-              : 'w-0 overflow-hidden border-l-0 lg:border-l'
+              : 'w-0 overflow-hidden border-l-0 ring-0 lg:border-l lg:border-sidebar-border lg:ring-1'
           }`}
         >
           <div className="flex h-full flex-col overflow-hidden">
-          <div className="flex-shrink-0 border-b border-border px-4 py-4">
+          <div className="flex-shrink-0 border-b border-sidebar-border bg-muted/25 px-4 py-4">
             <p className="mb-3 text-[10px] font-black uppercase tracking-widest text-muted-foreground">
               Aulas do modulo
             </p>
           </div>
 
-          <div className="flex-1 overflow-y-auto">
+          <div className="flex min-h-0 flex-1 flex-col px-2 pb-3 pt-2">
+            <div className="flex min-h-0 flex-1 flex-col overflow-y-auto rounded-xl border border-border bg-muted/35">
             {mockLessons.map((lesson, index) => (
               <div
                 key={lesson.id}
-                className={`flex cursor-pointer items-center gap-3 border-b border-border/50 px-4 py-3 transition-colors ${
+                className={`flex cursor-pointer items-center gap-3 border-b border-border/60 px-3 py-3 transition-colors last:border-b-0 ${
                   lesson.current
                     ? 'border-l-2 border-primary bg-primary/10'
-                    : 'hover:bg-muted/30'
+                    : 'hover:bg-muted/50'
                 }`}
               >
                 <span
@@ -405,6 +406,7 @@ export default function LessonPage() {
                 />
               </div>
             ))}
+            </div>
           </div>
           </div>
         </div>

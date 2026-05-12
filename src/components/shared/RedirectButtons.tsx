@@ -15,7 +15,6 @@ type RedirectButtonItem = {
 }
 
 const redirectButtonItems: RedirectButtonItem[] = [
-  { label: 'Comunidade', href: '/comunity', Icon: MessageCircle, colorToken: '--color-gold' },
   { label: 'Estudo Inteligente', href: '/study', Icon: Lightbulb, colorToken: '--color-chart-2' },
   { label: 'Simulador de Prova', href: '/simulado', Icon: ClipboardCheck, colorToken: '--color-accent' },
 ]

@@ -238,7 +238,7 @@ export default function SignupPage() {
             <p className="text-sm text-muted-foreground text-center">
               Já tem conta?{' '}
               <Link href="/auth/login" className="text-primary font-bold hover:underline text-sm">
-                Entrar
+                Clique Aqui
               </Link>
             </p>
           </div>

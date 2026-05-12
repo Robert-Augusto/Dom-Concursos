@@ -74,32 +74,36 @@ export default function AdminPage() {
     
     const supabase = createClient()
 
-    async function fetchData() {
-      const { data: lessonsData } = await supabase
-        .from('lessons')
-        .select('*')
-
-      const { data: subjectsData } = await supabase
-        .from('subjects')
-        .select('*')
-
+    async function fetchLessons() {
+      const { data: lessonsData } = await supabase.from('lessons').select('*')
       if (lessonsData) setLessons(lessonsData)
+    }
+
+    async function fetchSubjects() {
+      const { data: subjectsData } = await supabase.from('subjects').select('*')
       if (subjectsData) setSubjects(subjectsData)
     }
 
-    fetchData()
+    void Promise.all([fetchLessons(), fetchSubjects()])
 
     const channel = supabase
-      .channel('lessons_changes')
+      .channel('admin_lessons_subjects')
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'lessons' },
         () => {
-          fetchData()
+          fetchLessons()
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'subjects' },
+        () => {
+          fetchSubjects()
         }
       )
       .subscribe()
-  
+
     return () => {
       supabase.removeChannel(channel)
     }
