@@ -97,6 +97,7 @@ export interface QuestionOptions {
     B: string
     C: string
     D: string
+    E: string
 }
 export interface Questions {
     id: string

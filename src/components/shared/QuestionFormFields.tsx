@@ -23,6 +23,7 @@ export function QuestionFormFields({ banca, difficulty, subjectsId }: QuestionFo
   const [optionB, setOptionB] = useState('')
   const [optionC, setOptionC] = useState('')
   const [optionD, setOptionD] = useState('')
+  const [optionE, setOptionE] = useState('')
   const [correctOption, setCorrectOption] = useState<OptionKey>('A')
   const [explanation, setExplanation] = useState('')
   const [ano, setAno] = useState('')
@@ -55,7 +56,8 @@ export function QuestionFormFields({ banca, difficulty, subjectsId }: QuestionFo
       A: optionA,
       B: optionB,
       C: optionC,
-      D: optionD
+      D: optionD,
+      E: optionE
     }
     const {error} = await CreateQuestion(Number(subjectsId), text, optionsJson, correctOption, explanation, banca, difficulty, ano, instituicao)
     if (error) {
@@ -71,6 +73,7 @@ export function QuestionFormFields({ banca, difficulty, subjectsId }: QuestionFo
     setOptionB('')
     setOptionC('')
     setOptionD('')
+    setOptionE('')
     setText('')
   }
 
@@ -99,7 +102,8 @@ export function QuestionFormFields({ banca, difficulty, subjectsId }: QuestionFo
               ['A', optionA, (v: string) => setOptionA(v)],
               ['B', optionB, (v: string) => setOptionB(v)],
               ['C', optionC, (v: string) => setOptionC(v)],
-              ['D', optionD, (v: string) => setOptionD(v)] 
+              ['D', optionD, (v: string) => setOptionD(v)],
+              ['E', optionE, (v: string) => setOptionE(v)]
             ] as const
           ).map(([key, value, setValue]) => (
             <label key={key} className="flex flex-col gap-1">
