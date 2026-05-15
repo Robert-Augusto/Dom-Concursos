@@ -5,6 +5,29 @@ import type {
   QuestionsDifficulty,
 } from '@/types'
 
+// create
+
+
+
+export async function CreateQuestion(subjects_id: number, question: string, options: QuestionOptions, correct: string, explanation: string, banca: string, difficulty: string, ano: string, instituicao: string){
+  const supabase = createClient()
+  const {error} = await supabase
+    .from('subjects_questions')
+    .insert({
+      subjects_id: subjects_id,
+      question: question,
+      options: options,
+      correct_option: correct,
+      explanation: explanation,
+      difficulty: difficulty,
+      banca: banca,
+      ano: ano,
+      instituicao: instituicao
+    })
+  return {error}
+}
+
+// update
 export type UpdateQuestionPayload = {
   question: string
   options: QuestionOptions

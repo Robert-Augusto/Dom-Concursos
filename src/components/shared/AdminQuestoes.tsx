@@ -1,17 +1,12 @@
 'use client'
 
 import { SubjectFilterGroup } from '@/components/shared/SubjectFilterGroup'
-import { ModalGenerateQuestoes } from '@/components/shared/ModalGenerateQuestoes'
-import { ModalQuestion } from '@/components/shared/ModalQuestion'
+import { QuestionFormFields } from '@/components/shared/QuestionFormFields'
 import { createClient } from '@/lib/supabase/client'
 import { Pencil } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
-import { BANCA_OPTIONS, Questions, Subjects } from '@/types'
-
-const DIFFICULTY_OPTIONS = ['Todas', 'Fácil', 'Médio', 'Difícil'] as const
-
-const BANCA_FILTER_OPTIONS = ['Todas', ...BANCA_OPTIONS] as const
+import { BANCA_OPTIONS, Questions, Subjects, QuestionsDifficulty, DIFFICULTY_SELECT, QuestionsBanca } from '@/types'
 
 type AdminQuestoesProps = {
   subjectsData?: Subjects[] | null
@@ -27,14 +22,8 @@ export default function AdminQuestoes({
     Questions[] | null
   >(null)
   const [questionTextFilter, setQuestionTextFilter] = useState('')
-  const [difficultyFilter, setDifficultyFilter] =
-    useState<(typeof DIFFICULTY_OPTIONS)[number]>('Todas')
-  const [bancaFilter, setBancaFilter] =
-    useState<(typeof BANCA_FILTER_OPTIONS)[number]>('Todas')
-  const [isGenerateModalOpen, setIsGenerateModalOpen] = useState(false)
-  const [isQuestionModalOpen, setIsQuestionModalOpen] = useState(false)
-  const [questionModalDetail, setQuestionModalDetail] =
-    useState<Questions | null>(null)
+  const [difficultyFilter, setDifficultyFilter] = useState<QuestionsDifficulty>('Médio')
+  const [bancaFilter, setBancaFilter] = useState<QuestionsBanca>('CESPE/CEBRASPE')
 
   useEffect(() => {
     if (!relatedSubject) {
@@ -117,9 +106,9 @@ export default function AdminQuestoes({
       const matchesText =
         q === '' || item.question.toLowerCase().includes(q)
       const matchesDifficulty =
-        difficultyFilter === 'Todas' || item.difficulty === difficultyFilter
+        item.difficulty === difficultyFilter
       const matchesBanca =
-        bancaFilter === 'Todas' || item.banca === bancaFilter
+        item.banca === bancaFilter
       return matchesText && matchesDifficulty && matchesBanca
     })
   }, [questionsSourceList, questionTextFilter, difficultyFilter, bancaFilter])
@@ -182,7 +171,7 @@ export default function AdminQuestoes({
                 Filtrar por dificuldade
               </span>
               <div className="flex flex-wrap gap-2">
-                {DIFFICULTY_OPTIONS.map((opt) => {
+                {DIFFICULTY_SELECT.map((opt) => {
                   const active = difficultyFilter === opt
                   return (
                     <button
@@ -207,7 +196,7 @@ export default function AdminQuestoes({
                 Filtrar por banca
               </span>
               <div className="flex flex-wrap gap-2">
-                {BANCA_FILTER_OPTIONS.map((opt) => {
+                {BANCA_OPTIONS.map((opt) => {
                   const active = bancaFilter === opt
                   return (
                     <button
@@ -228,35 +217,29 @@ export default function AdminQuestoes({
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <p className="text-sm text-muted-foreground">
-              {isQuestionsLoading
-                ? 'Carregando questões…'
-                : `${filteredQuestionsList.length} questão(ões) encontrada(s)`}
-            </p>
-            <button
-              type="button"
-              onClick={() => setIsGenerateModalOpen(true)}
-              className="inline-flex items-center justify-center rounded-full border border-primary bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-opacity hover:opacity-90"
-            >
-              Criar nova questão
-            </button>
+          <div className="flex flex-col gap-4 rounded-xl border border-border bg-card p-4 md:p-5">
+            <div className="flex flex-col gap-1">
+              <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                Nova questão
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Preencha os campos abaixo para cadastrar uma questão nesta
+                matéria.
+              </p>
+            </div>
+
+            <QuestionFormFields
+              banca={bancaFilter}
+              difficulty={difficultyFilter}
+              subjectsId={String(relatedSubject.id)}
+            />
           </div>
 
-          <ModalGenerateQuestoes
-            open={isGenerateModalOpen}
-            relatedSubject={relatedSubject}
-            onClose={() => setIsGenerateModalOpen(false)}
-          />
-
-          <ModalQuestion
-            open={isQuestionModalOpen}
-            question={questionModalDetail}
-            onClose={() => {
-              setIsQuestionModalOpen(false)
-              setQuestionModalDetail(null)
-            }}
-          />
+          <p className="text-sm text-muted-foreground">
+            {isQuestionsLoading
+              ? 'Carregando questões…'
+              : `${filteredQuestionsList.length} questão(ões) encontrada(s)`}
+          </p>
 
           {isQuestionsLoading ? (
             <p className="text-sm text-muted-foreground">
@@ -291,10 +274,6 @@ export default function AdminQuestoes({
                         </span>
                         <button
                           type="button"
-                          onClick={() => {
-                            setQuestionModalDetail(question)
-                            setIsQuestionModalOpen(true)
-                          }}
                           className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background px-3 py-1 text-xs font-semibold text-foreground transition-colors hover:border-primary/40 hover:bg-muted/50"
                         >
                           <Pencil className="h-3.5 w-3.5" aria-hidden />
