@@ -1,137 +1,183 @@
 'use client'
 
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { Bell, ListChecks, X, type LucideIcon } from 'lucide-react'
+import { createClient } from '@/lib/supabase/client'
 import {
-  Bell,
-  FileText,
-  Lightbulb,
-  Star,
-  Video,
-  X,
-  type LucideIcon,
-} from 'lucide-react'
-
-interface Notification {
-  id: string
-  type: 'aula_ao_vivo' | 'edital' | 'flashcard' | 'aula' | 'conquista'
-  title: string
-  description: string
-  time: string
-  category: string
-  group: 'Hoje' | 'Ontem'
-  unread: boolean
-}
-
-const mockNotifications: Notification[] = [
-  {
-    id: '1',
-    type: 'aula_ao_vivo',
-    title: 'Aula ao vivo começando!',
-    description:
-      'Prof. João Lima - Direito Constitucional está começando agora. 1.243 alunos assistindo.',
-    time: 'Agora',
-    category: 'Aula ao Vivo',
-    group: 'Hoje',
-    unread: true,
-  },
-  {
-    id: '2',
-    type: 'edital',
-    title: 'Novo edital publicado',
-    description:
-      'TJ-SP abriu 5.000 vagas para Escrevente. Salário R$ 4.600. Prova em 13/07!',
-    time: '2h atrás',
-    category: 'Editais',
-    group: 'Hoje',
-    unread: true,
-  },
-  {
-    id: '3',
-    type: 'conquista',
-    title: 'Meta semanal quase lá!',
-    description:
-      'Você já completou 68% da sua meta semanal. Faltam apenas 2h30min de estudos!',
-    time: '5h atrás',
-    category: 'Progresso',
-    group: 'Hoje',
-    unread: true,
-  },
-  {
-    id: '4',
-    type: 'flashcard',
-    title: 'Hora do flashcard!',
-    description:
-      'Você não revisa Direito Constitucional há 3 dias. Que tal 10 minutos agora?',
-    time: '8h atrás',
-    category: 'Estudo',
-    group: 'Hoje',
-    unread: true,
-  },
-  {
-    id: '5',
-    type: 'conquista',
-    title: 'Nova conquista desbloqueada!',
-    description:
-      'Você completou 7 sessões Pomodoro seguidas. Parabéns pelo "Foco de Ferro"!',
-    time: 'Ontem às 21:15',
-    category: 'Conquistas',
-    group: 'Ontem',
-    unread: false,
-  },
-  {
-    id: '6',
-    type: 'aula',
-    title: 'Nova aula disponível',
-    description:
-      'Prof. Ana Silva publicou "Ortografia - Questões CESPE/CEBRASPE" no seu curso de Português.',
-    time: 'Ontem às 18:40',
-    category: 'Cursos',
-    group: 'Ontem',
-    unread: false,
-  },
-]
+  getUnreadNotificationsForProfile,
+  markAllNotificationsAsRead,
+  markNotificationAsRead,
+} from '@/lib/lib-notifications'
+import { toast } from 'sonner'
+import type {
+  NotificationType,
+  Notifications as NotificationRow,
+} from '@/types'
+import { useProfile } from '@/context/ProfileContext'
 
 type NotificationStyle = {
   icon: LucideIcon
   iconWrapperClassName: string
   iconClassName?: string
-  livePulse?: boolean
 }
 
-const notificationStyles: Record<Notification['type'], NotificationStyle> = {
-  aula_ao_vivo: {
-    icon: Video,
-    iconWrapperClassName: 'bg-destructive/20 text-destructive',
-    livePulse: true,
-  },
-  edital: {
-    icon: FileText,
+const notificationStyles: Record<NotificationType, NotificationStyle> = {
+  questions_created: {
+    icon: ListChecks,
     iconWrapperClassName: 'bg-primary/20 text-primary',
   },
-  flashcard: {
-    icon: Lightbulb,
-    iconWrapperClassName: 'bg-accent/20 text-accent',
-  },
-  aula: {
-    icon: Bell,
-    iconWrapperClassName: 'bg-primary/20 text-primary',
-  },
-  conquista: {
-    icon: Star,
-    iconWrapperClassName: 'bg-primary/20 text-primary',
-    iconClassName: 'fill-primary',
-  },
+}
+
+function formatRelativeTimePt(value: string | Date): string {
+  const date = typeof value === 'string' ? new Date(value) : value
+  const seconds = Math.round((date.getTime() - Date.now()) / 1000)
+  const rtf = new Intl.RelativeTimeFormat('pt-BR', { numeric: 'auto' })
+
+  const abs = Math.abs(seconds)
+  if (abs < 60) return rtf.format(Math.round(seconds / 1), 'second')
+  const minutes = Math.round(seconds / 60)
+  if (Math.abs(minutes) < 60) return rtf.format(minutes, 'minute')
+  const hours = Math.round(minutes / 60)
+  if (Math.abs(hours) < 24) return rtf.format(hours, 'hour')
+  const days = Math.round(hours / 24)
+  if (Math.abs(days) < 7) return rtf.format(days, 'day')
+  const weeks = Math.round(days / 7)
+  if (Math.abs(weeks) < 5) return rtf.format(weeks, 'week')
+  const months = Math.round(days / 30)
+  if (Math.abs(months) < 12) return rtf.format(months, 'month')
+  return rtf.format(Math.round(days / 365), 'year')
 }
 
 export function NotificationsDropdown() {
-  const [notifications, setNotifications] = useState(mockNotifications)
+  const { profile, loading: profileLoading } = useProfile()
+  const [notifications, setNotifications] = useState<NotificationRow[]>([])
+  const [loading, setLoading] = useState(true)
+  const [markingAll, setMarkingAll] = useState(false)
+  const [markingId, setMarkingId] = useState<string | null>(null)
   const [open, setOpen] = useState(false)
   const containerRef = useRef<HTMLDivElement>(null)
 
-  const unreadCount = useMemo(
-    () => notifications.filter((notification) => notification.unread).length,
-    [notifications]
+  const refetchUnread = useCallback(
+    async (opts?: { silent?: boolean; isCancelled?: () => boolean }) => {
+      const silent = opts?.silent ?? false
+      const isCancelled = opts?.isCancelled ?? (() => false)
+
+      if (!silent) {
+        setLoading(true)
+      }
+
+      const supabase = createClient()
+      const {
+        data: { user },
+      } = await supabase.auth.getUser()
+      if (isCancelled()) return
+
+      if (!user) {
+        setNotifications([])
+        if (!silent) setLoading(false)
+        return
+      }
+
+      const profileId = profile?.id ?? user.id
+      const { data, error } = await getUnreadNotificationsForProfile(
+        profileId,
+        profile?.role
+      )
+      if (isCancelled()) return
+
+      if (error) {
+        toast.error(error.message)
+        setNotifications([])
+        if (!silent) setLoading(false)
+        return
+      }
+
+      if (isCancelled()) return
+      setNotifications(data)
+      if (!silent) setLoading(false)
+    },
+    [profile?.id, profile?.role]
   )
+
+  useEffect(() => {
+    if (profileLoading) return
+
+    let cancelled = false
+    const isCancelled = () => cancelled
+
+    void refetchUnread({ silent: false, isCancelled })
+
+    const supabase = createClient()
+    const channelId = `notifications_feed:${profile?.id ?? 'pending'}`
+    const channel = supabase
+      .channel(channelId)
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'notifications' },
+        () => {
+          if (!cancelled) void refetchUnread({ silent: true })
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'notifications_reads' },
+        () => {
+          if (!cancelled) void refetchUnread({ silent: true })
+        }
+      )
+      .subscribe()
+
+    return () => {
+      cancelled = true
+      supabase.removeChannel(channel)
+    }
+  }, [profileLoading, profile?.id, refetchUnread])
+
+  const count = notifications.length
+
+  async function resolveProfileId(): Promise<string | null> {
+    const supabase = createClient()
+    const {
+      data: { user },
+    } = await supabase.auth.getUser()
+    if (!user) return null
+    return profile?.id ?? user.id
+  }
+
+  async function handleMarkRead(notificationId: string) {
+    if (markingId) return
+    const profileId = await resolveProfileId()
+    if (!profileId) return
+
+    setMarkingId(notificationId)
+    const { error } = await markNotificationAsRead(profileId, notificationId)
+    setMarkingId(null)
+
+    if (error) {
+      toast.error(error.message)
+      return
+    }
+
+    setNotifications((prev) => prev.filter((n) => n.id !== notificationId))
+  }
+
+  async function handleMarkAllRead() {
+    if (markingAll || notifications.length === 0) return
+    const profileId = await resolveProfileId()
+    if (!profileId) return
+
+    setMarkingAll(true)
+    const ids = notifications.map((n) => n.id)
+    const { error } = await markAllNotificationsAsRead(profileId, ids)
+    setMarkingAll(false)
+
+    if (error) {
+      toast.error(error.message)
+      return
+    }
+
+    setNotifications([])
+  }
 
   useEffect(() => {
     if (!open) return
@@ -149,22 +195,6 @@ export function NotificationsDropdown() {
     }
   }, [open])
 
-  function markAllAsRead() {
-    setNotifications((prev) =>
-      prev.map((notification) => ({ ...notification, unread: false }))
-    )
-  }
-
-  function markAsRead(id: string) {
-    setNotifications((prev) =>
-      prev.map((notification) =>
-        notification.id === id ? { ...notification, unread: false } : notification
-      )
-    )
-  }
-
-  const groups = ['Hoje', 'Ontem'] as const
-
   return (
     <div className="relative" ref={containerRef}>
       <button
@@ -174,9 +204,9 @@ export function NotificationsDropdown() {
         onClick={() => setOpen((prev) => !prev)}
       >
         <Bell className="h-4 w-4" />
-        {unreadCount > 0 && (
+        {count > 0 && (
           <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-[9px] font-black text-destructive-foreground">
-            {unreadCount > 9 ? '9+' : unreadCount}
+            {count > 9 ? '9+' : count}
           </span>
         )}
       </button>
@@ -196,82 +226,73 @@ export function NotificationsDropdown() {
             >
               <X className="h-4 w-4" aria-hidden />
             </button>
-            <div className="flex min-w-0 items-center justify-between gap-2">
+            <div className="flex min-w-0 items-center justify-between gap-2 pr-2">
               <h3 className="min-w-0 truncate font-heading text-sm font-black text-foreground">
                 Notificações
               </h3>
-              <button
-                type="button"
-                className="shrink-0 text-xs text-accent hover:underline"
-                onClick={markAllAsRead}
-              >
-                Marcar todas como lidas
-              </button>
+              {count > 0 && (
+                <button
+                  type="button"
+                  className="shrink-0 text-xs text-accent hover:underline disabled:pointer-events-none disabled:opacity-50"
+                  disabled={markingAll || Boolean(markingId)}
+                  onClick={() => void handleMarkAllRead()}
+                >
+                  {markingAll ? 'Marcando…' : 'Marcar todas como lidas'}
+                </button>
+              )}
             </div>
           </div>
 
           <div className="max-h-[min(480px,70dvh)] overflow-y-auto">
-            {notifications.length === 0 || unreadCount === 0 ? (
+            {loading ? (
+              <div className="flex flex-col items-center justify-center gap-3 py-12">
+                <p className="text-sm text-muted-foreground">Carregando…</p>
+              </div>
+            ) : notifications.length === 0 ? (
               <div className="flex flex-col items-center justify-center gap-3 py-12">
                 <Bell className="h-10 w-10 text-muted-foreground/30" />
                 <p className="text-sm text-muted-foreground">
-                  Nenhuma notificação nova
+                  Nenhuma notificação
                 </p>
               </div>
             ) : (
-              groups.map((group) => {
-                const groupNotifications = notifications.filter(
-                  (notification) => notification.group === group
-                )
-
-                if (groupNotifications.length === 0) return null
+              notifications.map((notification) => {
+                const style =
+                  notificationStyles[notification.type] ??
+                  notificationStyles.questions_created
+                const Icon = style.icon
+                const isMarkingThis = markingId === notification.id
 
                 return (
-                  <div key={group}>
-                    <div className="border-b border-border/50 bg-muted/30 px-4 py-2 text-xs font-bold uppercase tracking-widest text-muted-foreground">
-                      {group}
+                  <button
+                    key={notification.id}
+                    type="button"
+                    className="flex w-full items-start gap-3 border-b border-border/50 px-4 py-3 text-left transition-colors hover:bg-muted/30 disabled:cursor-wait disabled:opacity-60"
+                    disabled={Boolean(markingId) && !isMarkingThis}
+                    onClick={() => void handleMarkRead(notification.id)}
+                  >
+                    <div
+                      className={`relative flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl ${style.iconWrapperClassName}`}
+                    >
+                      <Icon
+                        className={`h-5 w-5 ${style.iconClassName ?? ''}`}
+                      />
                     </div>
 
-                    {groupNotifications.map((notification) => {
-                      const style = notificationStyles[notification.type]
-                      const Icon = style.icon
-
-                      return (
-                        <div
-                          key={notification.id}
-                          className={`flex cursor-pointer items-start gap-3 border-b border-border/50 px-4 py-3 transition-colors hover:bg-muted/30 ${
-                            notification.unread ? 'bg-primary/5' : ''
-                          }`}
-                          onClick={() => markAsRead(notification.id)}
-                        >
-                          <div
-                            className={`relative flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl ${style.iconWrapperClassName}`}
-                          >
-                            {style.livePulse && (
-                              <span className="absolute -left-0.5 -top-0.5 h-2 w-2 rounded-full bg-destructive animate-pulse" />
-                            )}
-                            <Icon className={`h-5 w-5 ${style.iconClassName ?? ''}`} />
-                          </div>
-
-                          <div className="min-w-0 flex-1 space-y-0.5">
-                            <p className="text-sm font-bold leading-snug text-foreground">
-                              {notification.title}
-                            </p>
-                            <p className="line-clamp-2 text-xs leading-snug text-muted-foreground">
-                              {notification.description}
-                            </p>
-                            <p className="mt-1 text-[10px] text-muted-foreground/70">
-                              {notification.time} • {notification.category}
-                            </p>
-                          </div>
-
-                          {notification.unread && (
-                            <span className="mt-1 h-2 w-2 flex-shrink-0 rounded-full bg-accent" />
-                          )}
-                        </div>
-                      )
-                    })}
-                  </div>
+                    <div className="min-w-0 flex-1 space-y-0.5">
+                      <p className="text-sm font-bold leading-snug text-foreground">
+                        {notification.title}
+                      </p>
+                      <p className="line-clamp-3 text-xs leading-snug text-muted-foreground">
+                        {notification.message}
+                      </p>
+                      <p className="mt-1 text-[10px] text-muted-foreground/70">
+                        {isMarkingThis
+                          ? 'Marcando como lida…'
+                          : formatRelativeTimePt(notification.created_at)}
+                      </p>
+                    </div>
+                  </button>
                 )
               })
             )}
