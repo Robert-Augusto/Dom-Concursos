@@ -19,14 +19,9 @@ type QuestionFormFieldsProps = {
 
 export function QuestionFormFields({ banca, difficulty, subjectsId }: QuestionFormFieldsProps) {
   const [text, setText] = useState('')
-  const [optionA, setOptionA] = useState('')
-  const [optionB, setOptionB] = useState('')
-  const [optionC, setOptionC] = useState('')
-  const [optionD, setOptionD] = useState('')
-  const [optionE, setOptionE] = useState('')
   const [correctOption, setCorrectOption] = useState<OptionKey>('A')
   const [explanation, setExplanation] = useState('')
-  const [ano, setAno] = useState('')
+  const [ano, setAno] = useState('2025')
   const [instituicao, setInstituicao] = useState('')
 
   async function handleCreateQuestion(event: FormEvent){
@@ -34,11 +29,6 @@ export function QuestionFormFields({ banca, difficulty, subjectsId }: QuestionFo
     
     if (!text) {
       toast.error("Preencha o texto da questão.")
-      return
-    }
-
-    if (!optionA || !optionB || !optionC || !optionD) {
-      toast.error("Preencha todas as alternativas.")
       return
     }
 
@@ -52,28 +42,30 @@ export function QuestionFormFields({ banca, difficulty, subjectsId }: QuestionFo
       return
     }
 
-    const optionsJson = {
-      A: optionA,
-      B: optionB,
-      C: optionC,
-      D: optionD,
-      E: optionE
-    }
-    const {error} = await CreateQuestion(Number(subjectsId), text, optionsJson, correctOption, explanation, banca, difficulty, ano, instituicao)
-    if (error) {
-      toast.error(error.message)
-      return
-    }
-    toast.success("Questão criada com sucesso.")
+    const response = await fetch ('https://n8n-qao4.srv1444382.hstgr.cloud/webhook/3b221980-d986-440a-9159-24cd22163523', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        text: text,
+        correctOption: correctOption,
+        explanation: explanation,
+        ano: ano,
+        instituicao: instituicao,
+        banca: banca,
+        difficulty: difficulty,
+        subjectsId: subjectsId
+      })
+    })
+
+    if (!response.ok) toast.error("Erro ao cadastrar questão")
+
+    toast.success("A questão está sendo criada.")
     setAno('2026')
     setCorrectOption('A')
     setExplanation('')
     setInstituicao('')
-    setOptionA('')
-    setOptionB('')
-    setOptionC('')
-    setOptionD('')
-    setOptionE('')
     setText('')
   }
 
@@ -91,36 +83,6 @@ export function QuestionFormFields({ banca, difficulty, subjectsId }: QuestionFo
           placeholder="Texto da questão"
         />
       </label>
-
-      <div className="flex flex-col gap-2">
-        <span className="text-xs font-semibold text-muted-foreground">
-          Alternativas
-        </span>
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          {(
-            [
-              ['A', optionA, (v: string) => setOptionA(v)],
-              ['B', optionB, (v: string) => setOptionB(v)],
-              ['C', optionC, (v: string) => setOptionC(v)],
-              ['D', optionD, (v: string) => setOptionD(v)],
-              ['E', optionE, (v: string) => setOptionE(v)]
-            ] as const
-          ).map(([key, value, setValue]) => (
-            <label key={key} className="flex flex-col gap-1">
-              <span className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-                {key}
-              </span>
-              <textarea
-                value={value}
-                onChange={(e) => setValue(e.target.value)}
-                rows={3}
-                className="resize-y rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none transition-colors focus:border-primary/50 disabled:opacity-60"
-                placeholder={`Texto da alternativa ${key}`}
-              />
-            </label>
-          ))}
-        </div>
-      </div>
 
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
         <label className="flex min-w-0 flex-col gap-1.5">
