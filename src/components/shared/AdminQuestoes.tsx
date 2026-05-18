@@ -1,5 +1,6 @@
 'use client'
 
+import { ModalEditQuestion } from '@/components/shared/ModalEditQuestion'
 import { SubjectFilterGroup } from '@/components/shared/SubjectFilterGroup'
 import { QuestionFormFields } from '@/components/shared/QuestionFormFields'
 import { createClient } from '@/lib/supabase/client'
@@ -34,6 +35,9 @@ export default function AdminQuestoes({
   const [bancaSearch, setBancaSearch] = useState('')
   const [showCreateBancaPanel, setShowCreateBancaPanel] = useState(false)
   const [newBancaName, setNewBancaName] = useState('')
+  const [editingQuestion, setEditingQuestion] = useState<Questions | null>(
+    null,
+  )
 
   function closeCreateBancaPanel() {
     setShowCreateBancaPanel(false)
@@ -498,11 +502,11 @@ export default function AdminQuestoes({
                     key={question.id}
                     className="rounded-xl border border-border bg-card p-4"
                   >
-                    <div className="flex flex-wrap items-start justify-between gap-2">
-                      <p className="min-w-0 flex-1 text-sm font-medium text-foreground">
+                    <div className="flex flex-col gap-3">
+                      <p className="w-full text-sm font-medium leading-relaxed text-foreground">
                         {question.question}
                       </p>
-                    <div className="flex shrink-0 flex-wrap items-start justify-end gap-2">
+                      <div className="flex flex-wrap items-center gap-2 sm:justify-end">
                         <span className="rounded-full border border-border bg-muted px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
                           {question.difficulty}
                         </span>
@@ -511,6 +515,7 @@ export default function AdminQuestoes({
                         </span>
                         <button
                           type="button"
+                          onClick={() => setEditingQuestion(question)}
                           className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background px-3 py-1 text-xs font-semibold text-foreground transition-colors hover:border-primary/40 hover:bg-muted/50"
                         >
                           <Pencil className="h-3.5 w-3.5" aria-hidden />
@@ -532,6 +537,13 @@ export default function AdminQuestoes({
           </p>
         </div>
       )}
+
+      <ModalEditQuestion
+        open={editingQuestion !== null}
+        question={editingQuestion}
+        bancas={bancas ?? []}
+        onClose={() => setEditingQuestion(null)}
+      />
     </section>
   )
 }

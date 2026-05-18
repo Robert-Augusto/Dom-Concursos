@@ -31,6 +31,8 @@ export type UpdateQuestionPayload = {
   explanation: string
   difficulty: QuestionsDifficulty
   banca: string
+  ano: string
+  instituicao: string
 }
 
 export async function UpdateQuestion(
@@ -47,6 +49,8 @@ export async function UpdateQuestion(
       explanation: payload.explanation,
       difficulty: payload.difficulty,
       banca: payload.banca,
+      ano: payload.ano,
+      instituicao: payload.instituicao
     })
     .eq('id', questionId)
 

@@ -105,6 +105,8 @@ export interface Questions {
     explanation: string
     difficulty: QuestionsDifficulty
     banca: string
+    ano: string
+    instituicao: string
 }
 
 // banca
