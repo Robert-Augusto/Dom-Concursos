@@ -1,14 +1,10 @@
 import { createClient } from '@/lib/supabase/client'
 import type {
   QuestionOptions,
-  QuestionsBanca,
   QuestionsDifficulty,
 } from '@/types'
 
 // create
-
-
-
 export async function CreateQuestion(subjects_id: number, question: string, options: QuestionOptions, correct: string, explanation: string, banca: string, difficulty: string, ano: string, instituicao: string){
   const supabase = createClient()
   const {error} = await supabase
@@ -34,7 +30,7 @@ export type UpdateQuestionPayload = {
   correct_option: string
   explanation: string
   difficulty: QuestionsDifficulty
-  banca: QuestionsBanca
+  banca: string
 }
 
 export async function UpdateQuestion(
