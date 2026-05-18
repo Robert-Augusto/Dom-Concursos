@@ -43,7 +43,6 @@ export default function EstudoInteligente({
     subjectsData = [],
 }: EstudoInteligenteProps){
     const [selectedSmartSubject, setSelectedSmartSubjectId] = useState<Subjects | null>(null)
-    const [subjectFilterSearch, setSubjectFilterSearch] = useState('')
     const [selectedRootFilter, setSelectedRootFilter] = useState('')
     const [isTextMaterialModalOpen, setIsTextMaterialModalOpen] = useState(false)
     const [isFlashcardModalOpen, setIsFlashcardModalOpen] = useState(false)
@@ -186,8 +185,6 @@ export default function EstudoInteligente({
 
                   <SubjectFilterGroup
                     subjectsData={subjectsData}
-                    subjectFilterSearch={subjectFilterSearch}
-                    onSubjectFilterSearchChange={setSubjectFilterSearch}
                     selectedRootFilter={selectedRootFilter}
                     selectedRelatedFilter={selectedSmartSubject?.id ?? ''}
                     onSelectedRootFilterChange={setSelectedRootFilter}

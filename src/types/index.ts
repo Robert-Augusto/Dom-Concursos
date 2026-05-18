@@ -57,11 +57,8 @@ export interface StudyFlashcards {
     back: string
 }
 
-// bancas
-export const BANCA_OPTIONS = ['CESPE/CEBRASPE', 'FCC', 'FGV', 'VUNESP', 'Fund. FAFIPA', 'IDECAN', 'ACCESS', 'IBAM', 'IBFC', 'IBGP' ] as const
-
 // notifications
-export type NotificationType = 'questions_created'
+export type NotificationType = 'questions_created' | 'questions_error'
 export type NotificationRole = 'all' | 'admin'
 export interface Notifications {
     id: string
@@ -88,8 +85,7 @@ export const DIFFICULTY_SELECT: QuestionsDifficulty[] = [
     'Médio',
     'Difícil',
 ]
-export type QuestionsBanca = typeof BANCA_OPTIONS[number]
-export const OPTION_KEYS = ['A', 'B', 'C', 'D'] as const
+export const OPTION_KEYS = ['A', 'B', 'C', 'D', 'E'] as const
 export const Anos = Array.from({ length: 2026 - 1994 + 1 }, (_, i) => String(1994 + i))
 export type OptionKey = (typeof OPTION_KEYS)[number]
 export interface QuestionOptions {
@@ -108,5 +104,12 @@ export interface Questions {
     correct_option: string
     explanation: string
     difficulty: QuestionsDifficulty
-    banca: QuestionsBanca
+    banca: string
+}
+
+// banca
+export interface Banca {
+    id: string
+    created_at: Date
+    name: string
 }

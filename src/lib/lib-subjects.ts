@@ -19,3 +19,13 @@ export async function CreateSubject(
     .single()
   return { error, data: data as { id: string } | null }
 }
+
+// delete
+export async function DeleteSubject(subjectId: string) {
+  const supabase = createClient()
+  const {error} = await supabase
+    .from('subjects')
+    .delete()
+    .eq('id', subjectId)
+  return {error}
+  }

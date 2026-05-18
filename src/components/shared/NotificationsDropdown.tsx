@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { Bell, ListChecks, X, type LucideIcon } from 'lucide-react'
+import { AlertCircle, Bell, ListChecks, X, type LucideIcon } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import {
   getUnreadNotificationsForProfile,
@@ -19,12 +19,18 @@ type NotificationStyle = {
   icon: LucideIcon
   iconWrapperClassName: string
   iconClassName?: string
+  rowClassName?: string
 }
 
 const notificationStyles: Record<NotificationType, NotificationStyle> = {
   questions_created: {
     icon: ListChecks,
     iconWrapperClassName: 'bg-primary/20 text-primary',
+  },
+  questions_error: {
+    icon: AlertCircle,
+    iconWrapperClassName: 'bg-destructive/20 text-destructive',
+    rowClassName: 'bg-destructive/5',
   },
 }
 
@@ -267,7 +273,7 @@ export function NotificationsDropdown() {
                   <button
                     key={notification.id}
                     type="button"
-                    className="flex w-full items-start gap-3 border-b border-border/50 px-4 py-3 text-left transition-colors hover:bg-muted/30 disabled:cursor-wait disabled:opacity-60"
+                    className={`flex w-full items-start gap-3 border-b border-border/50 px-4 py-3 text-left transition-colors hover:bg-muted/30 disabled:cursor-wait disabled:opacity-60 ${style.rowClassName ?? ''}`}
                     disabled={Boolean(markingId) && !isMarkingThis}
                     onClick={() => void handleMarkRead(notification.id)}
                   >

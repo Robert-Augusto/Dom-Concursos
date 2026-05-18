@@ -3,16 +3,14 @@
 import {
   OptionKey,
   OPTION_KEYS,
-  QuestionsBanca,
   QuestionsDifficulty,
   Anos
 } from '@/types'
 import { FormEvent, useState } from 'react'
 import { toast } from 'sonner'
-import { CreateQuestion, UpdateQuestion } from '@/lib/lib-questions'
 
 type QuestionFormFieldsProps = {
-  banca: QuestionsBanca
+  banca: string
   difficulty: QuestionsDifficulty
   subjectsId: string
 }
@@ -53,7 +51,7 @@ export function QuestionFormFields({ banca, difficulty, subjectsId }: QuestionFo
         explanation: explanation,
         ano: ano,
         instituicao: instituicao,
-        banca: banca,
+        banca: Number(banca),
         difficulty: difficulty,
         subjectsId: subjectsId
       })
@@ -72,9 +70,6 @@ export function QuestionFormFields({ banca, difficulty, subjectsId }: QuestionFo
   return (
     <div className="flex flex-col gap-5">
       <label className="flex flex-col gap-1.5">
-        <span className="text-xs font-semibold text-muted-foreground">
-          Enunciado
-        </span>
         <textarea
           value={text}
           onChange={(e) => setText(e.target.value)}
