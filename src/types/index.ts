@@ -44,7 +44,6 @@ export interface StudyMaterials {
     id: string
     created_at: Date
     subjects_id: string
-    content: string
     file_url: string
 }
 

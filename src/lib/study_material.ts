@@ -2,13 +2,12 @@ import { createClient } from "./supabase/client";
 import type { StudyMaterials } from "@/types";
 
 // create 
-export async function CreateStudyMaterial(subject_id: string, content: string, file_url: string) {
+export async function CreateStudyMaterial(subject_id: string, file_url: string) {
     const supabase = createClient()
     const {error} = await supabase
         .from('study_materials')
         .insert({
             subjects_id: subject_id,
-            content: content,
             file_url: file_url
         })
     return {error}
@@ -26,12 +25,11 @@ export async function GetStudyMaterialsBySubject(subjectId: string) {
 }
 
 // update
-export async function UpdateStudyMaterial(content: string, fileUrl: string, studyId: string){
+export async function UpdateStudyMaterial(fileUrl: string, studyId: string){
     const supabase = createClient()
     const {error} = await supabase
         .from('study_materials')
         .update({
-            content: content,
             file_url: fileUrl
         })
         .eq('id', studyId)

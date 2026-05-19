@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/client'
 import type {
   QuestionOptions,
   QuestionsDifficulty,
+  Questions
 } from '@/types'
 
 // create
@@ -53,6 +54,16 @@ export async function UpdateQuestion(
       instituicao: payload.instituicao
     })
     .eq('id', questionId)
-
   return { error }
+}
+
+// select
+export async function GetQuestionsBySubject(subjectId: string){
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from("subjects_questions")
+    .select("*")
+    .eq("subjects_id", subjectId)
+    .order("created_at", { ascending: false });
+  return { data: (data as Questions[] | null) ?? [], error };
 }

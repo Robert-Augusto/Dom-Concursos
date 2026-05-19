@@ -25,6 +25,19 @@ export async function GetFlashcardsBySubject(subjectId: string) {
     return { data: (data as StudyFlashcards[] | null) ?? [], error };
 }
 
+// read only one
+export async function GetOneFlashcardBySubject(subjectId: string) {
+    const supabase = createClient();
+    const { data, error } = await supabase
+      .from("study_flashcards")
+      .select("*")
+      .eq("subjects_id", subjectId)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .single()
+    return { data: data as StudyFlashcards | null, error };
+}
+
 // update
 export async function UpdateFlashcard(flashcardId: string, front: string, back: string){
     const supabase = createClient()
