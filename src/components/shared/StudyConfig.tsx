@@ -18,11 +18,14 @@ import { cn } from '@/lib/utils'
 import { GetStudyMaterialsBySubject } from '@/lib/study_material'
 import { GetOneFlashcardBySubject } from '@/lib/flashcards'
 import { toast } from 'sonner'
+import { CreateStudySession } from '@/lib/lib-study-session'
+import { useProfile } from '@/context/ProfileContext'
 
 export type StudyStartPayload = {
   subjectId: string
   subjectName: string
   rootSubjectName: string
+  studySessionId: string
   flashcardsData: StudyFlashcards
   materialsData: StudyMaterials
 }
@@ -40,6 +43,7 @@ export default function StudyConfig({
   onStart,
   onStartingChange,
 }: StudyConfigProps) {
+  const { profile, loading: profileLoading } = useProfile()
   const [selectedRootId, setSelectedRootId] = useState('')
   const [selectedRelated, setSelectedRelated] = useState<Subjects | null>(null)
   const [rootSearch, setRootSearch] = useState('')
@@ -85,6 +89,12 @@ export default function StudyConfig({
 
   async function handleStart() {
     if (!selectedRelated || isStarting) return
+    if (profileLoading) return
+
+    if (!profile?.id) {
+      toast.error('Faça login para iniciar o estudo.')
+      return
+    }
 
     setIsStarting(true)
     onStartingChange?.(true)
@@ -110,10 +120,18 @@ export default function StudyConfig({
         return
       }
 
+      const {data, error} = await CreateStudySession(profile.id, selectedRelated.id, new Date())
+
+      if (error || !data){
+        toast.error('Erro ao iniciar sessão de estudo, tente novamente.')
+        return
+      }
+
       onStart({
         subjectId: selectedRelated.id,
         subjectName: selectedRelated.name,
         rootSubjectName: selectedRootName,
+        studySessionId: String(data.id),
         flashcardsData: flashcardsRes.data,
         materialsData: materialsRes.data,
       })
@@ -291,7 +309,7 @@ export default function StudyConfig({
                 <p className="text-sm font-bold text-foreground">Assunto relacionado</p>
                 <p className="text-xs text-muted-foreground">
                   {selectedRootId
-                    ? `Assuntos em ${selectedRootName}`
+                    ? `Ex.: Uso do hífen, regra de três, interpretação de texto`
                     : 'Selecione uma matéria principal primeiro'}
                 </p>
               </div>

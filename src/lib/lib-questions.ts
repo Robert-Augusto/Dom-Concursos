@@ -1,9 +1,36 @@
 import { createClient } from '@/lib/supabase/client'
-import type {
-  QuestionOptions,
-  QuestionsDifficulty,
-  Questions
+import {
+  OPTION_KEYS,
+  type OptionKey,
+  type QuestionOptions,
+  type QuestionsDifficulty,
+  type Questions,
 } from '@/types'
+
+export function hasOptionText(value: unknown): boolean {
+  return typeof value === 'string' && value.trim().length > 0
+}
+
+export function getFilledOptionKeys(
+  options: QuestionOptions | Record<string, unknown> | null | undefined,
+): OptionKey[] {
+  return OPTION_KEYS.filter((key) => hasOptionText(options?.[key]))
+}
+
+/** Join `banca` FK for question rows (alias avoids column name clash). */
+export const QUESTIONS_WITH_BANCA_SELECT = '*, banca_info:banca ( name )'
+
+type QuestionRowWithBanca = Questions & {
+  banca_info?: { name: string } | null
+}
+
+export function mapQuestionWithBanca(row: QuestionRowWithBanca): Questions {
+  const { banca_info, ...rest } = row
+  return {
+    ...rest,
+    banca_name: banca_info?.name?.trim() || undefined,
+  }
+}
 
 // create
 export async function CreateQuestion(subjects_id: number, question: string, options: QuestionOptions, correct: string, explanation: string, banca: string, difficulty: string, ano: string, instituicao: string){

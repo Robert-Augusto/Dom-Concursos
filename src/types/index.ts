@@ -104,6 +104,7 @@ export interface Questions {
     explanation: string
     difficulty: QuestionsDifficulty
     banca: string
+    banca_name?: string
     ano: string
     instituicao: string
 }
@@ -113,4 +114,24 @@ export interface Banca {
     id: string
     created_at: Date
     name: string
+}
+
+// study session
+export interface StudySession {
+    id: string
+    created_at: Date
+    profile_id: string
+    subject_id: string
+    started_at: Date
+    end_at: Date
+}
+
+// study session answears
+export interface StudySessionAnswears {
+    id: string
+    created_at: Date
+    study_session_id: string
+    subject_question_id: string
+    selected_option: string
+    is_correct: boolean
 }

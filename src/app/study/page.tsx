@@ -10,6 +10,8 @@ import StudySession from '@/components/shared/StudySession'
 import { StudyFlowLoadingOverlay } from '@/components/shared/StudyFlowLoading'
 import { createClient } from '@/lib/supabase/client'
 import { Subjects, StudyFlashcards, StudyMaterials, Questions } from '@/types'
+import { UpdateStudySession } from '@/lib/lib-study-session'
+import { toast } from 'sonner'
 
 type Step = 'config' | 'material' | 'session' | 'score'
 
@@ -17,7 +19,7 @@ interface StudyState {
   subjectId: string
   subject: string
   rootSubjectName: string
-  answers: Record<string, string>
+  studySessionId: string
   flashcardsData: StudyFlashcards | null
   materialsData: StudyMaterials | null
 }
@@ -30,9 +32,9 @@ export default function StudyPage() {
     subjectId: '',
     subject: '',
     rootSubjectName: '',
-    answers: {},
     flashcardsData: null,
     materialsData: null,
+    studySessionId: '',
   })
   const [questions, setQuestions] = useState<Questions[]>([])
   const [isLoadingQuestions, setIsLoadingQuestions] = useState(false)
@@ -57,9 +59,9 @@ export default function StudyPage() {
       subjectId: payload.subjectId,
       subject: payload.subjectName,
       rootSubjectName: payload.rootSubjectName,
-      answers: {},
       flashcardsData: payload.flashcardsData,
       materialsData: payload.materialsData,
+      studySessionId: payload.studySessionId
     })
     setStep('material')
   }
@@ -67,6 +69,7 @@ export default function StudyPage() {
   function handleQuestions(fetchedQuestions: Questions[]) {
     setQuestions(fetchedQuestions)
     setIsLoadingQuestions(false)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
     setStep('session')
   }
 
@@ -78,9 +81,9 @@ export default function StudyPage() {
       subjectId: '',
       subject: '',
       rootSubjectName: '',
-      answers: {},
       flashcardsData: null,
       materialsData: null,
+      studySessionId: '',
     })
     setStep('config')
   }
@@ -124,10 +127,19 @@ export default function StudyPage() {
             {step === 'session' && (
               <StudySession
                 subjectName={studyState.subject}
+                studySessionId={studyState.studySessionId}
                 questionsData={questions}
                 isLoading={isLoadingQuestions}
-                onFinish={(answers) => {
-                  setStudyState((prev) => ({ ...prev, answers }))
+                onFinish={async () => {
+                  const { error } = await UpdateStudySession(
+                    studyState.studySessionId,
+                    new Date(),
+                  )
+                  if (error) {
+                    toast.error(error.message)
+                    return
+                  }
+                  window.scrollTo({ top: 0, behavior: 'smooth' })
                   setStep('score')
                 }}
                 onBack={() => setStep('material')}
@@ -136,8 +148,7 @@ export default function StudyPage() {
             {step === 'score' && (
               <StudyScore
                 subject={studyState.subject}
-                questionsData={questions}
-                answers={studyState.answers}
+                studySessionId={studyState.studySessionId}
                 onRestart={handleRestart}
               />
             )}

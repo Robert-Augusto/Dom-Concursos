@@ -1,25 +1,75 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { ArrowLeft, CheckCircle, FileText, Info, X } from 'lucide-react'
 import { StudyFlowLoading } from '@/components/shared/StudyFlowLoading'
 import { cn } from '@/lib/utils'
-import { OPTION_KEYS, type OptionKey, type Questions } from '@/types'
+import type { Questions } from '@/types'
+import { GetBancas } from '@/lib/lib-banca'
+import { getFilledOptionKeys } from '@/lib/lib-questions'
+import { CreateStudySessionAnswears } from '@/lib/lib-study-session-answears'
+import { toast } from 'sonner'
+
+function formatMetaTag(value: string | undefined) {
+  const trimmed = value?.trim()
+  return trimmed ? trimmed : '—'
+}
+
+function resolveBancaName(
+  question: Questions,
+  bancaNamesById: Record<string, string>,
+) {
+  return (
+    question.banca_name?.trim() ||
+    bancaNamesById[String(question.banca)] ||
+    '—'
+  )
+}
+
+function QuestionMetaTags({
+  bancaName,
+  ano,
+  instituicao,
+}: {
+  bancaName: string
+  ano: string
+  instituicao: string
+}) {
+  const tags = [
+    { key: 'banca', label: 'Banca', value: bancaName },
+    { key: 'ano', label: 'Ano', value: ano },
+    { key: 'instituicao', label: 'Instituição', value: instituicao },
+  ] as const
+
+  return (
+    <div className="mb-3 flex flex-wrap gap-2">
+      {tags.map(({ key, label, value }) => (
+        <span
+          key={key}
+          className="inline-flex max-w-full items-center gap-1.5 rounded-full border border-border bg-muted/30 px-2.5 py-1 text-[10px] font-semibold text-foreground"
+        >
+          <span className="shrink-0 font-black uppercase tracking-wide text-[9px] text-muted-foreground">
+            {label}
+          </span>
+          <span className="truncate">{value}</span>
+        </span>
+      ))}
+    </div>
+  )
+}
 
 export interface StudySessionProps {
   subjectName: string
+  studySessionId: string
   questionsData: Questions[]
   isLoading?: boolean
-  onFinish: (answers: Record<string, string>) => void
+  onFinish: () => void | Promise<void>
   onBack: () => void
-}
-
-function getQuestionOptionKeys(question: Questions): OptionKey[] {
-  return OPTION_KEYS.filter((key) => question.options[key]?.trim() !== '')
 }
 
 export default function StudySession({
   subjectName,
+  studySessionId,
   questionsData,
   isLoading = false,
   onFinish,
@@ -27,6 +77,27 @@ export default function StudySession({
 }: StudySessionProps) {
   const [answers, setAnswers] = useState<Record<string, string>>({})
   const [resolvedIds, setResolvedIds] = useState<Set<string>>(new Set())
+  const [resolvingId, setResolvingId] = useState<string | null>(null)
+  const [bancaNamesById, setBancaNamesById] = useState<Record<string, string>>({})
+
+  useEffect(() => {
+    let cancelled = false
+
+    async function loadBancas() {
+      const { data, error } = await GetBancas()
+      if (cancelled) return
+      if (error) return
+
+      setBancaNamesById(
+        Object.fromEntries(data.map((b) => [String(b.id), b.name])),
+      )
+    }
+
+    void loadBancas()
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   const allQuestions = questionsData
   const allResolved =
@@ -45,9 +116,38 @@ export default function StudySession({
     }
   }
 
-  function handleResolve(questionId: string) {
-    if (!answers[questionId]) return
-    setResolvedIds((prev) => new Set(prev).add(questionId))
+  async function handleResolve(questionId: string) {
+    const selected = answers[questionId]
+    if (!selected || resolvedIds.has(questionId) || resolvingId) return
+
+    const question = allQuestions.find((q) => q.id === questionId)
+    if (!question) return
+
+    if (!studySessionId) {
+      toast.error('Sessão de estudo inválida. Reinicie o estudo.')
+      return
+    }
+
+    const isCorrect = selected === question.correct_option
+
+    setResolvingId(questionId)
+    try {
+      const { error } = await CreateStudySessionAnswears(
+        String(studySessionId),
+        questionId,
+        selected,
+        isCorrect,
+      )
+
+      if (error) {
+        toast.error(error.message)
+        return
+      }
+
+      setResolvedIds((prev) => new Set(prev).add(questionId))
+    } finally {
+      setResolvingId(null)
+    }
   }
 
   if (isLoading) {
@@ -95,16 +195,17 @@ export default function StudySession({
       </div>
 
       <div className="flex flex-col gap-4 pb-24 pt-4">
-        <div className="flex items-center justify-center gap-2 py-2 text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+        <div className="flex items-center justify-center gap-2 py-2 text-[14px] font-black uppercase tracking-widest text-muted-foreground">
           <FileText className="h-3.5 w-3.5" />
-          {allQuestions.length} questões
+          Responda as {allQuestions.length} questões
         </div>
 
         {allQuestions.map((question, index) => {
           const resolved = resolvedIds.has(question.id)
           const selected = answers[question.id]
           const isCorrect = selected === question.correct_option
-          const optionKeys = getQuestionOptionKeys(question)
+          const optionKeys = getFilledOptionKeys(question.options)
+          const bancaName = resolveBancaName(question, bancaNamesById)
 
           return (
             <div
@@ -114,16 +215,23 @@ export default function StudySession({
               <p className="mb-2 text-[10px] font-black uppercase tracking-wider text-muted-foreground">
                 Questão {index + 1} de {allQuestions.length}
               </p>
+              <QuestionMetaTags
+                bancaName={bancaName}
+                ano={formatMetaTag(question.ano)}
+                instituicao={formatMetaTag(question.instituicao)}
+              />
               <p className="mb-4 text-sm font-bold leading-snug text-foreground">
                 {question.question}
               </p>
 
               <div className="flex flex-col gap-2">
                 {optionKeys.map((key) => {
+                  const optionText = question.options[key]?.trim() ?? ''
+                  if (!optionText) return null
+
                   const isSelected = selected === key
                   const isCorrectOption = key === question.correct_option
                   const isWrongPick = resolved && isSelected && !isCorrect
-                  const optionText = question.options[key]
 
                   let rowClass =
                     'border-border bg-background text-foreground hover:border-border/80'
@@ -188,16 +296,16 @@ export default function StudySession({
               {!resolved ? (
                 <button
                   type="button"
-                  disabled={!selected}
-                  onClick={() => handleResolve(question.id)}
+                  disabled={!selected || resolvingId === question.id}
+                  onClick={() => void handleResolve(question.id)}
                   className={cn(
                     'mt-4 w-full rounded-xl border py-3 text-sm font-bold transition-all',
-                    selected
+                    selected && resolvingId !== question.id
                       ? 'border-primary bg-primary text-primary-foreground hover:opacity-90'
                       : 'cursor-not-allowed border-border bg-muted text-muted-foreground',
                   )}
                 >
-                  Resolver
+                  {resolvingId === question.id ? 'Salvando...' : 'Resolver'}
                 </button>
               ) : (
                 <div
@@ -227,10 +335,7 @@ export default function StudySession({
         <button
           type="button"
           disabled={!allResolved}
-          onClick={() => {
-            onFinish(answers)
-            window.scrollTo({ top: 0, behavior: 'smooth' })
-          }}
+          onClick={() => void onFinish()}
           className={cn(
             'mx-auto flex w-full max-w-3xl items-center justify-center gap-2 rounded-2xl py-4 text-base font-black transition-all',
             allResolved

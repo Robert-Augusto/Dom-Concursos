@@ -22,6 +22,16 @@
 | `imagem_url` | `text` |  Nullable |
 | `authorization` | `text` |  Nullable |
 
+## Table `banca`
+
+### Columns
+
+| Name | Type | Constraints |
+|------|------|-------------|
+| `id` | `int8` | Primary Identity |
+| `created_at` | `timestamptz` |  |
+| `name` | `text` |  Nullable |
+
 ## Table `lessons`
 
 ### Columns
@@ -40,6 +50,31 @@
 | `is_published` | `bool` |  Nullable |
 | `is_searchable` | `bool` |  Nullable |
 | `subject_id` | `int8` |  Nullable |
+
+## Table `notifications`
+
+### Columns
+
+| Name | Type | Constraints |
+|------|------|-------------|
+| `id` | `int8` | Primary Identity |
+| `created_at` | `timestamptz` |  |
+| `title` | `text` |  Nullable |
+| `message` | `text` |  Nullable |
+| `type` | `NOTIFICATIONS_TYPE` |  Nullable |
+| `role` | `NOTIFICATIONS_ROLE` |  Nullable |
+
+## Table `notifications_reads`
+
+### Columns
+
+| Name | Type | Constraints |
+|------|------|-------------|
+| `id` | `int8` | Primary Identity |
+| `created_at` | `timestamptz` |  |
+| `profile_id` | `uuid` |  Nullable |
+| `notifications_id` | `int8` |  Nullable |
+| `read_at` | `timestamptz` |  Nullable |
 
 ## Table `profile`
 
@@ -77,8 +112,33 @@
 | `id` | `int8` | Primary Identity |
 | `created_at` | `timestamptz` |  |
 | `subjects_id` | `int8` |  Nullable |
-| `content` | `text` |  Nullable |
 | `file_url` | `text` |  Nullable |
+
+## Table `study_session`
+
+### Columns
+
+| Name | Type | Constraints |
+|------|------|-------------|
+| `id` | `int8` | Primary Identity |
+| `created_at` | `timestamptz` |  |
+| `profile_id` | `uuid` |  Nullable |
+| `subject_id` | `int8` |  Nullable |
+| `started_at` | `timestamptz` |  Nullable |
+| `end_at` | `timestamptz` |  Nullable |
+
+## Table `study_session_answers`
+
+### Columns
+
+| Name | Type | Constraints |
+|------|------|-------------|
+| `id` | `int8` | Primary Identity |
+| `created_at` | `timestamptz` |  |
+| `study_session_id` | `int8` |  Nullable |
+| `subject_question_id` | `int8` |  Nullable |
+| `selected_option` | `text` |  Nullable |
+| `is_correct` | `bool` |  Nullable |
 
 ## Table `subjects`
 
@@ -106,5 +166,7 @@
 | `correct_option` | `text` |  Nullable |
 | `explanation` | `text` |  Nullable |
 | `difficulty` | `SUBJECTS_QUESTIONS_DIFFICULTY` |  Nullable |
-| `banca` | `SUBJECTS_QUESTIONS_BANCA` |  Nullable |
+| `banca` | `int8` |  Nullable |
+| `ano` | `text` |  Nullable |
+| `instituicao` | `text` |  Nullable |
 
