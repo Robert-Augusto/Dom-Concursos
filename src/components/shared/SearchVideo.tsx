@@ -154,14 +154,6 @@ export function SearchVideo({
   return (
     <section className="flex flex-col gap-4">
         <div className="flex items-start justify-between gap-3">
-          <div className="flex flex-col gap-1">
-            <h2 className="font-heading text-lg font-black text-foreground">
-              Buscar Aulas
-            </h2>
-            <p className="text-sm text-muted-foreground">
-              Procure suas aulas de interesse
-            </p>
-          </div>
           {isAdminPage ? (
             <button
               type="button"

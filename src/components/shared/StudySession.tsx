@@ -108,12 +108,7 @@ export default function StudySession({
     subjectName.length > 24 ? `${subjectName.slice(0, 24)}…` : subjectName
 
   const handleBack = () => {
-    if (
-      typeof window !== 'undefined' &&
-      window.confirm('Voltar ao material? O progresso das questões será perdido.')
-    ) {
-      onBack()
-    }
+    onBack()
   }
 
   async function handleResolve(questionId: string) {
