@@ -2,7 +2,6 @@
 
 import dynamic from 'next/dynamic'
 import { StudyMaterials } from '@/types'
-import { cn } from '@/lib/utils'
 
 const PdfViewer = dynamic(() => import('@/components/shared/PdfViewer'), {
   ssr: false,
