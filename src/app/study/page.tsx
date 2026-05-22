@@ -4,23 +4,28 @@ import { useEffect, useState } from 'react'
 import { Header } from '@/components/layout/Header'
 import { Sidebar } from '@/components/layout/Sidebar'
 import StudyConfig, { type StudyStartPayload } from '@/components/shared/StudyConfig'
+import StudyFlashcard from '@/components/shared/StudyFlashcard'
 import StudyMaterial from '@/components/shared/StudyMaterial'
 import StudyScore from '@/components/shared/StudyScore'
 import StudySession from '@/components/shared/StudySession'
 import { StudyFlowLoadingOverlay } from '@/components/shared/StudyFlowLoading'
+import StudyFlowSteps, {
+  type StudyFlowStepId,
+} from '@/components/shared/StudyFlowSteps'
 import { createClient } from '@/lib/supabase/client'
 import { Subjects, StudyFlashcards, StudyMaterials, Questions } from '@/types'
 import { UpdateStudySession } from '@/lib/lib-study-session'
 import { toast } from 'sonner'
+import { ChevronLeft } from 'lucide-react'
 
-type Step = 'config' | 'material' | 'session' | 'score'
+type Step = 'config' | 'material' | 'flashcard' | 'session' | 'score'
 
 interface StudyState {
   subjectId: string
   subject: string
   rootSubjectName: string
   studySessionId: string
-  flashcardsData: StudyFlashcards | null
+  flashcardsData: StudyFlashcards[]
   materialsData: StudyMaterials | null
 }
 
@@ -32,7 +37,7 @@ export default function StudyPage() {
     subjectId: '',
     subject: '',
     rootSubjectName: '',
-    flashcardsData: null,
+    flashcardsData: [],
     materialsData: null,
     studySessionId: '',
   })
@@ -61,7 +66,7 @@ export default function StudyPage() {
       rootSubjectName: payload.rootSubjectName,
       flashcardsData: payload.flashcardsData,
       materialsData: payload.materialsData,
-      studySessionId: payload.studySessionId
+      studySessionId: payload.studySessionId,
     })
     setStep('material')
   }
@@ -81,18 +86,71 @@ export default function StudyPage() {
       subjectId: '',
       subject: '',
       rootSubjectName: '',
-      flashcardsData: null,
+      flashcardsData: [],
       materialsData: null,
       studySessionId: '',
     })
     setStep('config')
   }
 
+  function handleStepBack() {
+    if (step === 'material') setStep('config')
+    if (step === 'flashcard') setStep('material')
+    if (step === 'session') setStep('flashcard')
+  }
+
+  const showFlowHeader = ['material', 'flashcard', 'session'].includes(step)
+  const flowStepId: StudyFlowStepId | null =
+    step === 'material' || step === 'flashcard' || step === 'session'
+      ? step
+      : null
+
   return (
     <div className="min-h-screen bg-background">
       <Sidebar />
       <div className="min-h-screen pb-20 lg:ml-[240px] lg:pb-0">
-        <Header />
+        {step === 'config' && <Header />}
+
+        {showFlowHeader && (
+          <header className="sticky top-0 z-30 border-b border-border bg-background">
+            <div className="flex items-center gap-3 px-4 py-3 sm:px-6">
+              <button
+                type="button"
+                onClick={handleStepBack}
+                className="flex h-9 min-w-9 shrink-0 items-center justify-center rounded-lg border border-border bg-sidebar-accent text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+              >
+                <ChevronLeft className="h-5 w-5" />
+              </button>
+              <div className="min-w-0 flex-1">
+                <h1 className="font-heading truncate text-sm font-bold text-foreground">
+                  {step === 'material' && 'Estudo Teórico'}
+                  {step === 'flashcard' && 'Flashcards de revisão'}
+                  {step === 'session' && 'Hora de responder!'}
+                </h1>
+                <p className="truncate text-xs text-muted-foreground">
+                  {step === 'material' &&
+                    'Leia com atenção. O que você absorver agora fará diferença nas questões.'}
+                  {step === 'flashcard' &&
+                    'Revise os 3 flashcards antes de seguir para as questões.'}
+                  {step === 'session' &&
+                    'Leia com atenção e escolha a alternativa correta.'}
+                </p>
+              </div>
+            </div>
+            {flowStepId ? (
+              <div className="flex justify-center border-t border-border/60 bg-card/40 px-4">
+                <StudyFlowSteps activeStep={flowStepId} />
+              </div>
+            ) : null}
+          </header>
+        )}
+
+        {step === 'score' && (
+          <div className="flex justify-center border-b border-border bg-card/30 px-4">
+            <StudyFlowSteps activeStep="session" allCompleted />
+          </div>
+        )}
+
         <main className="mx-auto max-w-[1210px] p-6">
           <div className="relative mx-auto flex max-w-3xl flex-col gap-6 py-6">
             {(isLoadingQuestions || isStartingStudy) && (
@@ -114,14 +172,19 @@ export default function StudyPage() {
             )}
             {step === 'material' && (
               <StudyMaterial
-                subjectName={studyState.subject}
+                materialsData={studyState.materialsData}
+                onContinue={() => {
+                  window.scrollTo({ top: 0, behavior: 'smooth' })
+                  setStep('flashcard')
+                }}
+              />
+            )}
+            {step === 'flashcard' && (
+              <StudyFlashcard
+                flashcardsData={studyState.flashcardsData}
                 subjectId={studyState.subjectId}
-                rootSubjectName={studyState.rootSubjectName}
                 onContinue={handleQuestions}
                 onQuestionsLoadingChange={setIsLoadingQuestions}
-                flashcardsData={studyState.flashcardsData}
-                materialsData={studyState.materialsData}
-                onBack={() => setStep('config')}
               />
             )}
             {step === 'session' && (
@@ -142,7 +205,7 @@ export default function StudyPage() {
                   window.scrollTo({ top: 0, behavior: 'smooth' })
                   setStep('score')
                 }}
-                onBack={() => setStep('material')}
+                onBack={() => setStep('flashcard')}
               />
             )}
             {step === 'score' && (

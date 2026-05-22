@@ -54,7 +54,7 @@ function formatStudyDuration(startedAt: string, endAt: string): string {
 function getScoreTier(correct: number): ScoreTier {
   if (correct === 0) {
     return {
-      emoji: '😅',
+      emoji: '😔',
       headline: 'Não foi dessa vez',
       message:
         'Mas tudo bem — o aprendizado começa aqui. Revise o conteúdo teórico e tente novamente em 24 horas.',
@@ -68,7 +68,7 @@ function getScoreTier(correct: number): ScoreTier {
   }
   if (correct <= 2) {
     return {
-      emoji: '🤔',
+      emoji: '😕',
       headline: 'Começando a entender',
       message:
         'Você está no caminho, mas ainda há bastante espaço para crescer. Revise esse conteúdo em 24 horas para fixar melhor o que estudou.',
@@ -82,7 +82,7 @@ function getScoreTier(correct: number): ScoreTier {
   }
   if (correct === 3) {
     return {
-      emoji: '💪',
+      emoji: '🤔',
       headline: 'Metade lá!',
       message:
         'Você tem uma base, mas ainda precisa reforçar alguns pontos. Revise esse conteúdo em 7 dias para consolidar o aprendizado.',
@@ -96,7 +96,7 @@ function getScoreTier(correct: number): ScoreTier {
   }
   if (correct <= 5) {
     return {
-      emoji: '👏',
+      emoji: '🙂',
       headline: 'Muito bom!',
       message:
         'Você demonstrou um bom domínio do assunto. Revise esse conteúdo em 7 dias para manter o conhecimento fresco e evitar o esquecimento.',

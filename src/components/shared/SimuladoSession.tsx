@@ -8,6 +8,7 @@ import {
   Clock,
   LayoutGrid,
 } from 'lucide-react'
+import { GetBancas } from '@/lib/lib-banca'
 
 export type SimuladoQuestionGroup = 'basico' | 'especifico'
 
@@ -110,6 +111,24 @@ export default function SimuladoSession({
   )
   const [answers, setAnswers] = useState<Record<string, string>>({})
   const [seconds, setSeconds] = useState(0)
+  const [bancaName, setBancaName] = useState('')
+
+  useEffect(() => {
+    let cancelled = false
+
+    async function loadBancaName() {
+      const { data, error } = await GetBancas()
+      if (cancelled) return
+      if (error) return
+      const found = data.find((item) => item.id === banca)
+      setBancaName(found?.name ?? '')
+    }
+
+    void loadBancaName()
+    return () => {
+      cancelled = true
+    }
+  }, [banca])
 
   useEffect(() => {
     const interval = setInterval(() => setSeconds((s) => s + 1), 1000)
@@ -150,7 +169,7 @@ export default function SimuladoSession({
               <ArrowLeft className="h-4 w-4 text-muted-foreground" />
             </button>
             <span className="text-sm font-bold text-foreground truncate">
-              {questionCount} questões · {banca.toUpperCase()}
+              {questionCount} questões · {bancaName || '—'}
             </span>
           </div>
           <div className={`flex items-center gap-1.5 text-sm font-black shrink-0 ${timerColorClass}`}>

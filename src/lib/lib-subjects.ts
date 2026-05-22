@@ -1,5 +1,17 @@
-import { createClient } from "./supabase/client";
-import { SubjectType } from "@/types";
+import { createClient } from '@/lib/supabase/client'
+import type { SubjectType, Subjects } from '@/types'
+
+// select — root subjects only (no related / child rows)
+export async function GetRootSubjects() {
+  const supabase = createClient()
+  const { data, error } = await supabase
+    .from('subjects')
+    .select('*')
+    .is('subject_id', null)
+    .order('name', { ascending: true })
+
+  return { data: (data as Subjects[] | null) ?? [], error }
+}
 
 // create
 export async function CreateSubject(

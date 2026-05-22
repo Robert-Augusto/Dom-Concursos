@@ -1,19 +1,24 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import {
   Check,
   CheckCircle,
   CheckSquare,
   ClipboardList,
   Play,
+  Search,
 } from 'lucide-react'
-
-export type SimuladoDifficulty = 'facil' | 'medio' | 'dificil'
+import { GetBancas } from '@/lib/lib-banca'
+import { GetRootSubjects } from '@/lib/lib-subjects'
+import type { Banca, Subjects, QuestionsDifficulty } from '@/types'
+import { toast } from 'sonner'
+import { CreateSimuladoSession } from '@/lib/lib-simulado-session'
+import { useProfile } from '@/context/ProfileContext'
 
 export interface SimuladoConfigPayload {
   banca: string
-  difficulty: SimuladoDifficulty
+  difficulty: QuestionsDifficulty
   basicSubjects: { id: string; weight: 1 | 2 | 3 }[]
   specificSubjects: { id: string; weight: 1 | 2 | 3 }[]
   questionCount: number
@@ -23,41 +28,26 @@ export interface SimuladoConfigProps {
   onStart: (config: SimuladoConfigPayload) => void
 }
 
-const bancas = [
-  { id: 'cespe', label: 'CESPE/CEBRASPE', description: 'Certo ou Errado + Múlt.', initials: 'C', color: '#3D7FFF' },
-  { id: 'fcc', label: 'FCC', description: 'Múltipla Escolha A–E', initials: 'F', color: '#8B5CF6' },
-  { id: 'vunesp', label: 'VUNESP', description: 'Múlt. Escolha + Contexto', initials: 'V', color: '#2ECC8A' },
-  { id: 'ibam', label: 'IBAM', description: 'Múlt. Escolha Regional', initials: 'I', color: '#C9A84C' },
-  { id: 'fafipa', label: 'Fund. FAFIPA', description: 'Múlt. Escolha', initials: 'FA', color: '#FF4D6D' },
-  { id: 'ibfc', label: 'IBFC', description: 'Múlt. Escolha', initials: 'IB', color: '#0D9488' },
-  { id: 'idecan', label: 'IDECAN', description: 'Múlt. Escolha', initials: 'ID', color: '#8B5CF6' },
-  { id: 'ibgp', label: 'IBGP', description: 'Múlt. Escolha', initials: 'IG', color: '#FF4D6D' },
-  { id: 'access', label: 'ACCESS', description: 'Múlt. Escolha', initials: 'AC', color: '#3D7FFF' },
-  { id: 'fgv', label: 'FGV', description: 'Múlt. Escolha Analítica', initials: 'FG', color: '#C9A84C' },
-]
+const BANCA_AVATAR_COLORS = [
+  '#3D7FFF',
+  '#8B5CF6',
+  '#2ECC8A',
+  '#C9A84C',
+  '#FF4D6D',
+  '#0D9488',
+] as const
 
-const basicSubjectsList = [
-  { id: 'portugues', label: 'Português', emoji: '📖' },
-  { id: 'matematica', label: 'Matemática', emoji: '📐' },
-  { id: 'raciocinio', label: 'Raciocínio Lógico', emoji: '🧩' },
-  { id: 'leg-sus', label: 'Legislação do SUS', emoji: '📋' },
-  { id: 'leg-municipal', label: 'Legislação Municipal', emoji: '🏛️' },
-  { id: 'informatica', label: 'Informática', emoji: '💻' },
-  { id: 'atualidades', label: 'Conhecimentos Gerais / Atualidades', emoji: '🌐' },
-  { id: 'dir-const', label: 'Dir. Constitucional', emoji: '⚖️' },
-  { id: 'dir-adm', label: 'Dir. Administrativo', emoji: '🏛️' },
-]
+function bancaInitials(name: string) {
+  const parts = name.trim().split(/\s+/).filter(Boolean)
+  if (parts.length >= 2) {
+    return `${parts[0][0] ?? ''}${parts[1][0] ?? ''}`.toUpperCase().slice(0, 2)
+  }
+  return name.trim().slice(0, 2).toUpperCase()
+}
 
-const specificSubjectsList = [
-  { id: 'tec-enfermagem', label: 'Técnico em Enfermagem', emoji: '🩺' },
-  { id: 'enfermeiro', label: 'Enfermeiro', emoji: '👩‍⚕️' },
-  { id: 'assist-adm', label: 'Assistente Administrativo', emoji: '📁' },
-  { id: 'psicologo', label: 'Psicólogo', emoji: '🧠' },
-  { id: 'assist-social', label: 'Assistente Social', emoji: '🤝' },
-  { id: 'dentista', label: 'Cirurgião Dentista', emoji: '🦷' },
-  { id: 'medico', label: 'Médico', emoji: '👨‍⚕️' },
-  { id: 'farmaceutico', label: 'Farmacêutico', emoji: '💊' },
-]
+function bancaAvatarColor(index: number) {
+  return BANCA_AVATAR_COLORS[index % BANCA_AVATAR_COLORS.length]
+}
 
 const quantities = [
   { value: 15, label: 'Rápido' },
@@ -67,17 +57,55 @@ const quantities = [
   { value: 90, label: 'Máximo' },
 ]
 
-const weights = [1, 2, 3] as const
-
-function difficultyLabel(d: SimuladoDifficulty) {
-  if (d === 'facil') return 'Fácil'
-  if (d === 'medio') return 'Médio'
+function difficultyLabel(d: QuestionsDifficulty) {
+  if (d === 'Fácil') return 'Fácil'
+  if (d === 'Médio') return 'Médio'
   return 'Difícil'
 }
 
+function filterByName<T extends { name: string }>(items: T[], query: string) {
+  const q = query.trim().toLowerCase()
+  if (!q) return items
+  return items.filter((item) => item.name.toLowerCase().includes(q))
+}
+
+function ListSearchInput({
+  id,
+  value,
+  onChange,
+  placeholder,
+  disabled,
+}: {
+  id: string
+  value: string
+  onChange: (value: string) => void
+  placeholder: string
+  disabled?: boolean
+}) {
+  return (
+    <div className="relative mb-3">
+      <Search
+        className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+        aria-hidden
+      />
+      <input
+        id={id}
+        type="search"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        disabled={disabled}
+        placeholder={placeholder}
+        className="w-full rounded-xl border border-border bg-background py-3 pl-10 pr-4 text-sm text-foreground outline-none transition-all placeholder:text-muted-foreground focus:border-primary/60 focus:ring-2 focus:ring-primary/25 disabled:opacity-50"
+      />
+    </div>
+  )
+}
+
 export default function SimuladoConfig({ onStart }: SimuladoConfigProps) {
+  const [bancas, setBancas] = useState<Banca[] | null>(null)
+  const [rootSubjects, setRootSubjects] = useState<Subjects[] | null>(null)
   const [banca, setBanca] = useState('')
-  const [difficulty, setDifficulty] = useState<SimuladoDifficulty>('medio')
+  const [difficulty, setDifficulty] = useState<QuestionsDifficulty>('Médio')
   const [basicSubjects, setBasicSubjects] = useState<{ id: string; weight: 1 | 2 | 3 }[]>(
     [],
   )
@@ -85,11 +113,88 @@ export default function SimuladoConfig({ onStart }: SimuladoConfigProps) {
     { id: string; weight: 1 | 2 | 3 }[]
   >([])
   const [questionCount, setQuestionCount] = useState(30)
+  const [bancaSearch, setBancaSearch] = useState('')
+  const [basicSubjectSearch, setBasicSubjectSearch] = useState('')
+  const [specificSubjectSearch, setSpecificSubjectSearch] = useState('')
+  const { profile, loading: profileLoading } = useProfile()
+
+  useEffect(() => {
+    let cancelled = false
+
+    async function fetchBancas() {
+      const { data, error } = await GetBancas()
+      if (cancelled) return
+
+      if (error) {
+        console.error('banca:', error)
+        toast.error('Não foi possível carregar as bancas.')
+        setBancas([])
+        return
+      }
+
+      setBancas(data)
+    }
+
+    void fetchBancas()
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  useEffect(() => {
+    let cancelled = false
+
+    async function fetchSubjects() {
+      const { data, error } = await GetRootSubjects()
+      if (cancelled) return
+
+      if (error) {
+        console.error('subjects:', error)
+        toast.error('Não foi possível carregar as matérias.')
+        setRootSubjects([])
+        return
+      }
+
+      setRootSubjects(data)
+    }
+
+    void fetchSubjects()
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  const basicSubjectsList = useMemo(
+    () => (rootSubjects ?? []).filter((s) => s.type === 'basic'),
+    [rootSubjects],
+  )
+
+  const specificSubjectsList = useMemo(
+    () => (rootSubjects ?? []).filter((s) => s.type === 'specific'),
+    [rootSubjects],
+  )
+
+  const filteredBancas = useMemo(
+    () => filterByName(bancas ?? [], bancaSearch),
+    [bancas, bancaSearch],
+  )
+
+  const filteredBasicSubjects = useMemo(
+    () => filterByName(basicSubjectsList, basicSubjectSearch),
+    [basicSubjectsList, basicSubjectSearch],
+  )
+
+  const filteredSpecificSubjects = useMemo(
+    () => filterByName(specificSubjectsList, specificSubjectSearch),
+    [specificSubjectsList, specificSubjectSearch],
+  )
 
   const totalSelectedSubjects = basicSubjects.length + specificSubjects.length
   const canStart = banca !== '' && totalSelectedSubjects > 0
 
-  const bancaLabel = bancas.find((x) => x.id === banca)?.label ?? ''
+  const bancaLabel = bancas?.find((x) => x.id === banca)?.name ?? ''
+  const isBancasLoading = bancas === null
+  const isSubjectsLoading = rootSubjects === null
 
   const toggleBasicSubject = (id: string) => {
     setBasicSubjects((prev) => {
@@ -97,12 +202,6 @@ export default function SimuladoConfig({ onStart }: SimuladoConfigProps) {
       if (exists) return prev.filter((s) => s.id !== id)
       return [...prev, { id, weight: 1 }]
     })
-  }
-
-  const updateBasicWeight = (id: string, weight: 1 | 2 | 3) => {
-    setBasicSubjects((prev) =>
-      prev.map((s) => (s.id === id ? { ...s, weight } : s)),
-    )
   }
 
   const toggleSpecificSubject = (id: string) => {
@@ -113,10 +212,22 @@ export default function SimuladoConfig({ onStart }: SimuladoConfigProps) {
     })
   }
 
-  const updateSpecificWeight = (id: string, weight: 1 | 2 | 3) => {
-    setSpecificSubjects((prev) =>
-      prev.map((s) => (s.id === id ? { ...s, weight } : s)),
-    )
+  async function handleCreateSimuladoSession(){
+    if (profileLoading) return
+
+    if (!profile?.id) {
+      toast.error('Faça login para iniciar o estudo.')
+      return
+    }
+    
+    const {data, error} = await CreateSimuladoSession(profile.id, questionCount, new Date, banca, difficulty)
+
+    if(error || !data){
+      toast.error("Erro ao iniciar o simulado, tente novamente.")
+      return
+    }
+
+    
   }
 
   return (
@@ -158,35 +269,55 @@ export default function SimuladoConfig({ onStart }: SimuladoConfigProps) {
         <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2 mb-3">
           1. ESTILO DE BANCA
         </p>
+        <ListSearchInput
+          id="simulado-banca-search"
+          value={bancaSearch}
+          onChange={setBancaSearch}
+          placeholder="Buscar banca..."
+          disabled={isBancasLoading}
+        />
         <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-          {bancas.map((b) => {
-            const selected = banca === b.id
-            return (
-              <button
-                key={b.id}
-                type="button"
-                onClick={() => setBanca(b.id)}
-                className={`flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all text-left ${
-                  selected
-                    ? 'border-accent bg-accent/10'
-                    : 'border-border bg-card hover:border-border/80'
-                }`}
-              >
-                <span
-                  className="w-10 h-10 rounded-xl flex items-center justify-center text-sm font-black text-white flex-shrink-0"
-                  style={{ background: b.color }}
+          {isBancasLoading ? (
+            <p className="text-sm text-muted-foreground col-span-full">
+              Carregando bancas…
+            </p>
+          ) : (bancas?.length ?? 0) === 0 ? (
+            <p className="text-sm text-muted-foreground col-span-full">
+              Nenhuma banca cadastrada.
+            </p>
+          ) : filteredBancas.length === 0 ? (
+            <p className="text-sm text-muted-foreground col-span-full">
+              Nenhuma banca encontrada para essa busca.
+            </p>
+          ) : (
+            filteredBancas.map((b, index) => {
+              const selected = banca === b.id
+              return (
+                <button
+                  key={b.id}
+                  type="button"
+                  onClick={() => setBanca(b.id)}
+                  className={`flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all text-left ${
+                    selected
+                      ? 'border-accent bg-accent/10'
+                      : 'border-border bg-card hover:border-border/80'
+                  }`}
                 >
-                  {b.initials}
-                </span>
-                <span className="min-w-0">
-                  <span className="block text-sm font-bold text-foreground">{b.label}</span>
-                  <span className="block text-xs text-muted-foreground mt-0.5">
-                    {b.description}
+                  <span
+                    className="w-10 h-10 rounded-xl flex items-center justify-center text-sm font-black text-white flex-shrink-0"
+                    style={{ background: bancaAvatarColor(index) }}
+                  >
+                    {bancaInitials(b.name)}
                   </span>
-                </span>
-              </button>
-            )
-          })}
+                  <span className="min-w-0">
+                    <span className="block text-sm font-bold text-foreground">
+                      {b.name}
+                    </span>
+                  </span>
+                </button>
+              )
+            })
+          )}
         </div>
       </section>
 
@@ -197,18 +328,18 @@ export default function SimuladoConfig({ onStart }: SimuladoConfigProps) {
         <div className="grid grid-cols-3 gap-3">
           {(
             [
-              { key: 'facil' as const, emoji: '😊', label: 'Fácil' },
-              { key: 'medio' as const, emoji: '😤', label: 'Médio' },
-              { key: 'dificil' as const, emoji: '🔥', label: 'Difícil' },
+              { key: 'Fácil' as const, emoji: '😊', label: 'Fácil' },
+              { key: 'Médio' as const, emoji: '😤', label: 'Médio' },
+              { key: 'Difícil' as const, emoji: '🔥', label: 'Difícil' },
             ] as const
           ).map(({ key, emoji, label }) => {
             const active = difficulty === key
             const labelClass =
-              key === 'facil'
+              key === 'Fácil'
                 ? active
                   ? 'text-chart-2'
                   : 'text-muted-foreground'
-                : key === 'medio'
+                : key === 'Médio'
                   ? active
                     ? 'text-primary'
                     : 'text-muted-foreground'
@@ -248,7 +379,25 @@ export default function SimuladoConfig({ onStart }: SimuladoConfigProps) {
         <p className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-accent border-l-2 border-accent pl-3 mb-3">
           CONHECIMENTOS BÁSICOS
         </p>
-        {basicSubjectsList.map((subject) => {
+        <ListSearchInput
+          id="simulado-basic-subject-search"
+          value={basicSubjectSearch}
+          onChange={setBasicSubjectSearch}
+          placeholder="Buscar matéria básica..."
+          disabled={isSubjectsLoading}
+        />
+        {isSubjectsLoading ? (
+          <p className="text-sm text-muted-foreground mb-2">Carregando matérias…</p>
+        ) : basicSubjectsList.length === 0 ? (
+          <p className="text-sm text-muted-foreground mb-2">
+            Nenhuma matéria básica cadastrada.
+          </p>
+        ) : filteredBasicSubjects.length === 0 ? (
+          <p className="text-sm text-muted-foreground mb-2">
+            Nenhuma matéria básica encontrada para essa busca.
+          </p>
+        ) : (
+          filteredBasicSubjects.map((subject) => {
           const row = basicSubjects.find((s) => s.id === subject.id)
           const selected = !!row
           return (
@@ -270,8 +419,7 @@ export default function SimuladoConfig({ onStart }: SimuladoConfigProps) {
                 {selected && <Check className="h-3 w-3 text-white" />}
               </span>
               <span className="flex-1 flex items-center gap-2 min-w-0">
-                <span className="text-lg shrink-0">{subject.emoji}</span>
-                <span className="text-sm font-semibold text-foreground">{subject.label}</span>
+                <span className="text-sm font-semibold text-foreground">{subject.name}</span>
               </span>
               {/*{selected && row && (
                 <span
@@ -299,12 +447,31 @@ export default function SimuladoConfig({ onStart }: SimuladoConfigProps) {
               )}*/}
             </button>
           )
-        })}
+        })
+        )}
 
         <p className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-primary border-l-2 border-primary pl-3 mb-3 mt-6">
           CONHECIMENTOS ESPECÍFICOS
         </p>
-        {specificSubjectsList.map((subject) => {
+        <ListSearchInput
+          id="simulado-specific-subject-search"
+          value={specificSubjectSearch}
+          onChange={setSpecificSubjectSearch}
+          placeholder="Buscar matéria específica..."
+          disabled={isSubjectsLoading}
+        />
+        {isSubjectsLoading ? (
+          <p className="text-sm text-muted-foreground mb-2">Carregando matérias…</p>
+        ) : specificSubjectsList.length === 0 ? (
+          <p className="text-sm text-muted-foreground mb-2">
+            Nenhuma matéria específica cadastrada.
+          </p>
+        ) : filteredSpecificSubjects.length === 0 ? (
+          <p className="text-sm text-muted-foreground mb-2">
+            Nenhuma matéria específica encontrada para essa busca.
+          </p>
+        ) : (
+          filteredSpecificSubjects.map((subject) => {
           const row = specificSubjects.find((s) => s.id === subject.id)
           const selected = !!row
           return (
@@ -326,8 +493,7 @@ export default function SimuladoConfig({ onStart }: SimuladoConfigProps) {
                 {selected && <Check className="h-3 w-3 text-white" />}
               </span>
               <span className="flex-1 flex items-center gap-2 min-w-0">
-                <span className="text-lg shrink-0">{subject.emoji}</span>
-                <span className="text-sm font-semibold text-foreground">{subject.label}</span>
+                <span className="text-sm font-semibold text-foreground">{subject.name}</span>
               </span>
               {/*{selected && row && (
                 <span
@@ -355,7 +521,8 @@ export default function SimuladoConfig({ onStart }: SimuladoConfigProps) {
               )}*/}
             </button>
           )
-        })}
+        })
+        )}
       </section>
 
       <section>

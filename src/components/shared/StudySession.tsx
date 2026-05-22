@@ -156,16 +156,6 @@ export default function StudySession({
   if (allQuestions.length === 0) {
     return (
       <div className="flex min-h-0 flex-col">
-        <div className="sticky top-0 z-10 flex shrink-0 items-center gap-3 border-b border-border bg-background px-4 py-3">
-          <button
-            type="button"
-            onClick={onBack}
-            className="flex min-w-0 items-center gap-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground"
-          >
-            <ArrowLeft className="h-3.5 w-3.5 shrink-0" />
-            Voltar
-          </button>
-        </div>
         <p className="py-12 text-center text-sm text-muted-foreground">
           Nenhuma questão disponível para este assunto.
         </p>
@@ -175,20 +165,6 @@ export default function StudySession({
 
   return (
     <div className="flex min-h-0 flex-col">
-      <div className="sticky top-0 z-10 flex shrink-0 items-center gap-3 border-b border-border bg-background px-4 py-3">
-        <button
-          type="button"
-          onClick={handleBack}
-          className="flex min-w-0 items-center gap-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground"
-        >
-          <ArrowLeft className="h-3.5 w-3.5 shrink-0" />
-        </button>
-        <span className="shrink-0 text-border">·</span>
-        <span className="truncate text-xs text-muted-foreground">
-          {subjectShort} · Questões
-        </span>
-      </div>
-
       <div className="flex flex-col gap-4 pb-24 pt-4">
         <div className="flex items-center justify-center gap-2 py-2 text-[14px] font-black uppercase tracking-widest text-muted-foreground">
           <FileText className="h-3.5 w-3.5" />
@@ -326,34 +302,36 @@ export default function StudySession({
         })}
       </div>
 
-      <div className="fixed bottom-0 left-0 right-0 z-20 border-t border-border bg-background/95 p-4 backdrop-blur-sm">
-        <button
-          type="button"
-          disabled={!allResolved}
-          onClick={() => void onFinish()}
-          className={cn(
-            'mx-auto flex w-full max-w-3xl items-center justify-center gap-2 rounded-2xl py-4 text-base font-black transition-all',
-            allResolved
-              ? 'text-white hover:opacity-90'
-              : 'cursor-not-allowed bg-muted text-muted-foreground',
-          )}
-          style={
-            allResolved
-              ? {
-                  background: 'linear-gradient(90deg, #3D7FFF, #8B5CF6)',
-                  boxShadow: '0 6px 20px rgba(61,127,255,0.4)',
-                }
-              : undefined
-          }
-        >
-          <CheckCircle className="h-5 w-5" />
-          Finalizar e Ver Resultado
-        </button>
-        {!allResolved ? (
-          <p className="mt-2 text-center text-xs text-muted-foreground">
-            Resolva todas as questões para ver o resultado
-          </p>
-        ) : null}
+      <div className="fixed bottom-0 left-0 right-0 z-20 border-t border-border bg-background/95 p-4 backdrop-blur-sm lg:left-[240px]">
+        <div className="mx-auto w-full max-w-3xl">
+          <button
+            type="button"
+            disabled={!allResolved}
+            onClick={() => void onFinish()}
+            className={cn(
+              'flex w-full items-center justify-center gap-2 rounded-2xl py-4 text-base font-black transition-all',
+              allResolved
+                ? 'text-white hover:opacity-90'
+                : 'cursor-not-allowed bg-muted text-muted-foreground',
+            )}
+            style={
+              allResolved
+                ? {
+                    background: 'linear-gradient(90deg, #3D7FFF, #8B5CF6)',
+                    boxShadow: '0 6px 20px rgba(61,127,255,0.4)',
+                  }
+                : undefined
+            }
+          >
+            <CheckCircle className="h-5 w-5" />
+            Finalizar e Ver Resultado
+          </button>
+          {!allResolved ? (
+            <p className="mt-2 text-center text-xs text-muted-foreground">
+              Resolva todas as questões para ver o resultado
+            </p>
+          ) : null}
+        </div>
       </div>
     </div>
   )

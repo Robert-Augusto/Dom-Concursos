@@ -16,7 +16,7 @@ import {
 import { Subjects, StudyFlashcards, StudyMaterials } from '@/types'
 import { cn } from '@/lib/utils'
 import { GetStudyMaterialsBySubject } from '@/lib/study_material'
-import { GetOneFlashcardBySubject } from '@/lib/flashcards'
+import { GetStudyFlashcardsBySubject } from '@/lib/flashcards'
 import { toast } from 'sonner'
 import { CreateStudySession } from '@/lib/lib-study-session'
 import { useProfile } from '@/context/ProfileContext'
@@ -26,7 +26,7 @@ export type StudyStartPayload = {
   subjectName: string
   rootSubjectName: string
   studySessionId: string
-  flashcardsData: StudyFlashcards
+  flashcardsData: StudyFlashcards[]
   materialsData: StudyMaterials
 }
 
@@ -101,7 +101,7 @@ export default function StudyConfig({
     try {
       const [materialsRes, flashcardsRes] = await Promise.all([
         GetStudyMaterialsBySubject(selectedRelated.id),
-        GetOneFlashcardBySubject(selectedRelated.id),
+        GetStudyFlashcardsBySubject(selectedRelated.id, 3),
       ])
 
       if (materialsRes.error || !materialsRes.data) {
@@ -112,11 +112,16 @@ export default function StudyConfig({
         return
       }
 
-      if (flashcardsRes.error || !flashcardsRes.data) {
+      if (flashcardsRes.error) {
         toast.error(
-          flashcardsRes.error?.message ??
-            'Cadastre um flashcard para este assunto.',
+          flashcardsRes.error.message ??
+            'Não foi possível carregar os flashcards.',
         )
+        return
+      }
+
+      if (!flashcardsRes.data || flashcardsRes.data.length < 3) {
+        toast.error('Cadastre pelo menos 3 flashcards para este assunto.')
         return
       }
 
