@@ -9,7 +9,7 @@ const PdfViewer = dynamic(() => import('@/components/shared/PdfViewer'), {
     <div
       className="flex items-center justify-center bg-muted/20"
       style={{ height: 'min(70vh, 640px)' }}
-    >
+    > 
       <span className="text-sm text-muted-foreground">Carregando PDF...</span>
     </div>
   ),

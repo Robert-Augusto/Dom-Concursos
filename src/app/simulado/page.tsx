@@ -32,7 +32,7 @@ export default function SimuladoPage() {
             {step === 'config' && (
               <SimuladoConfig
                 onStart={(config) => {
-                  setSimuladoState((prev) => ({ ...prev, ...config }))
+                  {/*setSimuladoState((prev) => ({ ...prev, ...config }))*/}
                   setStep('session')
                 }}
               />
