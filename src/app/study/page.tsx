@@ -68,6 +68,7 @@ export default function StudyPage() {
       materialsData: payload.materialsData,
       studySessionId: payload.studySessionId,
     })
+    window.scrollTo({ top: 0, behavior: 'smooth' })
     setStep('material')
   }
 
@@ -108,7 +109,7 @@ export default function StudyPage() {
   return (
     <div className="min-h-screen bg-background">
       <Sidebar />
-      <div className="min-h-screen pb-20 lg:ml-[240px] lg:pb-0">
+      <div className="min-h-screen lg:ml-[240px]">
         {step === 'config' && <Header />}
 
         {showFlowHeader && (
@@ -117,17 +118,17 @@ export default function StudyPage() {
               <button
                 type="button"
                 onClick={handleStepBack}
-                className="flex h-9 min-w-9 shrink-0 items-center justify-center rounded-lg border border-border bg-sidebar-accent text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                className="flex h-12 min-w-12 shrink-0 items-center justify-center rounded-lg border border-border bg-sidebar-accent text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
               >
-                <ChevronLeft className="h-5 w-5" />
+                <ChevronLeft className="h-6 w-6" />
               </button>
               <div className="min-w-0 flex-1">
-                <h1 className="font-heading truncate text-sm font-bold text-foreground">
+                <h1 className="font-heading truncate text-base font-bold text-foreground">
                   {step === 'material' && 'Estudo Teórico'}
                   {step === 'flashcard' && 'Flashcards de revisão'}
                   {step === 'session' && 'Hora de responder!'}
                 </h1>
-                <p className="truncate text-xs text-muted-foreground">
+                <p className="text-sm text-muted-foreground">
                   {step === 'material' &&
                     'Leia com atenção. O que você absorver agora fará diferença nas questões.'}
                   {step === 'flashcard' &&
@@ -152,7 +153,7 @@ export default function StudyPage() {
         )}
 
         <main className="mx-auto max-w-[1210px] p-6">
-          <div className="relative mx-auto flex max-w-3xl flex-col gap-6 py-6">
+          <div className="relative mx-auto flex max-w-3xl flex-col gap-6 pb-6">
             {(isLoadingQuestions || isStartingStudy) && (
               <StudyFlowLoadingOverlay
                 label={

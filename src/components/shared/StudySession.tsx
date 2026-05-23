@@ -165,7 +165,7 @@ export default function StudySession({
 
   return (
     <div className="flex min-h-0 flex-col">
-      <div className="flex flex-col gap-4 pb-24 pt-4">
+      <div className="flex flex-col gap-4 pb-24">
         <div className="flex items-center justify-center gap-2 py-2 text-[14px] font-black uppercase tracking-widest text-muted-foreground">
           <FileText className="h-3.5 w-3.5" />
           Responda as {allQuestions.length} questões

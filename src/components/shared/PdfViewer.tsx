@@ -15,12 +15,15 @@ export interface PdfViewerProps {
   url: string
   className?: string
   title?: string
+  /** When true, fills the parent height instead of the default capped viewport height. */
+  fillContainer?: boolean
 }
 
 export default function PdfViewer({
   url,
   className,
   title = 'Apostila de Estudo',
+  fillContainer = false,
 }: PdfViewerProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const [containerWidth, setContainerWidth] = useState<number | null>(null)
@@ -109,9 +112,11 @@ export default function PdfViewer({
       ref={containerRef}
       className={cn(
         'relative w-full overflow-y-auto overflow-x-hidden bg-muted/20',
+        fillContainer && 'h-full min-h-0',
         className,
       )}
-      style={{ height: 'min(70vh, 640px)' }}
+      style={fillContainer ? undefined : { height: 'min(70vh, 640px)' }}
+      aria-label={title}
     >
       {isLoading ? (
         <div className="absolute inset-0 z-10 flex items-center justify-center bg-muted/20">

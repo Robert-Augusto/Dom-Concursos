@@ -73,7 +73,7 @@ export default function StudyFlowSteps({
                 />
               ) : null}
 
-              <div className="flex w-[4.25rem] shrink-0 flex-col items-center sm:w-[4.75rem]">
+              <div className="flex w-[4.25rem] shrink-0 flex-col items-center sm:w-[4.75rem] my-2">
                 <div
                   className={cn(
                     'relative z-10 flex h-7 w-7 shrink-0 items-center justify-center rounded-full border transition-all duration-300 sm:h-8 sm:w-8',
