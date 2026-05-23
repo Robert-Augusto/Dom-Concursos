@@ -2,7 +2,7 @@
 
 import dynamic from 'next/dynamic'
 import { useState } from 'react'
-import { Maximize2 } from 'lucide-react'
+import { Fullscreen } from 'lucide-react'
 import { ModalStudyPdf } from '@/components/shared/ModalStudyPdf'
 import { StudyMaterials } from '@/types'
 
@@ -37,10 +37,50 @@ export default function StudyMaterial({
         <button
           type="button"
           onClick={() => setIsFocusModalOpen(true)}
-          className="flex w-full items-center justify-center gap-2 rounded-2xl border border-primary/30 bg-primary/8 px-4 py-3 text-sm font-bold text-foreground transition-colors hover:border-primary/50 hover:bg-primary/12"
+          aria-label="Abrir apostila em tela cheia"
+          className="group relative w-full overflow-hidden rounded-2xl border border-border bg-card p-4 text-left transition-all hover:border-accent/45 hover:shadow-[0_8px_28px_rgba(61,127,255,0.12)]"
         >
-          <Maximize2 className="h-4 w-4 shrink-0 text-primary" aria-hidden />
-          Modo foco — estudar sem distrações
+          <div
+            className="pointer-events-none absolute inset-0 opacity-60 transition-opacity group-hover:opacity-100"
+            style={{
+              background:
+                'linear-gradient(105deg, rgba(61,127,255,0.12) 0%, transparent 42%)',
+            }}
+          />
+          <div className="relative flex items-center gap-3.5">
+            <span
+              className="flex size-10 shrink-0 items-center justify-center rounded-full transition-transform group-hover:scale-105"
+              style={{
+                background: 'linear-gradient(135deg, #3D7FFF, #5A9FFF)',
+                boxShadow: '0 4px 14px rgba(61,127,255,0.45)',
+              }}
+            >
+              <Fullscreen
+                className="size-[18px] text-white"
+                strokeWidth={2.25}
+                aria-hidden
+              />
+            </span>
+
+            <span className="min-w-0 flex-1">
+              <span className="flex flex-wrap items-center gap-2">
+                <span className="text-sm font-black text-foreground">
+                  Ler em tela cheia
+                </span>
+                <span className="rounded-full border border-accent/35 bg-accent/15 px-2 py-0.5 text-[9px] font-black uppercase tracking-widest text-accent">
+                  PDF
+                </span>
+              </span>
+              <span className="mt-1 block text-xs leading-relaxed text-muted-foreground">
+                Abre a apostila em tela cheia no navegador — ideal para estudar
+                com foco.
+              </span>
+            </span>
+
+            <span className="shrink-0 rounded-full border border-accent/40 bg-accent/10 px-3.5 py-2 text-[11px] font-black uppercase tracking-wide text-accent transition-colors group-hover:border-accent group-hover:bg-accent group-hover:text-accent-foreground">
+              Abrir
+            </span>
+          </div>
         </button>
       ) : null}
 
