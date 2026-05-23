@@ -16,6 +16,7 @@ import { createClient } from '@/lib/supabase/client'
 import { Subjects, StudyFlashcards, StudyMaterials, Questions } from '@/types'
 import { UpdateStudySession } from '@/lib/lib-study-session'
 import { toast } from 'sonner'
+import { BottomNav } from '@/components/layout/BottomNav'
 import { ChevronLeft } from 'lucide-react'
 
 type Step = 'config' | 'material' | 'flashcard' | 'session' | 'score'
@@ -152,7 +153,7 @@ export default function StudyPage() {
           </div>
         )}
 
-        <main className="mx-auto max-w-[1210px] p-6">
+        <main className="mx-auto max-w-[1210px] p-6 mb-20">
           <div className="relative mx-auto flex max-w-3xl flex-col gap-6 pb-6">
             {(isLoadingQuestions || isStartingStudy) && (
               <StudyFlowLoadingOverlay
@@ -219,6 +220,7 @@ export default function StudyPage() {
           </div>
         </main>
       </div>
+      {step === 'config' && (<BottomNav />)}
     </div>
   )
 }
