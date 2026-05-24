@@ -34,6 +34,18 @@ export interface StudyConfigProps {
   onStartingChange?: (starting: boolean) => void
 }
 
+function subjectChoiceClass(active: boolean, shape: 'grid' | 'pill') {
+  return cn(
+    'border font-bold transition-all',
+    shape === 'grid'
+      ? 'rounded-xl px-3 py-3.5 text-center text-sm'
+      : 'rounded-full px-4 py-2 text-xs sm:text-sm',
+    active
+      ? 'border-accent bg-popover text-foreground shadow-[0_0_0_1px_rgba(61,127,255,0.25)]'
+      : 'border-transparent bg-muted/35 font-semibold text-foreground/85 hover:border-border/50 hover:bg-muted/50',
+  )
+}
+
 export default function StudyConfig({
   subjectsData,
   isLoadingSubjects = false,
@@ -218,12 +230,7 @@ export default function StudyConfig({
                     key={subject.id}
                     type="button"
                     onClick={() => handleRootSelect(subject.id)}
-                    className={cn(
-                      'rounded-xl border-2 px-3 py-3.5 text-center text-sm font-semibold text-foreground transition-all',
-                      active
-                        ? 'border-accent bg-muted/50 shadow-[0_0_0_1px_rgba(61,127,255,0.15)]'
-                        : 'border-input bg-popover/40 hover:bg-muted/55',
-                    )}
+                    className={subjectChoiceClass(active, 'grid')}
                   >
                     {subject.name}
                   </button>
@@ -297,12 +304,7 @@ export default function StudyConfig({
                     key={subject.id}
                     type="button"
                     onClick={() => setSelectedRelated(subject)}
-                    className={cn(
-                      'rounded-full border-2 px-4 py-2 text-xs font-semibold text-foreground transition-all sm:text-sm',
-                      active
-                        ? 'border-accent bg-muted/50'
-                        : 'border-popover bg-muted/40 hover:bg-muted/55',
-                    )}
+                    className={subjectChoiceClass(active, 'pill')}
                   >
                     {subject.name}
                   </button>
