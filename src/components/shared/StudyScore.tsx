@@ -1,13 +1,14 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import {
   BarChart2,
   BookOpen,
   CalendarClock,
   CheckCircle2,
   Clock,
-  RefreshCw,
+  Home,
   Target,
   XCircle,
 } from 'lucide-react'
@@ -127,6 +128,7 @@ export default function StudyScore({
   studySessionId,
   onRestart,
 }: StudyScoreProps) {
+  const router = useRouter()
   const [loading, setLoading] = useState(true)
   const [correctAnswers, setCorrectAnswers] = useState(0)
   const [durationLabel, setDurationLabel] = useState<string | null>(null)
@@ -391,6 +393,17 @@ export default function StudyScore({
         >
           <BookOpen className="h-5 w-5" aria-hidden />
           Estudar outro assunto
+        </button>
+        <p className="text-center text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+          OU
+        </p>
+        <button
+          type="button"
+          onClick={() => router.push('/dashboard')}
+          className="flex w-full items-center justify-center gap-2 rounded-2xl border border-border bg-card py-3.5 text-sm font-bold text-muted-foreground transition-colors hover:border-border/80 hover:text-foreground"
+        >
+          <Home className="h-4 w-4 shrink-0" aria-hidden />
+          Voltar ao dashboard
         </button>
       </section>
     </div>

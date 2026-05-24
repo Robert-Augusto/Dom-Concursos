@@ -106,7 +106,7 @@ export default function StudyMaterial({
               boxShadow: '0 6px 20px rgba(61,127,255,0.4)',
             }}
           >
-            Continuar para flashcards
+            Continuar para os flashcards
           </button>
         </div>
       </div>

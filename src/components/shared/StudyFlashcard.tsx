@@ -4,9 +4,8 @@ import { useEffect, useState } from 'react'
 import {
   Brain,
   CheckCircle2,
-  ChevronLeft,
-  ChevronRight,
   Layers,
+  Lightbulb,
   Loader2,
 } from 'lucide-react'
 import { StudyFlashcards, Questions } from '@/types'
@@ -206,30 +205,20 @@ export default function StudyFlashcard({
   onContinue,
   onQuestionsLoadingChange,
 }: StudyFlashcardProps) {
-  const [activeIndex, setActiveIndex] = useState(0)
   const [flippedById, setFlippedById] = useState<Record<string, boolean>>({})
   const [isLoadingQuestions, setIsLoadingQuestions] = useState(false)
 
   const flashcards = flashcardsData
   const total = flashcards.length
-  const current = flashcards[activeIndex]
-  const isLast = activeIndex >= total - 1
-  const isFlipped = current ? Boolean(flippedById[current.id]) : false
 
   useEffect(() => {
-    setActiveIndex(0)
     setFlippedById({})
   }, [flashcardsData])
 
-  function goToIndex(next: number) {
-    setActiveIndex(next)
-  }
-
-  function toggleFlip() {
-    if (!current) return
+  function toggleFlip(id: string) {
     setFlippedById((prev) => ({
       ...prev,
-      [current.id]: !prev[current.id],
+      [id]: !prev[id],
     }))
   }
 
@@ -300,7 +289,7 @@ export default function StudyFlashcard({
   }
 
   return (
-    <div className="flex min-h-0 flex-col pb-24">
+    <div className="flex min-h-0 flex-col gap-4 pb-24">
       <section
         className="overflow-hidden rounded-2xl border border-primary/20 bg-card shadow-[0_12px_40px_rgba(61,127,255,0.08)]"
         style={{
@@ -333,106 +322,98 @@ export default function StudyFlashcard({
                   Flashcards de revisão
                 </h2>
                 <p className="text-[10px] text-muted-foreground">
-                  {activeIndex + 1} de {total} · Toque no card para virar
+                  {total} {total === 1 ? 'flashcard' : 'flashcards'} · Toque em
+                  cada card para virar
                 </p>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="px-4 py-5 sm:px-6 sm:py-6">
-          {current ? (
-            <FlipFlashcard
-              key={current.id}
-              flashcard={current}
-              isFlipped={isFlipped}
-              onToggleFlip={toggleFlip}
-              disabled={isLoadingQuestions}
-            />
-          ) : null}
-
-          {total > 1 ? (
-            <div className="mt-5 flex items-center justify-center gap-3">
-              <button
-                type="button"
-                disabled={activeIndex === 0 || isLoadingQuestions}
-                onClick={() => goToIndex(activeIndex - 1)}
-                className="flex h-9 w-9 items-center justify-center rounded-full border border-border bg-background text-muted-foreground transition-colors hover:text-foreground disabled:opacity-40"
-                aria-label="Flashcard anterior"
-              >
-                <ChevronLeft className="h-4 w-4" />
-              </button>
-              <div className="flex items-center gap-2">
-                {flashcards.map((card, index) => (
-                  <button
-                    key={card.id}
-                    type="button"
-                    disabled={isLoadingQuestions}
-                    onClick={() => goToIndex(index)}
-                    aria-label={`Flashcard ${index + 1}`}
-                    className={cn(
-                      'h-2.5 rounded-full transition-all',
-                      index === activeIndex
-                        ? 'w-8 bg-primary'
-                        : 'w-2.5 bg-muted-foreground/35 hover:bg-muted-foreground/55',
-                    )}
-                  />
-                ))}
-              </div>
-              <button
-                type="button"
-                disabled={isLast || isLoadingQuestions}
-                onClick={() => goToIndex(activeIndex + 1)}
-                className="flex h-9 w-9 items-center justify-center rounded-full border border-border bg-background text-muted-foreground transition-colors hover:text-foreground disabled:opacity-40"
-                aria-label="Próximo flashcard"
-              >
-                <ChevronRight className="h-4 w-4" />
-              </button>
+        <div className="flex flex-col gap-6 px-4 py-5 sm:px-6 sm:py-6">
+          {flashcards.map((flashcard, index) => (
+            <div key={flashcard.id} className="flex flex-col gap-2">
+              <p className="text-center text-[10px] font-black uppercase tracking-widest text-muted-foreground">
+                Flashcard {index + 1} de {total}
+              </p>
+              <FlipFlashcard
+                flashcard={flashcard}
+                isFlipped={Boolean(flippedById[flashcard.id])}
+                onToggleFlip={() => toggleFlip(flashcard.id)}
+                disabled={isLoadingQuestions}
+              />
             </div>
-          ) : null}
+          ))}
         </div>
       </section>
 
+      <aside
+        className="relative overflow-hidden rounded-2xl border border-primary/20 bg-card px-5 py-5 sm:px-6 sm:py-6"
+        style={{
+          background:
+            'linear-gradient(135deg, rgba(201,168,76,0.12) 0%, rgba(201,168,76,0.05) 45%, hsl(var(--card)) 100%)',
+        }}
+        aria-label="Dica de estudo"
+      >
+        <div
+          className="pointer-events-none absolute left-0 top-0 h-full w-1 rounded-l-2xl bg-primary"
+          aria-hidden
+        />
+        <div className="flex gap-4 sm:gap-5">
+          <span
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl ring-1 ring-primary/25 sm:h-12 sm:w-12"
+            style={{
+              background:
+                'linear-gradient(145deg, rgba(201,168,76,0.22), rgba(201,168,76,0.08))',
+            }}
+          >
+            <Lightbulb className="h-5 w-5 text-primary sm:h-6 sm:w-6" aria-hidden />
+          </span>
+          <div className="min-w-0 flex-1 pt-0.5">
+            <span className="inline-flex items-center rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-[11px] font-black uppercase tracking-wide text-primary">
+              💡 Dica
+            </span>
+            <p className="mt-3 text-[15px] leading-[1.8] text-foreground sm:text-base sm:leading-[1.85]">
+              Quer fixar de verdade? Escreva os conceitos à mão em papéis ou
+              Post-its e cole em lugares visíveis da sua casa como:{' '}
+              <span className="font-semibold text-primary">
+                espelho, geladeira, porta do banheiro
+              </span>
+              . Revisar enquanto faz outras coisas é uma das técnicas mais
+              poderosas para memorizar.
+            </p>
+          </div>
+        </div>
+      </aside>
+
       <div className="fixed bottom-0 left-0 right-0 z-20 border-t border-border bg-background/95 p-4 backdrop-blur-sm lg:left-[240px]">
-  <div className="mx-auto w-full max-w-3xl">
-    {isLast ? (
-      <button
-        type="button"
-        disabled={isLoadingQuestions}
-        onClick={() => void handleFetchQuestions()}
-        className={cn(
-          'flex w-full items-center justify-center gap-2 rounded-2xl py-4 text-base font-black transition-all',
-          isLoadingQuestions
-            ? 'cursor-not-allowed bg-muted text-muted-foreground'
-            : 'text-white hover:opacity-90',
-        )}
-        style={
-          isLoadingQuestions
-            ? undefined
-            : {
-                background: 'linear-gradient(90deg, #3D7FFF, #5A9FFF)',
-                boxShadow: '0 6px 20px rgba(61,127,255,0.4)',
-              }
-        }
-      >
-        {isLoadingQuestions ? (
-          <Loader2 className="h-5 w-5 animate-spin" aria-hidden />
-        ) : null}
-        {isLoadingQuestions ? 'Carregando questões...' : 'Responder Questões'}
-      </button>
-    ) : (
-      <button
-        type="button"
-        disabled={isLoadingQuestions}
-        onClick={() => goToIndex(activeIndex + 1)}
-        className="flex w-full items-center justify-center gap-2 rounded-2xl border border-primary/40 bg-primary/10 py-4 text-base font-black text-primary transition-colors hover:bg-primary/15"
-      >
-        Próximo flashcard
-        <ChevronRight className="h-5 w-5" />
-      </button>
-    )}
-  </div>
-</div>
+        <div className="mx-auto w-full max-w-3xl">
+          <button
+            type="button"
+            disabled={isLoadingQuestions}
+            onClick={() => void handleFetchQuestions()}
+            className={cn(
+              'flex w-full items-center justify-center gap-2 rounded-2xl py-4 text-base font-black transition-all',
+              isLoadingQuestions
+                ? 'cursor-not-allowed bg-muted text-muted-foreground'
+                : 'text-white hover:opacity-90',
+            )}
+            style={
+              isLoadingQuestions
+                ? undefined
+                : {
+                    background: 'linear-gradient(90deg, #3D7FFF, #5A9FFF)',
+                    boxShadow: '0 6px 20px rgba(61,127,255,0.4)',
+                  }
+            }
+          >
+            {isLoadingQuestions ? (
+              <Loader2 className="h-5 w-5 animate-spin" aria-hidden />
+            ) : null}
+            {isLoadingQuestions ? 'Carregando questões...' : 'Responder Questões'}
+          </button>
+        </div>
+      </div>
     </div>
   )
 }

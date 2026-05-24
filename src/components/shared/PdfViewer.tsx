@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { AlertCircle, ExternalLink } from 'lucide-react'
 import { Document, Page, pdfjs } from 'react-pdf'
 import { StudyFlowLoading } from '@/components/shared/StudyFlowLoading'
@@ -17,6 +17,8 @@ export interface PdfViewerProps {
   title?: string
   /** When true, fills the parent height instead of the default capped viewport height. */
   fillContainer?: boolean
+  /** Rendered after the last page inside the scroll area. */
+  endContent?: ReactNode
 }
 
 export default function PdfViewer({
@@ -24,6 +26,7 @@ export default function PdfViewer({
   className,
   title = 'Apostila de Estudo',
   fillContainer = false,
+  endContent,
 }: PdfViewerProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const [containerWidth, setContainerWidth] = useState<number | null>(null)
@@ -125,34 +128,37 @@ export default function PdfViewer({
       ) : null}
 
       {containerWidth ? (
-        <Document
-          file={url}
-          onLoadSuccess={handleLoadSuccess}
-          onLoadError={handleLoadError}
-          loading={null}
-          className="flex flex-col items-center gap-3 py-4"
-        >
-          {numPages
-            ? Array.from({ length: numPages }, (_, index) => (
-                <Page
-                  key={`page-${index + 1}`}
-                  pageNumber={index + 1}
-                  width={containerWidth}
-                  className="max-w-full shadow-sm"
-                  renderTextLayer
-                  renderAnnotationLayer
-                  loading={
-                    <div className="flex min-h-[120px] items-center justify-center">
-                      <StudyFlowLoading
-                        label={`Página ${index + 1}...`}
-                        size="sm"
-                      />
-                    </div>
-                  }
-                />
-              ))
-            : null}
-        </Document>
+        <>
+          <Document
+            file={url}
+            onLoadSuccess={handleLoadSuccess}
+            onLoadError={handleLoadError}
+            loading={null}
+            className="flex flex-col items-center gap-3 py-4"
+          >
+            {numPages
+              ? Array.from({ length: numPages }, (_, index) => (
+                  <Page
+                    key={`page-${index + 1}`}
+                    pageNumber={index + 1}
+                    width={containerWidth}
+                    className="max-w-full shadow-sm"
+                    renderTextLayer
+                    renderAnnotationLayer
+                    loading={
+                      <div className="flex min-h-[120px] items-center justify-center">
+                        <StudyFlowLoading
+                          label={`Página ${index + 1}...`}
+                          size="sm"
+                        />
+                      </div>
+                    }
+                  />
+                ))
+              : null}
+          </Document>
+          {endContent}
+        </>
       ) : (
         <div className="flex min-h-[200px] items-center justify-center">
           <StudyFlowLoading label="Preparando visualizador..." size="sm" />
