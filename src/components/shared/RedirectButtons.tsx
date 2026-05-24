@@ -81,10 +81,22 @@ export function RedirectButtons({
 
   return (
     <section>
+      {showScrollHint ? (
+        <div
+          className="mb-1.5 flex items-center justify-end gap-0.5 text-muted-foreground"
+          aria-hidden
+        >
+          <span className="text-[10px] font-semibold uppercase tracking-wide">
+            Deslize
+          </span>
+          <ChevronRight className="h-4 w-4 animate-pulse" />
+        </div>
+      ) : null}
+
       <div className="relative">
         <div
           ref={scrollRef}
-          className="flex gap-3 overflow-x-auto pb-2 pr-14 scrollbar-none"
+          className="flex gap-3 overflow-x-auto pb-2 scrollbar-none"
         >
           {redirectButtonItems.map(({ label, href, Icon, colorToken }) => (
             <Link
@@ -105,21 +117,10 @@ export function RedirectButtons({
         </div>
 
         {showScrollHint ? (
-          <>
-            <div
-              className="pointer-events-none absolute inset-y-0 right-0 w-20 bg-gradient-to-l from-background via-background/80 to-transparent"
-              aria-hidden
-            />
-            <div
-              className="pointer-events-none absolute right-0 top-1/2 flex -translate-y-1/2 items-center gap-0.5 text-muted-foreground"
-              aria-hidden
-            >
-              <span className="text-[10px] font-semibold uppercase tracking-wide">
-                Deslize
-              </span>
-              <ChevronRight className="h-4 w-4 animate-pulse" />
-            </div>
-          </>
+          <div
+            className="pointer-events-none absolute inset-y-0 right-0 w-16 bg-gradient-to-l from-background via-background/80 to-transparent"
+            aria-hidden
+          />
         ) : null}
       </div>
     </section>

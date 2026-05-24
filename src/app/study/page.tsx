@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Header } from '@/components/layout/Header'
 import { Sidebar } from '@/components/layout/Sidebar'
 import StudyConfig, { type StudyStartPayload } from '@/components/shared/StudyConfig'
 import StudyFlashcard from '@/components/shared/StudyFlashcard'
@@ -18,6 +17,7 @@ import { UpdateStudySession } from '@/lib/lib-study-session'
 import { toast } from 'sonner'
 import { BottomNav } from '@/components/layout/BottomNav'
 import { ChevronLeft } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 
 type Step = 'config' | 'material' | 'flashcard' | 'session' | 'score'
 
@@ -31,6 +31,7 @@ interface StudyState {
 }
 
 export default function StudyPage() {
+  const router = useRouter()
   const [step, setStep] = useState<Step>('config')
   const [subjects, setSubjects] = useState<Subjects[] | null>(null)
   const [subjectsLoading, setSubjectsLoading] = useState(true)
@@ -99,9 +100,10 @@ export default function StudyPage() {
     if (step === 'material') setStep('config')
     if (step === 'flashcard') setStep('material')
     if (step === 'session') setStep('flashcard')
+    if (step === 'config') router.push('dashboard')
   }
 
-  const showFlowHeader = ['material', 'flashcard', 'session'].includes(step)
+  const showFlowHeader = ['material', 'flashcard', 'session', 'config'].includes(step)
   const flowStepId: StudyFlowStepId | null =
     step === 'material' || step === 'flashcard' || step === 'session'
       ? step
@@ -111,8 +113,6 @@ export default function StudyPage() {
     <div className="min-h-screen bg-background">
       <Sidebar />
       <div className="min-h-screen lg:ml-[240px]">
-        {step === 'config' && <Header />}
-
         {showFlowHeader && (
           <header className="sticky top-0 z-30 border-b border-border bg-background">
             <div className="flex items-center gap-3 px-4 py-3 sm:px-6">
@@ -128,6 +128,7 @@ export default function StudyPage() {
                   {step === 'material' && 'Estudo Teórico'}
                   {step === 'flashcard' && 'Flashcards de revisão'}
                   {step === 'session' && 'Hora de responder!'}
+                  {step === 'config' && 'Estudo inteligente'}
                 </h1>
                 <p className="text-sm text-muted-foreground">
                   {step === 'material' &&
@@ -136,6 +137,7 @@ export default function StudyPage() {
                     'Revise os 3 flashcards antes de seguir para as questões.'}
                   {step === 'session' &&
                     'Leia com atenção e escolha a alternativa correta.'}
+                  {step === 'config' && 'Estude no seu tempo...'}
                 </p>
               </div>
             </div>
