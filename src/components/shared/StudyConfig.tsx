@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react'
 import {
+  Check,
   CheckCircle2,
   ChevronRight,
   Lightbulb,
@@ -35,14 +36,25 @@ export interface StudyConfigProps {
 }
 
 function subjectChoiceClass(active: boolean, shape: 'grid' | 'pill') {
+  const base =
+    'group relative inline-flex items-center font-semibold transition-all duration-200 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/60 focus-visible:ring-offset-2 focus-visible:ring-offset-background'
+
+  if (shape === 'grid') {
+    return cn(
+      base,
+      'min-h-[3.5rem] w-full justify-between gap-3 rounded-xl border-2 px-4 py-3 text-left text-sm',
+      active
+        ? 'border-accent bg-accent/15 text-foreground shadow-[0_0_0_1px_rgba(61,127,255,0.3),0_8px_22px_rgba(61,127,255,0.25)]'
+        : 'border-border/70 bg-card text-foreground/90 shadow-[0_2px_6px_rgba(0,0,0,0.18)] hover:-translate-y-0.5 hover:border-accent/50 hover:bg-popover hover:shadow-[0_8px_20px_rgba(0,0,0,0.28)]',
+    )
+  }
+
   return cn(
-    'border font-bold transition-all',
-    shape === 'grid'
-      ? 'rounded-xl px-3 py-3.5 text-center text-sm'
-      : 'rounded-full px-4 py-2 text-xs sm:text-sm',
+    base,
+    'gap-1.5 rounded-full border-2 px-4 py-2 text-xs sm:text-sm',
     active
-      ? 'border-accent bg-popover text-foreground shadow-[0_0_0_1px_rgba(61,127,255,0.25)]'
-      : 'border-transparent bg-sidebar-accent/35 font-semibold text-foreground/85 hover:border-border/50 hover:bg-muted/50',
+      ? 'border-accent bg-accent text-accent-foreground shadow-[0_4px_14px_rgba(61,127,255,0.4)]'
+      : 'border-border/70 bg-card text-foreground/90 shadow-[0_2px_6px_rgba(0,0,0,0.18)] hover:-translate-y-0.5 hover:border-accent/55 hover:bg-popover hover:shadow-[0_4px_14px_rgba(0,0,0,0.25)]',
   )
 }
 
@@ -230,9 +242,25 @@ export default function StudyConfig({
                     key={subject.id}
                     type="button"
                     onClick={() => handleRootSelect(subject.id)}
+                    aria-pressed={active}
                     className={subjectChoiceClass(active, 'grid')}
                   >
-                    {subject.name}
+                    <span className="flex-1 truncate leading-tight">
+                      {subject.name}
+                    </span>
+                    <span
+                      className={cn(
+                        'flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-all',
+                        active
+                          ? 'border-accent bg-accent text-accent-foreground'
+                          : 'border-border/70 bg-background group-hover:border-accent/55',
+                      )}
+                      aria-hidden
+                    >
+                      {active ? (
+                        <Check className="h-3 w-3" strokeWidth={3.5} />
+                      ) : null}
+                    </span>
                   </button>
                 )
               })}
@@ -254,7 +282,7 @@ export default function StudyConfig({
                 onChange={(e) => setRootSearch(e.target.value)}
                 disabled={isLoadingSubjects}
                 placeholder="Pesquisar..."
-                className="w-full rounded-lg border border-primary/40 bg-background py-2.5 pl-10 pr-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-primary/70 disabled:opacity-50"
+                className="w-full rounded-lg border border-primary/40 bg-primary-foreground py-2.5 pl-10 pr-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-primary/70 disabled:opacity-50"
               />
             </div>
           </div>
@@ -304,9 +332,17 @@ export default function StudyConfig({
                     key={subject.id}
                     type="button"
                     onClick={() => setSelectedRelated(subject)}
+                    aria-pressed={active}
                     className={subjectChoiceClass(active, 'pill')}
                   >
-                    {subject.name}
+                    {active ? (
+                      <Check
+                        className="h-3.5 w-3.5 shrink-0"
+                        strokeWidth={3}
+                        aria-hidden
+                      />
+                    ) : null}
+                    <span className="truncate">{subject.name}</span>
                   </button>
                 )
               })}
@@ -328,7 +364,7 @@ export default function StudyConfig({
                 onChange={(e) => setRelatedSearch(e.target.value)}
                 disabled={!selectedRootId || isLoadingSubjects}
                 placeholder="Pesquisar..."
-                className="w-full rounded-lg border border-primary/40 bg-background py-2.5 pl-10 pr-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-primary/70 disabled:cursor-not-allowed disabled:opacity-50"
+                className="w-full rounded-lg border border-primary/40 bg-primary-foreground py-2.5 pl-10 pr-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-primary/70 disabled:cursor-not-allowed disabled:opacity-50"
               />
             </div>
           </div>

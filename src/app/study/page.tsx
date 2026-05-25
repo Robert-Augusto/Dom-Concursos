@@ -16,7 +16,7 @@ import { Subjects, StudyFlashcards, StudyMaterials, Questions } from '@/types'
 import { UpdateStudySession } from '@/lib/lib-study-session'
 import { toast } from 'sonner'
 import { BottomNav } from '@/components/layout/BottomNav'
-import { ChevronLeft } from 'lucide-react'
+import { ChevronLeft, Sparkles } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 
 type Step = 'config' | 'material' | 'flashcard' | 'session' | 'score'
@@ -150,11 +150,56 @@ export default function StudyPage() {
               </div>
         ) : null}
 
-        {step === 'score' && (
-          <div className='mt-8'>
-            <StudyFlowSteps activeStep="session" allCompleted />
-          </div>
-        )}
+{step === 'score' && (
+  <>
+    <section
+      className="justify-center mx-auto relative overflow-hidden rounded-2xl border border-chart-2/30 bg-card p-5 sm:p-6 mt-5 ml-5 mr-5 max-w-[770px]"
+      style={{
+        background:
+          'linear-gradient(135deg, rgba(46,204,138,0.12) 0%, rgba(46,204,138,0.04) 50%, hsl(var(--card)) 100%)',
+      }}
+    >
+      <div
+        className="pointer-events-none absolute -right-10 -top-10 h-32 w-32 rounded-full bg-chart-2/25 blur-3xl"
+        aria-hidden
+      />
+      <div
+        className="pointer-events-none absolute -bottom-12 -left-8 h-28 w-28 rounded-full bg-accent/15 blur-3xl"
+        aria-hidden
+      />
+
+      <div className="relative flex items-start gap-4 sm:items-center">
+        <span
+          className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-chart-2/40 bg-chart-2/15 sm:h-14 sm:w-14"
+          style={{ boxShadow: '0 6px 20px rgba(46,204,138,0.3)' }}
+        >
+          <span className="text-2xl leading-none sm:text-3xl" aria-hidden>
+            🎉
+          </span>
+        </span>
+
+        <div className="min-w-0 flex-1">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-chart-2/35 bg-chart-2/10 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.15em] text-chart-2">
+            <Sparkles className="h-3 w-3 shrink-0" aria-hidden />
+            Parabéns!
+          </span>
+          <p className="mt-2 font-heading text-base font-black leading-tight text-foreground sm:text-lg">
+            Você concluiu todas as etapas! 🚀
+          </p>
+          <p className="mt-1 text-xs leading-relaxed text-muted-foreground sm:text-sm">
+            Estudo teórico, flashcards e questões. Sua dedicação está te
+            aproximando da{' '}
+            <span className="font-semibold text-primary">aprovação</span>!
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <div className='mt-8'>
+      <StudyFlowSteps activeStep="session" allCompleted />
+    </div>
+  </>
+)}
 
         <main className="mx-auto max-w-[1210px] p-6 mb-20">
           <div className="relative mx-auto flex max-w-3xl flex-col gap-6 pb-6">

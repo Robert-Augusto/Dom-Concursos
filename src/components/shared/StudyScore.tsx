@@ -303,25 +303,45 @@ export default function StudyScore({
 
   return (
     <div className="flex flex-col gap-6 pb-4">
-      {/* Header */}
       <section className="flex flex-col items-center gap-3 text-center">
         <span className="inline-flex items-center gap-2 rounded-full border border-primary/40 bg-primary/5 px-3.5 py-1.5 text-[10px] font-black uppercase tracking-[0.15em] text-foreground">
           <Trophy className="h-3.5 w-3.5 text-primary" aria-hidden />
           Seu resultado
         </span>
-
-        <span className="text-4xl leading-none" aria-hidden>
-          {tier.emoji}
-        </span>
-
         <h1 className="font-heading text-2xl font-black text-foreground sm:text-3xl">
           {tier.headline}{' '}
           <span style={{ color: tier.accent }}>{tier.headlineAccent}</span>
         </h1>
-        <p className="max-w-md text-sm text-muted-foreground">
-          Você concluiu todas as etapas de estudo em{' '}
-          <span className="font-semibold text-foreground">{subject}</span>.
-        </p>
+      </section>
+
+      {/* Review CTA */}
+      <section className="rounded-2xl border border-primary/35 bg-card p-4 sm:p-5">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-primary/30 bg-primary/10">
+            <CalendarClock className="h-6 w-6 text-primary" aria-hidden />
+          </span>
+          <div className="min-w-0 flex-1">
+            <p className="font-heading text-base font-black text-foreground">
+              Reforce o que aprendeu!
+            </p>
+            <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+              {tier.message}
+            </p>
+            <span className="mt-2 inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-[11px] font-bold text-primary">
+              <Target className="h-3.5 w-3.5 shrink-0" aria-hidden />
+              {tier.reviewLabel}
+            </span>
+          </div>
+          {/*<button
+            type="button"
+            onClick={onRestart}
+            className="flex shrink-0 items-center justify-center gap-1 rounded-xl bg-primary px-5 py-3 text-[11px] font-black uppercase tracking-wide text-primary-foreground transition-all hover:brightness-110"
+            style={{ boxShadow: '0 4px 20px rgba(201,168,76,0.4)' }}
+          >
+            Revisar agora
+            <ChevronRight className="h-4 w-4" aria-hidden />
+          </button>*/}
+        </div>
       </section>
 
       {/* Score ring */}
@@ -508,36 +528,6 @@ export default function StudyScore({
           <span className="font-bold text-foreground">3 de 3 etapas</span> com
           sucesso! 🚀
         </p>
-      </section>
-
-      {/* Review CTA */}
-      <section className="rounded-2xl border border-primary/35 bg-card p-4 sm:p-5">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-primary/30 bg-primary/10">
-            <CalendarClock className="h-6 w-6 text-primary" aria-hidden />
-          </span>
-          <div className="min-w-0 flex-1">
-            <p className="font-heading text-base font-black text-foreground">
-              Reforce o que aprendeu!
-            </p>
-            <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-              {tier.message}
-            </p>
-            <span className="mt-2 inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-[11px] font-bold text-primary">
-              <Target className="h-3.5 w-3.5 shrink-0" aria-hidden />
-              {tier.reviewLabel}
-            </span>
-          </div>
-          {/*<button
-            type="button"
-            onClick={onRestart}
-            className="flex shrink-0 items-center justify-center gap-1 rounded-xl bg-primary px-5 py-3 text-[11px] font-black uppercase tracking-wide text-primary-foreground transition-all hover:brightness-110"
-            style={{ boxShadow: '0 4px 20px rgba(201,168,76,0.4)' }}
-          >
-            Revisar agora
-            <ChevronRight className="h-4 w-4" aria-hidden />
-          </button>*/}
-        </div>
       </section>
 
       {/* Actions */}
