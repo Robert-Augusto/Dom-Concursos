@@ -245,7 +245,7 @@ export default function StudyConfig({
                     aria-pressed={active}
                     className={subjectChoiceClass(active, 'grid')}
                   >
-                    <span className="flex-1 truncate leading-tight">
+                    <span className="flex-1 leading-tight font-semibold">
                       {subject.name}
                     </span>
                     <span
