@@ -46,6 +46,7 @@ export default function StudyPage() {
   const [questions, setQuestions] = useState<Questions[]>([])
   const [isLoadingQuestions, setIsLoadingQuestions] = useState(false)
   const [isStartingStudy, setIsStartingStudy] = useState(false)
+  const [flashcardsFlipped, setFlashcardsFlipped] = useState(0)
 
   useEffect(() => {
     const supabase = createClient()
@@ -62,6 +63,7 @@ export default function StudyPage() {
 
   function handleStart(payload: StudyStartPayload) {
     setIsStartingStudy(false)
+    setFlashcardsFlipped(0)
     setStudyState({
       subjectId: payload.subjectId,
       subject: payload.subjectName,
@@ -85,6 +87,7 @@ export default function StudyPage() {
     setQuestions([])
     setIsLoadingQuestions(false)
     setIsStartingStudy(false)
+    setFlashcardsFlipped(0)
     setStudyState({
       subjectId: '',
       subject: '',
@@ -126,7 +129,7 @@ export default function StudyPage() {
               <div className="min-w-0 flex-1">
                 <h1 className="font-heading truncate text-base font-bold text-foreground">
                   {step === 'material' && 'Estudo Teórico'}
-                  {step === 'flashcard' && 'Flashcards de revisão'}
+                  {step === 'flashcard' && 'Flashcards'}
                   {step === 'session' && 'Hora de responder!'}
                   {step === 'config' && 'Estudo inteligente'}
                 </h1>
@@ -134,7 +137,7 @@ export default function StudyPage() {
                   {step === 'material' &&
                     'Leia com atenção. O que você absorver agora fará diferença nas questões.'}
                   {step === 'flashcard' &&
-                    'Revise os 3 flashcards antes de seguir para as questões.'}
+                    'Hora de revisar o assunto.'}
                   {step === 'session' &&
                     'Leia com atenção e escolha a alternativa correta.'}
                   {step === 'config' && 'Estude no seu tempo...'}
@@ -235,6 +238,7 @@ export default function StudyPage() {
                 subjectId={studyState.subjectId}
                 onContinue={handleQuestions}
                 onQuestionsLoadingChange={setIsLoadingQuestions}
+                onFlippedCountChange={setFlashcardsFlipped}
               />
             )}
             {step === 'session' && (
@@ -263,6 +267,8 @@ export default function StudyPage() {
                 subject={studyState.subject}
                 studySessionId={studyState.studySessionId}
                 onRestart={handleRestart}
+                flashcardsFlipped={flashcardsFlipped}
+                flashcardsTotal={studyState.flashcardsData.length}
               />
             )}
           </div>

@@ -30,6 +30,8 @@ export interface StudyScoreProps {
   subject: string
   studySessionId: string
   onRestart: () => void
+  flashcardsFlipped?: number
+  flashcardsTotal?: number
 }
 
 type ScoreTier = {
@@ -219,6 +221,8 @@ export default function StudyScore({
   subject,
   studySessionId,
   onRestart,
+  flashcardsFlipped = 0,
+  flashcardsTotal = 0,
 }: StudyScoreProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(true)
@@ -288,9 +292,17 @@ export default function StudyScore({
   const tier = getScoreTier(correctAnswers, totalQuestions || 6)
   const ringProgress = (accuracyPct / 100) * RING_CIRCUMFERENCE
 
+  const flashcardsPct =
+    flashcardsTotal > 0
+      ? Math.min(
+          100,
+          Math.floor((flashcardsFlipped / flashcardsTotal) * 100),
+        )
+      : 0
+
   const stageScores = {
     material: 100,
-    flashcard: 100,
+    flashcard: flashcardsPct,
     session: accuracyPct,
   }
 
@@ -310,7 +322,6 @@ export default function StudyScore({
         </span>
         <h1 className="font-heading text-2xl font-black text-foreground sm:text-3xl">
           {tier.headline}{' '}
-          <span style={{ color: tier.accent }}>{tier.headlineAccent}</span>
         </h1>
       </section>
 

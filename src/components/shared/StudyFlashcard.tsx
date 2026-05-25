@@ -24,6 +24,7 @@ export interface StudyFlashcardProps {
   subjectId: string
   onContinue: (questions: Questions[]) => void
   onQuestionsLoadingChange?: (loading: boolean) => void
+  onFlippedCountChange?: (flippedCount: number) => void
 }
 
 const FLASHCARD_FACE_STYLE = {
@@ -146,8 +147,12 @@ function FlipFlashcard({
             }}
           >
             <div
-              className="absolute inset-0 overflow-hidden rounded-3xl border border-primary/35 bg-[#0D0D0D] shadow-[0_0_0_1px_rgba(201,168,76,0.08),0_8px_32px_rgba(0,0,0,0.45)]"
-              style={FLASHCARD_FACE_STYLE}
+              className="absolute inset-0 overflow-hidden rounded-3xl border border-primary/35 shadow-[0_0_0_1px_rgba(201,168,76,0.08),0_8px_32px_rgba(0,0,0,0.45)]"
+              style={{
+                ...FLASHCARD_FACE_STYLE,
+                background:
+                  'radial-gradient(circle at 22% 18%, rgba(201,168,76,0.12) 0%, transparent 55%), linear-gradient(155deg, #14110A 0%, #0B0A07 100%)',
+              }}
             >
               <FlashcardFaceContent
                 side="front"
@@ -183,18 +188,24 @@ export default function StudyFlashcard({
   subjectId,
   onContinue,
   onQuestionsLoadingChange,
+  onFlippedCountChange,
 }: StudyFlashcardProps) {
   const [flippedById, setFlippedById] = useState<Record<string, boolean>>({})
   const [isLoadingQuestions, setIsLoadingQuestions] = useState(false)
 
   const flashcards = flashcardsData
   const total = flashcards.length
-  const hasFlippedAtLeastOne = Object.values(flippedById).some(Boolean)
+  const flippedCount = Object.values(flippedById).filter(Boolean).length
+  const hasFlippedAtLeastOne = flippedCount > 0
   const canContinue = hasFlippedAtLeastOne && !isLoadingQuestions
 
   useEffect(() => {
     setFlippedById({})
   }, [flashcardsData])
+
+  useEffect(() => {
+    onFlippedCountChange?.(flippedCount)
+  }, [flippedCount, onFlippedCountChange])
 
   function toggleFlip(id: string) {
     setFlippedById((prev) => ({

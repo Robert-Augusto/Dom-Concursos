@@ -42,7 +42,7 @@ function subjectChoiceClass(active: boolean, shape: 'grid' | 'pill') {
   if (shape === 'grid') {
     return cn(
       base,
-      'min-h-[3.5rem] w-full justify-between gap-3 rounded-xl border-2 px-4 py-3 text-left text-[15px]',
+      'min-h-[3.5rem] w-full justify-between gap-2 rounded-xl border-2 px-3 py-3 text-left text-[12px] sm:gap-3 sm:px-4 sm:text-[15px]',
       active
         ? 'border-accent bg-accent/15 text-foreground shadow-[0_0_0_1px_rgba(61,127,255,0.3),0_8px_22px_rgba(61,127,255,0.25)]'
         : 'border-foreground/25 bg-card font-bold text-foreground shadow-[0_3px_10px_rgba(0,0,0,0.28)] hover:-translate-y-0.5 hover:border-accent/60 hover:bg-popover hover:shadow-[0_10px_24px_rgba(0,0,0,0.35)]',
@@ -205,7 +205,7 @@ export default function StudyConfig({
       <div className="flex items-start gap-3 rounded-xl border border-primary/25 bg-primary/8 p-4">
         <Lightbulb className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
         <p className="text-sm leading-relaxed text-foreground">
-          Estude <strong className="text-primary">um assunto por vez</strong>. Exemplo: escolha a matéria, ex: <strong className="text-primary">"Português"</strong>, depois escolha o conteúdo relacionado, ex: <strong className="text-primary">"Interpretação de texto"</strong> ou <strong className="text-primary">"Uso do Hífen"</strong>. Assim você aprende assunto por assunto, sem cansar.
+          Estude <strong className="text-primary">um assunto por vez</strong>. Escolha a matéria, ex: <strong className="text-primary">"Português"</strong>, depois escolha o conteúdo relacionado, ex: <strong className="text-primary">"Interpretação de texto"</strong> ou <strong className="text-primary">"Uso do Hífen"</strong>. Assim você aprende assunto por assunto, sem cansar.
         </p>
       </div>
 
@@ -234,7 +234,7 @@ export default function StudyConfig({
                 : 'Nenhuma matéria encontrada para essa busca.'}
             </p>
           ) : (
-            <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 sm:gap-3">
+            <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
               {filteredRoots.map((subject) => {
                 const active = selectedRootId === subject.id
                 return (
@@ -245,7 +245,9 @@ export default function StudyConfig({
                     aria-pressed={active}
                     className={subjectChoiceClass(active, 'grid')}
                   >
-                    <span className="flex-1 leading-tight">{subject.name}</span>
+                    <span className="font-light min-w-0 flex-1 leading-tight">
+                      {subject.name}
+                    </span>
                     <span
                       className={cn(
                         'flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-all',
@@ -340,7 +342,7 @@ export default function StudyConfig({
                         aria-hidden
                       />
                     ) : null}
-                    <span className="truncate">{subject.name}</span>
+                    <span className="truncate font-light">{subject.name}</span>
                   </button>
                 )
               })}
