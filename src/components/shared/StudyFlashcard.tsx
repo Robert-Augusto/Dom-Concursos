@@ -2,12 +2,14 @@
 
 import { useEffect, useState } from 'react'
 import {
-  Brain,
-  CheckCircle2,
+  ClipboardList,
+  Hand,
   Layers,
   Lightbulb,
   Loader2,
+  Sparkles,
 } from 'lucide-react'
+import StudyContentProgress from '@/components/shared/StudyContentProgress'
 import { StudyFlashcards, Questions } from '@/types'
 import {
   mapQuestionWithBanca,
@@ -31,10 +33,14 @@ const FLASHCARD_FACE_STYLE = {
 
 function FlashcardFaceContent({
   side,
+  index,
+  total,
   text,
   className,
 }: {
   side: 'front' | 'back'
+  index: number
+  total: number
   text: string
   className?: string
 }) {
@@ -43,50 +49,39 @@ function FlashcardFaceContent({
   return (
     <div
       className={cn(
-        'flex w-full flex-col items-center gap-4 p-5 sm:gap-5 sm:p-7',
+        'flex w-full flex-col items-center px-6 py-8 sm:px-8 sm:py-10',
         className,
       )}
     >
+      <p
+        className={cn(
+          'text-[10px] font-black uppercase tracking-[0.2em]',
+          isBack ? 'text-primary-foreground/75' : 'text-primary/85',
+        )}
+      >
+        Flashcard {index + 1} de {total}
+      </p>
+
       <span
         className={cn(
-          'inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-[10px] font-black uppercase tracking-widest shadow-sm',
+          'mt-3 inline-flex items-center gap-1.5 rounded-full border px-3.5 py-1.5 text-[10px] font-semibold',
           isBack
-            ? 'border-emerald-300/50 text-white'
-            : 'border-blue-300/50 text-white',
+            ? 'border-primary-foreground/35 text-primary-foreground'
+            : 'border-primary/45 text-primary',
         )}
-        style={
-          isBack
-            ? {
-                background:
-                  'linear-gradient(135deg, rgba(46,204,138,0.95) 0%, rgba(16,185,129,0.85) 100%)',
-                boxShadow: '0 4px 16px rgba(46,204,138,0.45)',
-              }
-            : {
-                background:
-                  'linear-gradient(135deg, #3D7FFF 0%, #6366F1 55%, #5A9FFF 100%)',
-                boxShadow: '0 4px 16px rgba(61,127,255,0.5)',
-              }
-        }
       >
-        {isBack ? (
-          <>
-            <CheckCircle2 className="h-3.5 w-3.5 shrink-0" aria-hidden />
-            Resposta
-          </>
-        ) : (
-          <>
-            <Brain className="h-3.5 w-3.5 shrink-0" aria-hidden />
-            Pergunta
-          </>
-        )}
+        <Hand className="h-3.5 w-3.5 shrink-0" aria-hidden />
+        {isBack
+          ? 'Clique aqui para voltar ao card'
+          : 'Clique aqui para virar o card'}
       </span>
 
       <p
         className={cn(
-          'w-full text-center leading-relaxed',
+          'mt-8 w-full max-w-md text-center text-base leading-relaxed sm:text-lg sm:leading-relaxed',
           isBack
-            ? 'text-sm text-emerald-50/95 sm:text-base'
-            : 'text-sm font-bold text-white sm:text-base',
+            ? 'font-medium text-primary-foreground'
+            : 'font-semibold text-foreground',
         )}
       >
         {text}
@@ -97,11 +92,15 @@ function FlashcardFaceContent({
 
 function FlipFlashcard({
   flashcard,
+  index,
+  total,
   isFlipped,
   onToggleFlip,
   disabled,
 }: {
   flashcard: StudyFlashcards
+  index: number
+  total: number
   isFlipped: boolean
   onToggleFlip: () => void
   disabled?: boolean
@@ -125,17 +124,21 @@ function FlipFlashcard({
         <div className="grid w-full [grid-template-areas:'stack']">
           <FlashcardFaceContent
             side="front"
+            index={index}
+            total={total}
             text={flashcard.front}
             className="[grid-area:stack] invisible pointer-events-none select-none"
           />
           <FlashcardFaceContent
             side="back"
+            index={index}
+            total={total}
             text={flashcard.back}
             className="[grid-area:stack] invisible pointer-events-none select-none"
           />
 
           <div
-            className="[grid-area:stack] relative h-full w-full min-h-[10rem]"
+            className="[grid-area:stack] relative h-full w-full"
             style={{
               transformStyle: 'preserve-3d',
               transition: 'transform 0.65s cubic-bezier(0.4, 0, 0.2, 1)',
@@ -143,53 +146,29 @@ function FlipFlashcard({
             }}
           >
             <div
-              className="absolute inset-0 overflow-hidden rounded-2xl border-2 border-blue-400/30 ring-1 ring-blue-400/20"
-              style={{
-                ...FLASHCARD_FACE_STYLE,
-                background:
-                  'linear-gradient(145deg, rgba(61,127,255,0.35) 0%, rgba(99,102,241,0.22) 35%, rgba(15,23,42,0.92) 100%)',
-                boxShadow:
-                  '0 0 0 1px rgba(96,165,250,0.15), 0 12px 40px rgba(61,127,255,0.35), 0 4px 24px rgba(99,102,241,0.2)',
-              }}
+              className="absolute inset-0 overflow-hidden rounded-3xl border border-primary/35 bg-[#0D0D0D] shadow-[0_0_0_1px_rgba(201,168,76,0.08),0_8px_32px_rgba(0,0,0,0.45)]"
+              style={FLASHCARD_FACE_STYLE}
             >
-              <div
-                className="pointer-events-none absolute -right-10 -top-10 h-36 w-36 rounded-full bg-blue-400/30 blur-3xl"
-                aria-hidden
-              />
-              <div
-                className="pointer-events-none absolute -bottom-8 -left-8 h-28 w-28 rounded-full bg-indigo-500/25 blur-2xl"
-                aria-hidden
-              />
               <FlashcardFaceContent
                 side="front"
+                index={index}
+                total={total}
                 text={flashcard.front}
-                className="relative z-10"
               />
             </div>
 
             <div
-              className="absolute inset-0 overflow-hidden rounded-2xl border-2 border-emerald-400/35 ring-1 ring-emerald-400/25"
+              className="absolute inset-0 overflow-hidden rounded-3xl border border-primary/70 bg-primary shadow-[0_8px_32px_rgba(201,168,76,0.35)]"
               style={{
                 ...FLASHCARD_FACE_STYLE,
                 transform: 'rotateY(180deg)',
-                background:
-                  'linear-gradient(145deg, rgba(46,204,138,0.38) 0%, rgba(16,185,129,0.25) 40%, rgba(6,78,59,0.92) 100%)',
-                boxShadow:
-                  '0 0 0 1px rgba(52,211,153,0.2), 0 12px 40px rgba(46,204,138,0.35), 0 4px 24px rgba(16,185,129,0.2)',
               }}
             >
-              <div
-                className="pointer-events-none absolute -left-10 -top-8 h-32 w-32 rounded-full bg-emerald-400/35 blur-3xl"
-                aria-hidden
-              />
-              <div
-                className="pointer-events-none absolute -bottom-10 -right-6 h-28 w-28 rounded-full bg-teal-400/20 blur-2xl"
-                aria-hidden
-              />
               <FlashcardFaceContent
                 side="back"
+                index={index}
+                total={total}
                 text={flashcard.back}
-                className="relative z-10"
               />
             </div>
           </div>
@@ -210,6 +189,8 @@ export default function StudyFlashcard({
 
   const flashcards = flashcardsData
   const total = flashcards.length
+  const hasFlippedAtLeastOne = Object.values(flippedById).some(Boolean)
+  const canContinue = hasFlippedAtLeastOne && !isLoadingQuestions
 
   useEffect(() => {
     setFlippedById({})
@@ -290,62 +271,60 @@ export default function StudyFlashcard({
 
   return (
     <div className="flex min-h-0 flex-col gap-4 pb-24">
+      <StudyContentProgress step="flashcard" />
+
       <section
-        className="overflow-hidden rounded-2xl border border-primary/20 bg-card shadow-[0_12px_40px_rgba(61,127,255,0.08)]"
+        className="relative overflow-hidden rounded-2xl border border-primary/30 bg-card px-4 py-4 sm:px-5 sm:py-5"
         style={{
           background:
-            'linear-gradient(180deg, hsl(var(--card)) 0%, hsl(var(--card)) 70%, rgba(61,127,255,0.04) 100%)',
+            'linear-gradient(135deg, rgba(201,168,76,0.1) 0%, rgba(201,168,76,0.03) 50%, hsl(var(--card)) 100%)',
         }}
       >
-        <div className="relative overflow-hidden border-b border-primary/15 px-4 py-3">
-          <div
-            className="pointer-events-none absolute -right-8 -top-10 h-32 w-32 rounded-full bg-primary/25 blur-3xl"
+        <div
+          className="pointer-events-none absolute -right-6 -top-8 h-28 w-28 rounded-full bg-primary/20 blur-3xl"
+          aria-hidden
+        />
+        <div className="relative flex items-center gap-3 sm:gap-4">
+          <span
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-primary/35 bg-primary/15"
+            style={{ boxShadow: '0 4px 14px rgba(201,168,76,0.25)' }}
+          >
+            <Layers className="h-5 w-5 text-primary" strokeWidth={2.25} aria-hidden />
+          </span>
+          <p className="min-w-0 flex-1 text-sm leading-relaxed text-foreground sm:text-[15px]">
+            Você está revisando{' '}
+            <span className="font-bold text-primary">
+              {total} {total === 1 ? 'flashcard' : 'flashcards'}
+            </span>
+            . Toque em cada card para virar.
+          </p>
+          <span
+            className="hidden shrink-0 sm:flex sm:items-center sm:gap-1"
             aria-hidden
-          />
-          <div
-            className="pointer-events-none absolute -bottom-6 left-0 h-20 w-20 rounded-full bg-chart-2/15 blur-2xl"
-            aria-hidden
-          />
-          <div className="relative flex items-center justify-between gap-3">
-            <div className="flex min-w-0 items-center gap-2">
-              <span
-                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl"
-                style={{
-                  background: 'linear-gradient(135deg, #3D7FFF, #5A9FFF)',
-                  boxShadow: '0 4px 14px rgba(61,127,255,0.35)',
-                }}
-              >
-                <Layers className="h-4 w-4 text-white" aria-hidden />
-              </span>
-              <div className="min-w-0">
-                <h2 className="text-sm font-black text-foreground">
-                  Flashcards de revisão
-                </h2>
-                <p className="text-[10px] text-muted-foreground">
-                  {total} {total === 1 ? 'flashcard' : 'flashcards'} · Toque em
-                  cada card para virar
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="flex flex-col gap-6 px-4 py-5 sm:px-6 sm:py-6">
-          {flashcards.map((flashcard, index) => (
-            <div key={flashcard.id} className="flex flex-col gap-2">
-              <p className="text-center text-[10px] font-black uppercase tracking-widest text-muted-foreground">
-                Flashcard {index + 1} de {total}
-              </p>
-              <FlipFlashcard
-                flashcard={flashcard}
-                isFlipped={Boolean(flippedById[flashcard.id])}
-                onToggleFlip={() => toggleFlip(flashcard.id)}
-                disabled={isLoadingQuestions}
-              />
-            </div>
-          ))}
+          >
+            <span className="flex h-10 w-8 -rotate-6 items-center justify-center rounded-lg border border-primary/40 bg-primary/15">
+              <Sparkles className="h-4 w-4 text-primary" />
+            </span>
+            <span className="flex h-10 w-8 rotate-6 items-center justify-center rounded-lg border border-primary/35 bg-primary/10">
+              <Layers className="h-4 w-4 text-primary/80" />
+            </span>
+          </span>
         </div>
       </section>
+
+      <div className="flex flex-col gap-8">
+        {flashcards.map((flashcard, index) => (
+          <FlipFlashcard
+            key={flashcard.id}
+            flashcard={flashcard}
+            index={index}
+            total={total}
+            isFlipped={Boolean(flippedById[flashcard.id])}
+            onToggleFlip={() => toggleFlip(flashcard.id)}
+            disabled={isLoadingQuestions}
+          />
+        ))}
+      </div>
 
       <aside
         className="relative overflow-hidden rounded-2xl border border-primary/20 bg-card px-5 py-5 sm:px-6 sm:py-6"
@@ -390,28 +369,32 @@ export default function StudyFlashcard({
         <div className="mx-auto w-full max-w-3xl">
           <button
             type="button"
-            disabled={isLoadingQuestions}
+            disabled={!canContinue}
             onClick={() => void handleFetchQuestions()}
             className={cn(
-              'flex w-full items-center justify-center gap-2 rounded-2xl py-4 text-base font-black transition-all',
-              isLoadingQuestions
-                ? 'cursor-not-allowed bg-muted text-muted-foreground'
-                : 'text-white hover:opacity-90',
+              'flex w-full items-center justify-center gap-2.5 rounded-2xl py-4 text-base font-black transition-all',
+              canContinue
+                ? 'bg-primary text-primary-foreground hover:brightness-110'
+                : 'cursor-not-allowed bg-muted text-muted-foreground',
             )}
             style={
-              isLoadingQuestions
-                ? undefined
-                : {
-                    background: 'linear-gradient(90deg, #3D7FFF, #5A9FFF)',
-                    boxShadow: '0 6px 20px rgba(61,127,255,0.4)',
-                  }
+              canContinue
+                ? { boxShadow: '0 6px 24px rgba(201,168,76,0.45)' }
+                : undefined
             }
           >
-            {isLoadingQuestions ? (
+            {isLoadingQuestions && (
               <Loader2 className="h-5 w-5 animate-spin" aria-hidden />
-            ) : null}
-            {isLoadingQuestions ? 'Carregando questões...' : 'Responder Questões'}
+            )}
+            <span className="flex-1 text-center">
+              {isLoadingQuestions ? 'Carregando questões...' : 'Responder Questões'}
+            </span>
           </button>
+          {!hasFlippedAtLeastOne && !isLoadingQuestions ? (
+            <p className="mt-2 text-center text-xs text-muted-foreground">
+              Vire pelo menos um flashcard para continuar
+            </p>
+          ) : null}
         </div>
       </div>
     </div>

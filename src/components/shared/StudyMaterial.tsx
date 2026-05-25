@@ -3,6 +3,7 @@
 import dynamic from 'next/dynamic'
 import { useState } from 'react'
 import { Fullscreen } from 'lucide-react'
+import StudyContentProgress from '@/components/shared/StudyContentProgress'
 import { ModalStudyPdf } from '@/components/shared/ModalStudyPdf'
 import { StudyMaterials } from '@/types'
 
@@ -33,6 +34,8 @@ export default function StudyMaterial({
 
   return (
     <div className="flex min-h-0 flex-col gap-4 pb-24">
+      <StudyContentProgress step="material" />
+
       {hasPdf ? (
         <button
           type="button"
@@ -49,14 +52,14 @@ export default function StudyMaterial({
           />
           <div className="relative flex items-center gap-3.5">
             <span
-              className="flex size-10 shrink-0 items-center justify-center rounded-full transition-transform group-hover:scale-105"
+              className="flex size-10 shrink-0 items-center justify-center rounded-md transition-transform group-hover:scale-105"
               style={{
                 background: 'linear-gradient(135deg, #3D7FFF, #5A9FFF)',
                 boxShadow: '0 4px 14px rgba(61,127,255,0.45)',
               }}
             >
               <Fullscreen
-                className="size-[18px] text-white"
+                className="size-[22px] text-white"
                 strokeWidth={2.25}
                 aria-hidden
               />
@@ -64,16 +67,12 @@ export default function StudyMaterial({
 
             <span className="min-w-0 flex-1">
               <span className="flex flex-wrap items-center gap-2">
-                <span className="text-sm font-black text-foreground">
-                  Ler em tela cheia
-                </span>
-                <span className="rounded-full border border-accent/35 bg-accent/15 px-2 py-0.5 text-[9px] font-black uppercase tracking-widest text-accent">
-                  PDF
+                <span className="text-sm font-medium text-foreground">
+                  LER EM TELA CHEIA
                 </span>
               </span>
               <span className="mt-1 block text-xs leading-relaxed text-muted-foreground">
-                Abre a apostila em tela cheia no navegador — ideal para estudar
-                com foco.
+                Para ver o conteúdo em tela cheia, basta clicar no botão ao lado.
               </span>
             </span>
 

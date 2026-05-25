@@ -1,7 +1,8 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { ArrowLeft, CheckCircle, FileText, Info, X } from 'lucide-react'
+import { CheckCircle, FileText, Info, X } from 'lucide-react'
+import StudyContentProgress from '@/components/shared/StudyContentProgress'
 import { StudyFlowLoading } from '@/components/shared/StudyFlowLoading'
 import { cn } from '@/lib/utils'
 import type { Questions } from '@/types'
@@ -9,6 +10,7 @@ import { GetBancas } from '@/lib/lib-banca'
 import { getFilledOptionKeys } from '@/lib/lib-questions'
 import { CreateStudySessionAnswears } from '@/lib/lib-study-session-answears'
 import { toast } from 'sonner'
+import { QuestionCardActions } from './QuestionCardActions'
 
 function formatMetaTag(value: string | undefined) {
   const trimmed = value?.trim()
@@ -46,9 +48,9 @@ function QuestionMetaTags({
       {tags.map(({ key, label, value }) => (
         <span
           key={key}
-          className="inline-flex max-w-full items-center gap-1.5 rounded-full border border-border bg-muted/30 px-2.5 py-1 text-[10px] font-semibold text-foreground"
+          className="inline-flex max-w-full items-center gap-1.5 rounded-full border border-amber-500/35 bg-amber-500/5 px-2.5 py-1 text-[10px] font-semibold text-foreground"
         >
-          <span className="shrink-0 font-black uppercase tracking-wide text-[9px] text-muted-foreground">
+          <span className="shrink-0 font-black uppercase tracking-wide text-[9px] text-amber-500">
             {label}
           </span>
           <span className="truncate">{value}</span>
@@ -107,10 +109,6 @@ export default function StudySession({
   const subjectShort =
     subjectName.length > 24 ? `${subjectName.slice(0, 24)}…` : subjectName
 
-  const handleBack = () => {
-    onBack()
-  }
-
   async function handleResolve(questionId: string) {
     const selected = answers[questionId]
     if (!selected || resolvedIds.has(questionId) || resolvingId) return
@@ -166,7 +164,9 @@ export default function StudySession({
   return (
     <div className="flex min-h-0 flex-col">
       <div className="flex flex-col gap-4 pb-24">
-        <div className="flex items-center justify-center gap-2 py-2 text-[14px] font-black uppercase tracking-widest text-muted-foreground">
+        <StudyContentProgress step="session" />
+
+        <div className="flex items-center justify-center gap-2 py-2 text-[14px] font-black uppercase tracking-widest text-amber-500">
           <FileText className="h-3.5 w-3.5" />
           Responda as {allQuestions.length} questões
         </div>
@@ -181,9 +181,9 @@ export default function StudySession({
           return (
             <div
               key={question.id}
-              className="rounded-2xl border border-border bg-card p-5"
+              className="rounded-2xl border border-amber-500/30 bg-card p-5"
             >
-              <p className="mb-2 text-[10px] font-black uppercase tracking-wider text-muted-foreground">
+              <p className="mb-2 text-[10px] font-black uppercase tracking-wider text-amber-500">
                 Questão {index + 1} de {allQuestions.length}
               </p>
               <QuestionMetaTags
@@ -191,7 +191,7 @@ export default function StudySession({
                 ano={formatMetaTag(question.ano)}
                 instituicao={formatMetaTag(question.instituicao)}
               />
-              <p className="mb-4 text-sm font-bold leading-snug text-foreground">
+              <p className="mb-4 text-sm font-medium leading-snug text-foreground">
                 {question.question}
               </p>
 
@@ -205,7 +205,7 @@ export default function StudySession({
                   const isWrongPick = resolved && isSelected && !isCorrect
 
                   let rowClass =
-                    'border-border bg-background text-foreground hover:border-border/80'
+                    'border-amber-500/25 bg-background text-foreground hover:border-amber-500/40'
                   let badgeClass = 'bg-muted text-muted-foreground'
 
                   if (resolved) {
@@ -222,8 +222,9 @@ export default function StudySession({
                         'border-border/60 bg-muted/20 text-muted-foreground opacity-80'
                     }
                   } else if (isSelected) {
-                    rowClass = 'border-primary/50 bg-primary/5 text-foreground'
-                    badgeClass = 'bg-primary text-primary-foreground'
+                    rowClass =
+                      'border-amber-500/60 bg-amber-500/5 text-foreground'
+                    badgeClass = 'bg-amber-500 text-black'
                   }
 
                   return (
@@ -272,23 +273,17 @@ export default function StudySession({
                   className={cn(
                     'mt-4 w-full rounded-xl border py-3 text-sm font-bold transition-all',
                     selected && resolvingId !== question.id
-                      ? 'border-primary bg-primary text-primary-foreground hover:opacity-90'
+                      ? 'border-amber-500 bg-amber-500 text-black hover:brightness-110'
                       : 'cursor-not-allowed border-border bg-muted text-muted-foreground',
                   )}
                 >
                   {resolvingId === question.id ? 'Salvando...' : 'Resolver'}
                 </button>
               ) : (
-                <div
-                  className="mt-4 rounded-xl p-4"
-                  style={{
-                    background: 'rgba(61,127,255,0.08)',
-                    border: '1px solid rgba(61,127,255,0.2)',
-                  }}
-                >
+                <div className="mt-4 rounded-xl border border-amber-500/25 bg-amber-500/8 p-4">
                   <div className="mb-2 flex items-center gap-2">
-                    <Info className="h-4 w-4 text-primary" />
-                    <span className="text-[10px] font-black uppercase text-primary">
+                    <Info className="h-4 w-4 text-amber-500" />
+                    <span className="text-[10px] font-black uppercase text-amber-500">
                       {isCorrect ? 'Resposta correta' : 'Resposta incorreta'}
                     </span>
                   </div>
@@ -297,6 +292,10 @@ export default function StudySession({
                   </p>
                 </div>
               )}
+
+              <QuestionCardActions
+                questionId={question.id}
+              />
             </div>
           )
         })}
@@ -311,15 +310,12 @@ export default function StudySession({
             className={cn(
               'flex w-full items-center justify-center gap-2 rounded-2xl py-4 text-base font-black transition-all',
               allResolved
-                ? 'text-white hover:opacity-90'
+                ? 'bg-amber-500 text-black hover:brightness-110'
                 : 'cursor-not-allowed bg-muted text-muted-foreground',
             )}
             style={
               allResolved
-                ? {
-                    background: 'linear-gradient(90deg, #3D7FFF, #8B5CF6)',
-                    boxShadow: '0 6px 20px rgba(61,127,255,0.4)',
-                  }
+                ? { boxShadow: '0 6px 24px rgba(245,158,11,0.4)' }
                 : undefined
             }
           >

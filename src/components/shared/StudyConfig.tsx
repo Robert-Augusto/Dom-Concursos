@@ -42,7 +42,7 @@ function subjectChoiceClass(active: boolean, shape: 'grid' | 'pill') {
       : 'rounded-full px-4 py-2 text-xs sm:text-sm',
     active
       ? 'border-accent bg-popover text-foreground shadow-[0_0_0_1px_rgba(61,127,255,0.25)]'
-      : 'border-transparent bg-muted/35 font-semibold text-foreground/85 hover:border-border/50 hover:bg-muted/50',
+      : 'border-transparent bg-sidebar-accent/35 font-semibold text-foreground/85 hover:border-border/50 hover:bg-muted/50',
   )
 }
 
@@ -208,8 +208,8 @@ export default function StudyConfig({
             <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent text-sm font-black text-accent-foreground">
               1
             </span>
-            <h3 className="text-sm font-bold text-foreground sm:text-base">
-              Escolha a matéria
+            <h3 className="text-sm font-bold text-primary sm:text-base">
+              ESCOLHA A MATÉRIA
             </h3>
           </div>
 
@@ -278,10 +278,10 @@ export default function StudyConfig({
             >
               2
             </span>
-            <h3 className="text-sm font-bold text-foreground sm:text-base">
+            <h3 className="text-sm font-bold text-primary sm:text-base">
               {selectedRootName
-                ? `Escolha o assunto de ${selectedRootName}`
-                : 'Escolha o assunto'}
+                ? `ESCOLHA O ASSUNTO DE ${selectedRootName.toUpperCase()}`
+                : 'ESCOLHA O ASSUNTO'}
             </h3>
           </div>
 

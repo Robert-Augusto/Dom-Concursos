@@ -81,17 +81,15 @@ export function RedirectButtons({
 
   return (
     <section>
-      {showScrollHint ? (
-        <div
-          className="mb-1.5 flex items-center justify-end gap-0.5 text-muted-foreground"
-          aria-hidden
-        >
-          <span className="text-[10px] font-semibold uppercase tracking-wide">
-            Deslize
-          </span>
-          <ChevronRight className="h-4 w-4 animate-pulse" />
-        </div>
-      ) : null}
+      <div
+        className="mb-1.5 flex items-center justify-end gap-0.5 text-muted-foreground md:hidden"
+        aria-hidden
+      >
+        <span className="text-[10px] font-semibold uppercase tracking-wide">
+          Deslize
+        </span>
+        <ChevronRight className="h-4 w-4 animate-pulse" />
+      </div>
 
       <div className="relative">
         <div
@@ -115,13 +113,6 @@ export function RedirectButtons({
             </Link>
           ))}
         </div>
-
-        {showScrollHint ? (
-          <div
-            className="pointer-events-none absolute inset-y-0 right-0 w-16 bg-gradient-to-l from-background via-background/80 to-transparent"
-            aria-hidden
-          />
-        ) : null}
       </div>
     </section>
   )

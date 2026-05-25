@@ -135,3 +135,11 @@ export interface StudySessionAnswears {
     selected_option: string
     is_correct: boolean
 }
+
+// subject question review
+export interface StudyQuestionReview {
+    id: string
+    created_at: Date
+    subjects_questions_id: string
+    profile_id: string
+}

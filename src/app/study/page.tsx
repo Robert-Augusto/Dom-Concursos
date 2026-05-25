@@ -114,7 +114,7 @@ export default function StudyPage() {
       <Sidebar />
       <div className="min-h-screen lg:ml-[240px]">
         {showFlowHeader && (
-          <header className="sticky top-0 z-30 border-b border-border bg-background">
+          <header className="sticky top-0 z-30 border-b border-border bg-background mb-3">
             <div className="flex items-center gap-3 px-4 py-3 sm:px-6">
               <button
                 type="button"
@@ -141,16 +141,17 @@ export default function StudyPage() {
                 </p>
               </div>
             </div>
-            {flowStepId ? (
-              <div className="flex justify-center border-t border-border/60 bg-card/40 px-4">
-                <StudyFlowSteps activeStep={flowStepId} />
-              </div>
-            ) : null}
           </header>
         )}
 
+        {flowStepId ? (
+              <div>
+                <StudyFlowSteps activeStep={flowStepId} />
+              </div>
+        ) : null}
+
         {step === 'score' && (
-          <div className="flex justify-center border-b border-border bg-card/30 px-4">
+          <div className='mt-8'>
             <StudyFlowSteps activeStep="session" allCompleted />
           </div>
         )}
