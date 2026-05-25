@@ -63,10 +63,10 @@ function getScoreTier(correct: number, total: number): ScoreTier {
   if (correct === 0) {
     return {
       emoji: '😔',
-      headline: 'Não foi dessa',
+      headline: 'Não foi dessa vez...',
       headlineAccent: 'vez',
       message:
-        'Mas tudo bem — o aprendizado começa aqui. Revise o conteúdo teórico e tente novamente em 24 horas.',
+        'Mas tudo bem, o seu aprendizado começou. Assista às aulas em vídeo (desse assunto) na tela principal e tente novamente em 24 horas.',
       motivational: 'Cada tentativa te aproxima da sua',
       motivationalAccent: 'aprovação!',
       reviewLabel: 'Revisar em 24 horas',
@@ -78,10 +78,10 @@ function getScoreTier(correct: number, total: number): ScoreTier {
   if (correct <= 2) {
     return {
       emoji: '😕',
-      headline: 'Começando a',
+      headline: 'Começando a entender...',
       headlineAccent: 'entender',
       message:
-        'Você está no caminho, mas ainda há bastante espaço para crescer. Revise esse conteúdo em 24 horas para fixar melhor o que estudou.',
+        'Você está no caminho, mas ainda há bastante espaço para crescer. Revise esse conteúdo em 24 horas para fixar melhor o assunto. Assista também às aulas em vídeo (desse assunto) na tela principal.',
       motivational: 'Sua dedicação está te aproximando da sua',
       motivationalAccent: 'aprovação!',
       reviewLabel: 'Revisar em 24 horas',
@@ -93,10 +93,10 @@ function getScoreTier(correct: number, total: number): ScoreTier {
   if (correct <= Math.floor(total / 2)) {
     return {
       emoji: '🤔',
-      headline: 'Metade',
+      headline: 'Metade lá!',
       headlineAccent: 'lá!',
       message:
-        'Você tem uma base, mas ainda precisa reforçar alguns pontos. Revise esse conteúdo em 7 dias para consolidar o aprendizado.',
+        'Você tem uma base, mas ainda precisa reforçar alguns pontos. Revise esse conteúdo em 7 dias para consolidar o aprendizado. Assista também às aulas em vídeo (desse assunto) na tela principal.',
       motivational: 'Sua dedicação está te aproximando da sua',
       motivationalAccent: 'aprovação!',
       reviewLabel: 'Revisar em 7 dias',
@@ -108,7 +108,7 @@ function getScoreTier(correct: number, total: number): ScoreTier {
   if (correct <= total - 1) {
     return {
       emoji: '🙂',
-      headline: 'Muito',
+      headline: 'Muito bom!',
       headlineAccent: 'bom!',
       message:
         'Você demonstrou um bom domínio do assunto. Revise esse conteúdo em 7 dias para manter o conhecimento fresco e evitar o esquecimento.',
@@ -122,7 +122,7 @@ function getScoreTier(correct: number, total: number): ScoreTier {
   }
   return {
     emoji: '🎖️',
-    headline: 'Excelente',
+    headline: 'Excelente trabalho!',
     headlineAccent: 'trabalho!',
     message:
       'Parabéns! Você dominou esse assunto. Revise em 30 dias para fixar na memória de longo prazo e avance para um novo assunto.',
@@ -314,36 +314,6 @@ export default function StudyScore({
         </h1>
       </section>
 
-      {/* Review CTA */}
-      <section className="rounded-2xl border border-primary/35 bg-card p-4 sm:p-5">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-primary/30 bg-primary/10">
-            <CalendarClock className="h-6 w-6 text-primary" aria-hidden />
-          </span>
-          <div className="min-w-0 flex-1">
-            <p className="font-heading text-base font-black text-foreground">
-              Reforce o que aprendeu!
-            </p>
-            <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
-              {tier.message}
-            </p>
-            <span className="mt-2 inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-[11px] font-bold text-primary">
-              <Target className="h-3.5 w-3.5 shrink-0" aria-hidden />
-              {tier.reviewLabel}
-            </span>
-          </div>
-          {/*<button
-            type="button"
-            onClick={onRestart}
-            className="flex shrink-0 items-center justify-center gap-1 rounded-xl bg-primary px-5 py-3 text-[11px] font-black uppercase tracking-wide text-primary-foreground transition-all hover:brightness-110"
-            style={{ boxShadow: '0 4px 20px rgba(201,168,76,0.4)' }}
-          >
-            Revisar agora
-            <ChevronRight className="h-4 w-4" aria-hidden />
-          </button>*/}
-        </div>
-      </section>
-
       {/* Score ring */}
       <section className="flex flex-col items-center gap-4">
         <div className="relative h-60 w-60 shrink-0 p-3 ">
@@ -393,13 +363,38 @@ export default function StudyScore({
             </p>
           </div>
         </div>
+      </section>
 
-        <p className="max-w-sm text-center text-sm text-muted-foreground">
-          {tier.motivational}{' '}
-          <span className="font-semibold" style={{ color: tier.accent }}>
-            {tier.motivationalAccent}
+
+
+      {/* Review CTA */}
+      <section className="rounded-2xl border border-primary/35 bg-card p-4 sm:p-5">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border border-primary/30 bg-primary/10">
+            <CalendarClock className="h-6 w-6 text-primary" aria-hidden />
           </span>
-        </p>
+          <div className="min-w-0 flex-1">
+            <p className="font-heading text-base font-black text-foreground">
+            {tier.headline}
+            </p>
+            <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+              {tier.message}
+            </p>
+            <span className="mt-2 inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-[11px] font-bold text-primary">
+              <Target className="h-3.5 w-3.5 shrink-0" aria-hidden />
+              {tier.reviewLabel}
+            </span>
+          </div>
+          {/*<button
+            type="button"
+            onClick={onRestart}
+            className="flex shrink-0 items-center justify-center gap-1 rounded-xl bg-primary px-5 py-3 text-[11px] font-black uppercase tracking-wide text-primary-foreground transition-all hover:brightness-110"
+            style={{ boxShadow: '0 4px 20px rgba(201,168,76,0.4)' }}
+          >
+            Revisar agora
+            <ChevronRight className="h-4 w-4" aria-hidden />
+          </button>*/}
+        </div>
       </section>
 
       {/* Stats grid */}

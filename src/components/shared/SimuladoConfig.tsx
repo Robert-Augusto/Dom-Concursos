@@ -5,7 +5,7 @@ import {
   Check,
   CheckCircle,
   CheckSquare,
-  ClipboardList,
+  Lightbulb,
   Play,
   Search,
 } from 'lucide-react'
@@ -15,6 +15,50 @@ import type { Banca, Subjects, QuestionsDifficulty } from '@/types'
 import { toast } from 'sonner'
 import { CreateSimuladoSession } from '@/lib/lib-simulado-session'
 import { useProfile } from '@/context/ProfileContext'
+import { cn } from '@/lib/utils'
+
+type SubjectColor = 'accent' | 'chart-2'
+
+function subjectChoiceClass(active: boolean, color: SubjectColor) {
+  const base =
+    'group relative inline-flex items-center font-semibold transition-all duration-200 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-background'
+
+  if (color === 'accent') {
+    return cn(
+      base,
+      'min-h-[3.5rem] w-full justify-between gap-3 rounded-xl border-2 px-4 py-3 text-left text-sm focus-visible:ring-accent/60',
+      active
+        ? 'border-accent bg-accent/15 text-foreground shadow-[0_0_0_1px_rgba(61,127,255,0.3),0_8px_22px_rgba(61,127,255,0.25)]'
+        : 'border-border/70 bg-card text-foreground/90 shadow-[0_2px_6px_rgba(0,0,0,0.18)] hover:-translate-y-0.5 hover:border-accent/50 hover:bg-popover hover:shadow-[0_8px_20px_rgba(0,0,0,0.28)]',
+    )
+  }
+
+  return cn(
+    base,
+    'min-h-[3.5rem] w-full justify-between gap-3 rounded-xl border-2 px-4 py-3 text-left text-sm focus-visible:ring-chart-2/60',
+    active
+      ? 'border-chart-2 bg-chart-2/15 text-foreground shadow-[0_0_0_1px_rgba(46,204,138,0.3),0_8px_22px_rgba(46,204,138,0.25)]'
+      : 'border-border/70 bg-card text-foreground/90 shadow-[0_2px_6px_rgba(0,0,0,0.18)] hover:-translate-y-0.5 hover:border-chart-2/50 hover:bg-popover hover:shadow-[0_8px_20px_rgba(0,0,0,0.28)]',
+  )
+}
+
+function subjectCheckMarkerClass(active: boolean, color: SubjectColor) {
+  if (color === 'accent') {
+    return cn(
+      'flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-all',
+      active
+        ? 'border-accent bg-accent text-accent-foreground'
+        : 'border-border/70 bg-background group-hover:border-accent/55',
+    )
+  }
+
+  return cn(
+    'flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-all',
+    active
+      ? 'border-chart-2 bg-chart-2 text-white'
+      : 'border-border/70 bg-background group-hover:border-chart-2/55',
+  )
+}
 
 export interface SimuladoConfigPayload {
   banca: string
@@ -50,11 +94,9 @@ function bancaAvatarColor(index: number) {
 }
 
 const quantities = [
-  { value: 15, label: 'Rápido' },
-  { value: 30, label: 'Padrão' },
-  { value: 50, label: 'Completo' },
-  { value: 75, label: 'Extenso' },
-  { value: 90, label: 'Máximo' },
+  { value: 20, label: 'Rápido' },
+  { value: 40, label: 'Padrão' },
+  { value: 60, label: 'Completo' }
 ]
 
 function difficultyLabel(d: QuestionsDifficulty) {
@@ -232,304 +274,61 @@ export default function SimuladoConfig({ onStart }: SimuladoConfigProps) {
 
   return (
     <div className="flex flex-col gap-8">
-      <div>
-        <h1 className="flex items-center gap-2 font-heading font-black text-2xl text-foreground">
-          <ClipboardList className="h-6 w-6 text-primary shrink-0" />
-          Monte sua prova
-        </h1>
+      <div className="flex flex-col gap-6">
 
-        <button
+        <div className="flex flex-col gap-2">
+          <h1 className="font-heading flex items-center gap-2 text-2xl font-black text-foreground">
+            <span className="w-2 self-stretch rounded-sm bg-primary" />
+            Monte sua prova! 🎯
+          </h1>
+        </div>
+
+          <button
           type="button"
-          className="mt-4 flex items-center gap-3 bg-card border border-border rounded-xl p-4 cursor-pointer hover:border-accent/40 transition-colors self-start text-left w-full sm:w-auto"
+          className="flex w-full cursor-pointer items-center gap-3 self-start rounded-xl border border-border bg-card p-4 text-left transition-colors hover:border-accent/40 sm:w-auto"
         >
           <span
-            className="w-10 h-10 rounded-full flex items-center justify-center shrink-0"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full"
             style={{
               background: 'linear-gradient(135deg, #3D7FFF, #5A9FFF)',
               boxShadow: '0 4px 14px rgba(61,127,255,0.4)',
             }}
           >
-            <Play className="h-4 w-4 text-white fill-white ml-0.5" />
+            <Play className="ml-0.5 h-4 w-4 fill-white text-white" />
           </span>
-          <span className="flex flex-col">
+          <span className="flex flex-col gap-1">
             <span className="text-sm font-bold text-foreground">
               Como funciona o Simulador de Prova?
             </span>
-            <span className="text-xs text-muted-foreground mt-0.5">2 min</span>
+            <span className="mt-0.5 text-xs text-muted-foreground">
+              Clique aqui e assista o vídeo para entender.
+            </span>
+            <span className="mt-0.5 text-xs text-muted-foreground">
+              2 min
+            </span>
           </span>
         </button>
 
-        <p className="text-sm text-muted-foreground mt-4">
-          Configure banca, dificuldade, matérias e quantidade para um simulado
-          personalizado.
+        <div className="flex items-start gap-3 rounded-xl border border-primary/25 bg-primary/8 p-4">
+          <Lightbulb className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
+          <p className="text-sm leading-relaxed text-foreground">
+          Configure <strong className="text-primary">banca, dificuldade, matérias</strong> e <strong className="text-primary">quantidade</strong> para um simulado personalizado
         </p>
       </div>
 
-      <section>
-        <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2 mb-3">
-          1. ESTILO DE BANCA
-        </p>
-        <ListSearchInput
-          id="simulado-banca-search"
-          value={bancaSearch}
-          onChange={setBancaSearch}
-          placeholder="Buscar banca..."
-          disabled={isBancasLoading}
-        />
-        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-          {isBancasLoading ? (
-            <p className="text-sm text-muted-foreground col-span-full">
-              Carregando bancas…
-            </p>
-          ) : (bancas?.length ?? 0) === 0 ? (
-            <p className="text-sm text-muted-foreground col-span-full">
-              Nenhuma banca cadastrada.
-            </p>
-          ) : filteredBancas.length === 0 ? (
-            <p className="text-sm text-muted-foreground col-span-full">
-              Nenhuma banca encontrada para essa busca.
-            </p>
-          ) : (
-            filteredBancas.map((b, index) => {
-              const selected = banca === b.id
-              return (
-                <button
-                  key={b.id}
-                  type="button"
-                  onClick={() => setBanca(b.id)}
-                  className={`flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all text-left ${
-                    selected
-                      ? 'border-accent bg-accent/10'
-                      : 'border-border bg-card hover:border-border/80'
-                  }`}
-                >
-                  <span
-                    className="w-10 h-10 rounded-xl flex items-center justify-center text-sm font-black text-white flex-shrink-0"
-                    style={{ background: bancaAvatarColor(index) }}
-                  >
-                    {bancaInitials(b.name)}
-                  </span>
-                  <span className="min-w-0">
-                    <span className="block text-sm font-bold text-foreground">
-                      {b.name}
-                    </span>
-                  </span>
-                </button>
-              )
-            })
-          )}
+      </div>
+
+      <section className='flex flex-col'>
+        <div className="flex items-center gap-2.5 mb-5 mt-3">
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent text-sm font-black text-accent-foreground">
+            1
+          </span>
+          <h3 className="text-sm font-bold text-primary sm:text-base">
+            ESCOLHA A QUANTIDADE DE QUESTÕES
+          </h3>
         </div>
-      </section>
 
-      <section>
-        <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2 mb-3">
-          2. NÍVEL DE DIFICULDADE
-        </p>
-        <div className="grid grid-cols-3 gap-3">
-          {(
-            [
-              { key: 'Fácil' as const, emoji: '😊', label: 'Fácil' },
-              { key: 'Médio' as const, emoji: '😤', label: 'Médio' },
-              { key: 'Difícil' as const, emoji: '🔥', label: 'Difícil' },
-            ] as const
-          ).map(({ key, emoji, label }) => {
-            const active = difficulty === key
-            const labelClass =
-              key === 'Fácil'
-                ? active
-                  ? 'text-chart-2'
-                  : 'text-muted-foreground'
-                : key === 'Médio'
-                  ? active
-                    ? 'text-primary'
-                    : 'text-muted-foreground'
-                  : active
-                    ? 'text-destructive'
-                    : 'text-muted-foreground'
-            return (
-              <button
-                key={key}
-                type="button"
-                onClick={() => setDifficulty(key)}
-                className={`flex flex-col items-center gap-2 p-5 rounded-2xl border-2 cursor-pointer transition-all ${
-                  active
-                    ? 'border-primary bg-primary/10'
-                    : 'border-border bg-card hover:border-border/80'
-                }`}
-              >
-                <span className="text-3xl">{emoji}</span>
-                <span className={`text-sm font-bold ${labelClass}`}>{label}</span>
-              </button>
-            )
-          })}
-        </div>
-      </section>
-
-      <section>
-        <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2 mb-1">
-          3. MATÉRIAS E PESO
-        </p>
-        <p className="text-xs text-muted-foreground mb-3">
-          Peso: <span className="text-foreground font-bold">1x</span> normal ·{' '}
-          <span className="text-foreground font-bold">2x</span> dobro ·{' '}
-          <span className="text-foreground font-bold">3x</span> triplo. Matérias específicas
-          sempre têm peso maior.
-        </p>
-
-        <p className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-accent border-l-2 border-accent pl-3 mb-3">
-          CONHECIMENTOS BÁSICOS
-        </p>
-        <ListSearchInput
-          id="simulado-basic-subject-search"
-          value={basicSubjectSearch}
-          onChange={setBasicSubjectSearch}
-          placeholder="Buscar matéria básica..."
-          disabled={isSubjectsLoading}
-        />
-        {isSubjectsLoading ? (
-          <p className="text-sm text-muted-foreground mb-2">Carregando matérias…</p>
-        ) : basicSubjectsList.length === 0 ? (
-          <p className="text-sm text-muted-foreground mb-2">
-            Nenhuma matéria básica cadastrada.
-          </p>
-        ) : filteredBasicSubjects.length === 0 ? (
-          <p className="text-sm text-muted-foreground mb-2">
-            Nenhuma matéria básica encontrada para essa busca.
-          </p>
-        ) : (
-          filteredBasicSubjects.map((subject) => {
-          const row = basicSubjects.find((s) => s.id === subject.id)
-          const selected = !!row
-          return (
-            <button
-              key={subject.id}
-              type="button"
-              onClick={() => toggleBasicSubject(subject.id)}
-              className={`w-full flex items-center gap-3 p-4 rounded-xl border mb-2 cursor-pointer transition-colors text-left ${
-                selected
-                  ? 'border-chart-2/50 bg-chart-2/5'
-                  : 'border-border bg-card hover:border-border/80'
-              }`}
-            >
-              <span
-                className={`w-5 h-5 rounded-md border-2 flex items-center justify-center flex-shrink-0 transition-colors ${
-                  selected ? 'border-chart-2 bg-chart-2' : 'border-border bg-transparent'
-                }`}
-              >
-                {selected && <Check className="h-3 w-3 text-white" />}
-              </span>
-              <span className="flex-1 flex items-center gap-2 min-w-0">
-                <span className="text-sm font-semibold text-foreground">{subject.name}</span>
-              </span>
-              {/*{selected && row && (
-                <span
-                  className="flex items-center gap-1 shrink-0"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  {weights.map((w) => (
-                    <button
-                      key={w}
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        updateBasicWeight(subject.id, w)
-                      }}
-                      className={`w-8 h-8 rounded-lg text-xs font-black transition-colors text-center ${
-                        row.weight === w
-                          ? 'bg-chart-2 text-white'
-                          : 'bg-muted text-muted-foreground hover:bg-muted/80'
-                      }`}
-                    >
-                      {w}x
-                    </button>
-                  ))}
-                </span>
-              )}*/}
-            </button>
-          )
-        })
-        )}
-
-        <p className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-primary border-l-2 border-primary pl-3 mb-3 mt-6">
-          CONHECIMENTOS ESPECÍFICOS
-        </p>
-        <ListSearchInput
-          id="simulado-specific-subject-search"
-          value={specificSubjectSearch}
-          onChange={setSpecificSubjectSearch}
-          placeholder="Buscar matéria específica..."
-          disabled={isSubjectsLoading}
-        />
-        {isSubjectsLoading ? (
-          <p className="text-sm text-muted-foreground mb-2">Carregando matérias…</p>
-        ) : specificSubjectsList.length === 0 ? (
-          <p className="text-sm text-muted-foreground mb-2">
-            Nenhuma matéria específica cadastrada.
-          </p>
-        ) : filteredSpecificSubjects.length === 0 ? (
-          <p className="text-sm text-muted-foreground mb-2">
-            Nenhuma matéria específica encontrada para essa busca.
-          </p>
-        ) : (
-          filteredSpecificSubjects.map((subject) => {
-          const row = specificSubjects.find((s) => s.id === subject.id)
-          const selected = !!row
-          return (
-            <button
-              key={subject.id}
-              type="button"
-              onClick={() => toggleSpecificSubject(subject.id)}
-              className={`w-full flex items-center gap-3 p-4 rounded-xl border mb-2 cursor-pointer transition-colors text-left ${
-                selected
-                  ? 'border-primary/50 bg-primary/5'
-                  : 'border-border bg-card hover:border-border/80'
-              }`}
-            >
-              <span
-                className={`w-5 h-5 rounded-md border-2 flex items-center justify-center flex-shrink-0 transition-colors ${
-                  selected ? 'border-primary bg-primary' : 'border-border bg-transparent'
-                }`}
-              >
-                {selected && <Check className="h-3 w-3 text-white" />}
-              </span>
-              <span className="flex-1 flex items-center gap-2 min-w-0">
-                <span className="text-sm font-semibold text-foreground">{subject.name}</span>
-              </span>
-              {/*{selected && row && (
-                <span
-                  className="flex items-center gap-1 shrink-0"
-                  onClick={(e) => e.stopPropagation()}
-                >
-                  {weights.map((w) => (
-                    <button
-                      key={w}
-                      type="button"
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        updateSpecificWeight(subject.id, w)
-                      }}
-                      className={`w-8 h-8 rounded-lg text-xs font-black transition-colors text-center ${
-                        row.weight === w
-                          ? 'bg-primary text-primary-foreground'
-                          : 'bg-muted text-muted-foreground hover:bg-muted/80'
-                      }`}
-                    >
-                      {w}x
-                    </button>
-                  ))}
-                </span>
-              )}*/}
-            </button>
-          )
-        })
-        )}
-      </section>
-
-      <section>
-        <p className="text-[10px] font-black uppercase tracking-widest text-muted-foreground flex items-center gap-2 mb-3">
-          4. QUANTIDADE DE QUESTÕES
-        </p>
-        <div className="grid grid-cols-5 gap-2">
+        <div className="grid grid-cols-3 gap-2">
           {quantities.map((q) => {
             const active = questionCount === q.value
             return (
@@ -554,6 +353,217 @@ export default function SimuladoConfig({ onStart }: SimuladoConfigProps) {
               </button>
             )
           })}
+        </div>
+        </section>
+
+      <section className='flex flex-col gap-3'>
+        <div className="flex items-center gap-2.5">
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent text-sm font-black text-accent-foreground">
+            2
+          </span>
+          <h3 className="text-sm font-bold text-primary sm:text-base">
+            ESCOLHA A BANCA
+          </h3>
+        </div>
+
+        <ListSearchInput
+          id="simulado-banca-search"
+          value={bancaSearch}
+          onChange={setBancaSearch}
+          placeholder="Buscar banca..."
+          disabled={isBancasLoading}
+        />
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
+          {isBancasLoading ? (
+            <p className="text-sm text-muted-foreground col-span-full">
+              Carregando bancas…
+            </p>
+          ) : (bancas?.length ?? 0) === 0 ? (
+            <p className="text-sm text-muted-foreground col-span-full">
+              Nenhuma banca cadastrada.
+            </p>
+          ) : filteredBancas.length === 0 ? (
+            <p className="text-sm text-muted-foreground col-span-full">
+              Nenhuma banca encontrada para essa busca.
+            </p>
+          ) : (
+            filteredBancas.map((b, index) => {
+              const selected = banca === b.id
+              return (
+                <button
+                  key={b.id}
+                  type="button"
+                  onClick={() => setBanca(b.id)}
+                  title={b.name}
+                  className={`relative flex items-center gap-2 rounded-lg border px-2.5 py-2 text-left transition-all ${
+                    selected
+                      ? 'border-accent bg-accent/10 shadow-sm'
+                      : 'border-border bg-card hover:border-accent/40 hover:bg-accent/5'
+                  }`}
+                >
+                  <span
+                    className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-[10px] font-black text-white"
+                    style={{ background: bancaAvatarColor(index) }}
+                  >
+                    {bancaInitials(b.name)}
+                  </span>
+                  <span
+                    className={`min-w-0 flex-1 truncate text-xs font-bold ${
+                      selected ? 'text-accent' : 'text-foreground'
+                    }`}
+                  >
+                    {b.name}
+                  </span>
+                  {selected && (
+                    <Check
+                      className="h-3.5 w-3.5 shrink-0 text-accent"
+                      aria-hidden
+                    />
+                  )}
+                </button>
+              )
+            })
+          )}
+        </div>
+      </section>
+
+      <section className='flex flex-col gap-3'>
+
+        <div className="flex items-center gap-2.5 mb-5 mt-3">
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent text-sm font-black text-accent-foreground">
+            3
+          </span>
+          <h3 className="text-sm font-bold text-primary sm:text-base">
+            ESCOLHA AS MATÉRIAS
+          </h3>
+        </div>
+
+        <div className="flex flex-col gap-4">
+          <p className="flex items-center gap-2 border-l-2 border-accent pl-3 text-[14px] font-black uppercase tracking-widest text-accent">
+            CONHECIMENTOS BÁSICOS {'(peso 1.0)'}
+          </p>
+
+          {isSubjectsLoading ? (
+            <p className="text-xs text-muted-foreground">Carregando matérias...</p>
+          ) : basicSubjectsList.length === 0 ? (
+            <p className="rounded-xl border border-dashed border-border bg-muted/30 px-3 py-4 text-center text-xs text-muted-foreground">
+              Nenhuma matéria básica cadastrada.
+            </p>
+          ) : filteredBasicSubjects.length === 0 ? (
+            <p className="rounded-xl border border-dashed border-border bg-muted/30 px-3 py-4 text-center text-xs text-muted-foreground">
+              Nenhuma matéria básica encontrada para essa busca.
+            </p>
+          ) : (
+            <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
+              {filteredBasicSubjects.map((subject) => {
+                const selected = basicSubjects.some((s) => s.id === subject.id)
+                return (
+                  <button
+                    key={subject.id}
+                    type="button"
+                    onClick={() => toggleBasicSubject(subject.id)}
+                    aria-pressed={selected}
+                    className={subjectChoiceClass(selected, 'accent')}
+                  >
+                    <span className="flex-1 leading-tight font-semibold">
+                      {subject.name}
+                    </span>
+                    <span
+                      className={subjectCheckMarkerClass(selected, 'accent')}
+                      aria-hidden
+                    >
+                      {selected ? <Check className="h-3 w-3" strokeWidth={3.5} /> : null}
+                    </span>
+                  </button>
+                )
+              })}
+            </div>
+          )}
+
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-xs font-medium text-accent">
+              • Não encontrou a matéria básica?
+            </p>
+            <div className="relative w-full sm:max-w-[220px] sm:shrink-0">
+              <Search
+                className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-accent/70"
+                aria-hidden
+              />
+              <input
+                id="simulado-basic-subject-search"
+                type="search"
+                value={basicSubjectSearch}
+                onChange={(e) => setBasicSubjectSearch(e.target.value)}
+                disabled={isSubjectsLoading}
+                placeholder="Pesquisar..."
+                className="w-full rounded-lg border border-accent/40 bg-background py-2.5 pl-10 pr-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-accent/70 disabled:opacity-50"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="mt-6 flex flex-col gap-4">
+          <p className="flex items-center gap-2 border-l-2 border-chart-2 pl-3 text-[14px] font-black uppercase tracking-widest text-chart-2">
+            CONHECIMENTOS ESPECÍFICOS {'(peso 2.0)'}
+          </p>
+
+          {isSubjectsLoading ? (
+            <p className="text-xs text-muted-foreground">Carregando matérias...</p>
+          ) : specificSubjectsList.length === 0 ? (
+            <p className="rounded-xl border border-dashed border-border bg-muted/30 px-3 py-4 text-center text-xs text-muted-foreground">
+              Nenhuma matéria específica cadastrada.
+            </p>
+          ) : filteredSpecificSubjects.length === 0 ? (
+            <p className="rounded-xl border border-dashed border-border bg-muted/30 px-3 py-4 text-center text-xs text-muted-foreground">
+              Nenhuma matéria específica encontrada para essa busca.
+            </p>
+          ) : (
+            <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
+              {filteredSpecificSubjects.map((subject) => {
+                const selected = specificSubjects.some((s) => s.id === subject.id)
+                return (
+                  <button
+                    key={subject.id}
+                    type="button"
+                    onClick={() => toggleSpecificSubject(subject.id)}
+                    aria-pressed={selected}
+                    className={subjectChoiceClass(selected, 'chart-2')}
+                  >
+                    <span className="flex-1 leading-tight font-semibold">
+                      {subject.name}
+                    </span>
+                    <span
+                      className={subjectCheckMarkerClass(selected, 'chart-2')}
+                      aria-hidden
+                    >
+                      {selected ? <Check className="h-3 w-3" strokeWidth={3.5} /> : null}
+                    </span>
+                  </button>
+                )
+              })}
+            </div>
+          )}
+
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <p className="text-xs font-medium text-chart-2">
+              • Não encontrou a matéria específica?
+            </p>
+            <div className="relative w-full sm:max-w-[220px] sm:shrink-0">
+              <Search
+                className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-chart-2/70"
+                aria-hidden
+              />
+              <input
+                id="simulado-specific-subject-search"
+                type="search"
+                value={specificSubjectSearch}
+                onChange={(e) => setSpecificSubjectSearch(e.target.value)}
+                disabled={isSubjectsLoading}
+                placeholder="Pesquisar..."
+                className="w-full rounded-lg border border-chart-2/40 bg-background py-2.5 pl-10 pr-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-chart-2/70 disabled:opacity-50"
+              />
+            </div>
+          </div>
         </div>
       </section>
 

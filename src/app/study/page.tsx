@@ -179,12 +179,12 @@ export default function StudyPage() {
         </span>
 
         <div className="min-w-0 flex-1">
-          <span className="inline-flex items-center gap-1.5 rounded-full border border-chart-2/35 bg-chart-2/10 px-2.5 py-1 text-[10px] font-black uppercase tracking-[0.15em] text-chart-2">
+          <span className="inline-flex items-center gap-1.5 rounded-full border border-chart-2/35 bg-chart-2/10 px-2.5 py-1 text-[15px] font-bold uppercase tracking-[0.15em] text-chart-2">
             <Sparkles className="h-3 w-3 shrink-0" aria-hidden />
             Parabéns!
           </span>
           <p className="mt-2 font-heading text-base font-black leading-tight text-foreground sm:text-lg">
-            Você concluiu todas as etapas! 🚀
+            Você concluiu todas as etapas!
           </p>
           <p className="mt-1 text-xs leading-relaxed text-muted-foreground sm:text-sm">
             Estudo teórico, flashcards e questões. Sua dedicação está te

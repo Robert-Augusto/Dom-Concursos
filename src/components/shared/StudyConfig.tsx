@@ -42,10 +42,10 @@ function subjectChoiceClass(active: boolean, shape: 'grid' | 'pill') {
   if (shape === 'grid') {
     return cn(
       base,
-      'min-h-[3.5rem] w-full justify-between gap-3 rounded-xl border-2 px-4 py-3 text-left text-sm',
+      'min-h-[3.5rem] w-full justify-between gap-3 rounded-xl border-2 px-4 py-3 text-left text-[15px]',
       active
         ? 'border-accent bg-accent/15 text-foreground shadow-[0_0_0_1px_rgba(61,127,255,0.3),0_8px_22px_rgba(61,127,255,0.25)]'
-        : 'border-border/70 bg-card text-foreground/90 shadow-[0_2px_6px_rgba(0,0,0,0.18)] hover:-translate-y-0.5 hover:border-accent/50 hover:bg-popover hover:shadow-[0_8px_20px_rgba(0,0,0,0.28)]',
+        : 'border-foreground/25 bg-card font-bold text-foreground shadow-[0_3px_10px_rgba(0,0,0,0.28)] hover:-translate-y-0.5 hover:border-accent/60 hover:bg-popover hover:shadow-[0_10px_24px_rgba(0,0,0,0.35)]',
     )
   }
 
@@ -54,7 +54,7 @@ function subjectChoiceClass(active: boolean, shape: 'grid' | 'pill') {
     'gap-1.5 rounded-full border-2 px-4 py-2 text-xs sm:text-sm',
     active
       ? 'border-accent bg-accent text-accent-foreground shadow-[0_4px_14px_rgba(61,127,255,0.4)]'
-      : 'border-border/70 bg-card text-foreground/90 shadow-[0_2px_6px_rgba(0,0,0,0.18)] hover:-translate-y-0.5 hover:border-accent/55 hover:bg-popover hover:shadow-[0_4px_14px_rgba(0,0,0,0.25)]',
+      : 'border-foreground/25 bg-card font-bold text-foreground shadow-[0_3px_10px_rgba(0,0,0,0.28)] hover:-translate-y-0.5 hover:border-accent/60 hover:bg-popover hover:shadow-[0_6px_18px_rgba(0,0,0,0.35)]',
   )
 }
 
@@ -234,7 +234,7 @@ export default function StudyConfig({
                 : 'Nenhuma matéria encontrada para essa busca.'}
             </p>
           ) : (
-            <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
+            <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 sm:gap-3">
               {filteredRoots.map((subject) => {
                 const active = selectedRootId === subject.id
                 return (
@@ -245,15 +245,13 @@ export default function StudyConfig({
                     aria-pressed={active}
                     className={subjectChoiceClass(active, 'grid')}
                   >
-                    <span className="flex-1 leading-tight font-semibold">
-                      {subject.name}
-                    </span>
+                    <span className="flex-1 leading-tight">{subject.name}</span>
                     <span
                       className={cn(
                         'flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-all',
                         active
                           ? 'border-accent bg-accent text-accent-foreground'
-                          : 'border-border/70 bg-background group-hover:border-accent/55',
+                          : 'border-foreground/35 bg-background/60 group-hover:border-accent/60',
                       )}
                       aria-hidden
                     >
