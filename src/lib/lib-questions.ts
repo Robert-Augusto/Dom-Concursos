@@ -33,7 +33,7 @@ export function mapQuestionWithBanca(row: QuestionRowWithBanca): Questions {
 }
 
 // create
-export async function CreateQuestion(subjects_id: number, question: string, options: QuestionOptions, correct: string, explanation: string, banca: string, difficulty: string, ano: string, instituicao: string){
+export async function CreateQuestion(subjects_id: number, question: string, options: QuestionOptions, correct: string, explanation: string, banca: string, difficulty: string, ano: string, instituicao: string, subjectRootId: number){
   const supabase = createClient()
   const {error} = await supabase
     .from('subjects_questions')
@@ -46,7 +46,8 @@ export async function CreateQuestion(subjects_id: number, question: string, opti
       difficulty: difficulty,
       banca: banca,
       ano: ano,
-      instituicao: instituicao
+      instituicao: instituicao,
+      subject_root_id: subjectRootId
     })
   return {error}
 }

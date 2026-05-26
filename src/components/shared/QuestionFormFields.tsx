@@ -13,9 +13,10 @@ type QuestionFormFieldsProps = {
   banca: string
   difficulty: QuestionsDifficulty
   subjectsId: string
+  subjectRootId: string
 }
 
-export function QuestionFormFields({ banca, difficulty, subjectsId }: QuestionFormFieldsProps) {
+export function QuestionFormFields({ banca, difficulty, subjectsId, subjectRootId }: QuestionFormFieldsProps) {
   const [text, setText] = useState('')
   const [correctOption, setCorrectOption] = useState<OptionKey>('A')
   const [explanation, setExplanation] = useState('')
@@ -53,7 +54,8 @@ export function QuestionFormFields({ banca, difficulty, subjectsId }: QuestionFo
         instituicao: instituicao,
         banca: Number(banca),
         difficulty: difficulty,
-        subjectsId: subjectsId
+        subjectsId: subjectsId,
+        subjectRootId: subjectRootId
       })
     })
 
@@ -70,6 +72,7 @@ export function QuestionFormFields({ banca, difficulty, subjectsId }: QuestionFo
   return (
     <div className="flex flex-col gap-5">
       <label className="flex flex-col gap-1.5">
+      subject root: {subjectRootId}
         <textarea
           value={text}
           onChange={(e) => setText(e.target.value)}

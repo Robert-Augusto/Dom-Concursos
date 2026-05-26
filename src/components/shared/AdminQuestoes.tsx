@@ -476,6 +476,7 @@ export default function AdminQuestoes({
               banca={selectedBanca?.id ?? ''}
               difficulty={difficultyFilter}
               subjectsId={String(relatedSubject.id)}
+              subjectRootId={selectedRootFilter}
             />
           </div>
 

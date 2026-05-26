@@ -91,6 +91,47 @@
 | `avatar_url` | `text` |  Nullable |
 | `whatsapp` | `text` |  Nullable |
 
+## Table `simulado_sessions`
+
+### Columns
+
+| Name | Type | Constraints |
+|------|------|-------------|
+| `id` | `int8` | Primary Identity |
+| `created_at` | `timestamptz` |  |
+| `profile_id` | `uuid` |  Nullable |
+| `total_questions` | `numeric` |  Nullable |
+| `started_at` | `timestamptz` |  Nullable |
+| `end_at` | `timestamptz` |  Nullable |
+| `banca_id` | `int8` |  Nullable |
+| `difficulty` | `SUBJECTS_QUESTIONS_DIFFICULTY` |  Nullable |
+| `total_score` | `numeric` |  Nullable |
+| `minimum_score` | `numeric` |  Nullable |
+
+## Table `simulado_sessions_answers`
+
+### Columns
+
+| Name | Type | Constraints |
+|------|------|-------------|
+| `id` | `int8` | Primary Identity |
+| `created_at` | `timestamptz` |  |
+| `simulado_sessions_id` | `int8` |  Nullable |
+| `subject_question_id` | `int8` |  Nullable |
+| `selected_option` | `text` |  Nullable |
+| `is_correct` | `bool` |  Nullable |
+
+## Table `simulado_sessions_subjects`
+
+### Columns
+
+| Name | Type | Constraints |
+|------|------|-------------|
+| `id` | `int8` | Primary Identity |
+| `created_at` | `timestamptz` |  |
+| `simulado_sessions_id` | `int8` |  Nullable |
+| `subject_id` | `int8` |  Nullable |
+
 ## Table `study_flashcards`
 
 ### Columns
@@ -169,4 +210,29 @@
 | `banca` | `int8` |  Nullable |
 | `ano` | `text` |  Nullable |
 | `instituicao` | `text` |  Nullable |
+| `subject_root_id` | `int8` |  Nullable |
 
+## Table `subjects_questions_review`
+
+### Columns
+
+| Name | Type | Constraints |
+|------|------|-------------|
+| `id` | `int8` | Primary Identity |
+| `created_at` | `timestamptz` |  |
+| `subjects_questions_id` | `int8` |  Nullable |
+| `profile_id` | `uuid` |  Nullable |
+
+## Table `suport`
+
+### Columns
+
+| Name | Type | Constraints |
+|------|------|-------------|
+| `id` | `int8` | Primary Identity |
+| `created_at` | `timestamptz` |  |
+| `profile_id` | `uuid` |  Nullable |
+| `title` | `text` |  Nullable |
+| `message` | `text` |  Nullable |
+| `status` | `SUPORT_STATUS` |  Nullable |
+| `type` | `SUPORT_TYPE` |  Nullable |
