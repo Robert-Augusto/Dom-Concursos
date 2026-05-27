@@ -96,7 +96,7 @@ export default function SimuladoPage() {
                 {step === 'session' && 'Hora de responder!'}
               </h1>
               <p className="text-sm text-muted-foreground">
-                {step === 'config' && 'Coloque seus conhecimentos em prática...'}
+                {step === 'config' && 'Configure quantidade, banca e as matérias para um simulado personalizado'}
                 {step === 'session' &&
                   'Leia com atenção e escolha a alternativa correta.'}
               </p>

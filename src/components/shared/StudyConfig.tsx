@@ -58,6 +58,73 @@ function subjectChoiceClass(active: boolean, shape: 'grid' | 'pill') {
   )
 }
 
+const SUBJECT_PAGE_SIZE = 10
+
+function Pager({
+  page,
+  totalPages,
+  totalItems,
+  itemLabel,
+  color,
+  onPrev,
+  onNext,
+}: {
+  page: number
+  totalPages: number
+  totalItems: number
+  itemLabel: string
+  color: 'accent' | 'chart-2'
+  onPrev: () => void
+  onNext: () => void
+}) {
+  if (totalItems === 0) return null
+
+  const tone =
+    color === 'accent'
+      ? 'border-accent/50 bg-accent/10 text-accent hover:bg-accent/20'
+      : 'border-chart-2/50 bg-chart-2/10 text-chart-2 hover:bg-chart-2/20'
+
+  if (totalPages <= 1) {
+    return (
+      <p className="text-right text-sm text-muted-foreground">
+        {totalItems} {itemLabel}
+      </p>
+    )
+  }
+
+  return (
+    <div className="mt-2 flex items-center justify-between gap-3">
+      <span className="text-xs text-muted-foreground sm:text-sm">
+        {totalItems} {itemLabel} · página {page} de {totalPages}
+      </span>
+      <div className="flex gap-1.5">
+        <button
+          type="button"
+          onClick={onPrev}
+          disabled={page <= 1}
+          className={cn(
+            'min-h-9 min-w-9 rounded-lg border px-3 py-1.5 text-sm font-bold transition-colors disabled:cursor-not-allowed disabled:border-border disabled:bg-muted disabled:text-muted-foreground disabled:opacity-70',
+            tone,
+          )}
+        >
+          Voltar
+        </button>
+        <button
+          type="button"
+          onClick={onNext}
+          disabled={page >= totalPages}
+          className={cn(
+            'min-h-9 min-w-9 rounded-lg border px-3 py-1.5 text-sm font-bold transition-colors disabled:cursor-not-allowed disabled:border-border disabled:bg-muted disabled:text-muted-foreground disabled:opacity-70',
+            tone,
+          )}
+        >
+          Avançar
+        </button>
+      </div>
+    </div>
+  )
+}
+
 export default function StudyConfig({
   subjectsData,
   isLoadingSubjects = false,
@@ -69,6 +136,8 @@ export default function StudyConfig({
   const [selectedRelated, setSelectedRelated] = useState<Subjects | null>(null)
   const [rootSearch, setRootSearch] = useState('')
   const [relatedSearch, setRelatedSearch] = useState('')
+  const [rootPage, setRootPage] = useState(1)
+  const [relatedPage, setRelatedPage] = useState(1)
   const [isStarting, setIsStarting] = useState(false)
 
   const allSubjects = subjectsData ?? []
@@ -100,12 +169,31 @@ export default function StudyConfig({
     return relatedForRoot.filter((s) => s.name.toLowerCase().includes(q))
   }, [relatedForRoot, relatedSearch])
 
+  const rootTotalPages = Math.max(
+    1,
+    Math.ceil(filteredRoots.length / SUBJECT_PAGE_SIZE),
+  )
+  const pagedRoots = useMemo(() => {
+    const start = (rootPage - 1) * SUBJECT_PAGE_SIZE
+    return filteredRoots.slice(start, start + SUBJECT_PAGE_SIZE)
+  }, [filteredRoots, rootPage])
+
+  const relatedTotalPages = Math.max(
+    1,
+    Math.ceil(filteredRelated.length / SUBJECT_PAGE_SIZE),
+  )
+  const pagedRelated = useMemo(() => {
+    const start = (relatedPage - 1) * SUBJECT_PAGE_SIZE
+    return filteredRelated.slice(start, start + SUBJECT_PAGE_SIZE)
+  }, [filteredRelated, relatedPage])
+
   const canStart = Boolean(selectedRelated)
 
   function handleRootSelect(rootId: string) {
     setSelectedRootId(rootId)
     setSelectedRelated(null)
     setRelatedSearch('')
+    setRelatedPage(1)
   }
 
   async function handleStart() {
@@ -235,7 +323,7 @@ export default function StudyConfig({
             </p>
           ) : (
             <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
-              {filteredRoots.map((subject) => {
+              {pagedRoots.map((subject) => {
                 const active = selectedRootId === subject.id
                 return (
                   <button
@@ -266,6 +354,17 @@ export default function StudyConfig({
               })}
             </div>
           )}
+          {!isLoadingSubjects && filteredRoots.length > 0 && (
+            <Pager
+              page={rootPage}
+              totalPages={rootTotalPages}
+              totalItems={filteredRoots.length}
+              itemLabel={filteredRoots.length === 1 ? 'matéria' : 'matérias'}
+              color="accent"
+              onPrev={() => setRootPage((p) => Math.max(1, p - 1))}
+              onNext={() => setRootPage((p) => Math.min(rootTotalPages, p + 1))}
+            />
+          )}
 
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-xs font-medium text-primary">
@@ -279,7 +378,10 @@ export default function StudyConfig({
               <input
                 type="search"
                 value={rootSearch}
-                onChange={(e) => setRootSearch(e.target.value)}
+                onChange={(e) => {
+                  setRootSearch(e.target.value)
+                  setRootPage(1)
+                }}
                 disabled={isLoadingSubjects}
                 placeholder="Pesquisar..."
                 className="w-full rounded-lg border border-primary/40 bg-primary-foreground py-2.5 pl-10 pr-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-primary/70 disabled:opacity-50"
@@ -325,7 +427,7 @@ export default function StudyConfig({
             </p>
           ) : (
             <div className="flex flex-wrap gap-2">
-              {filteredRelated.map((subject) => {
+              {pagedRelated.map((subject) => {
                 const active = selectedRelated?.id === subject.id
                 return (
                   <button
@@ -348,6 +450,19 @@ export default function StudyConfig({
               })}
             </div>
           )}
+          {!isLoadingSubjects && selectedRootId && filteredRelated.length > 0 && (
+            <Pager
+              page={relatedPage}
+              totalPages={relatedTotalPages}
+              totalItems={filteredRelated.length}
+              itemLabel={filteredRelated.length === 1 ? 'assunto' : 'assuntos'}
+              color="chart-2"
+              onPrev={() => setRelatedPage((p) => Math.max(1, p - 1))}
+              onNext={() =>
+                setRelatedPage((p) => Math.min(relatedTotalPages, p + 1))
+              }
+            />
+          )}
 
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-xs font-medium text-primary">
@@ -361,7 +476,10 @@ export default function StudyConfig({
               <input
                 type="search"
                 value={relatedSearch}
-                onChange={(e) => setRelatedSearch(e.target.value)}
+                onChange={(e) => {
+                  setRelatedSearch(e.target.value)
+                  setRelatedPage(1)
+                }}
                 disabled={!selectedRootId || isLoadingSubjects}
                 placeholder="Pesquisar..."
                 className="w-full rounded-lg border border-primary/40 bg-primary-foreground py-2.5 pl-10 pr-3 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-primary/70 disabled:cursor-not-allowed disabled:opacity-50"

@@ -2,12 +2,16 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import {
+  BookOpen,
   Check,
   CheckCircle,
   CheckSquare,
+  FilePenLine,
   Lightbulb,
   Play,
   Search,
+  Sparkles,
+  Target,
   X,
 } from 'lucide-react'
 import { GetBancas } from '@/lib/lib-banca'
@@ -15,7 +19,10 @@ import { GetRootSubjects } from '@/lib/lib-subjects'
 import type { Banca, Subjects, QuestionsDifficulty, Questions } from '@/types'
 import { toast } from 'sonner'
 import { CreateSimuladoSession } from '@/lib/lib-simulado-session'
-import { FetchSimuladoQuestions } from '@/lib/lib-simulado-questions'
+import {
+  FetchSimuladoQuestions,
+  getSimuladoDistribution,
+} from '@/lib/lib-simulado-questions'
 import { useProfile } from '@/context/ProfileContext'
 import { cn } from '@/lib/utils'
 
@@ -28,19 +35,19 @@ function subjectChoiceClass(active: boolean, color: SubjectColor) {
   if (color === 'accent') {
     return cn(
       base,
-      'min-h-[3.5rem] w-full justify-between gap-3 rounded-xl border-2 px-4 py-3 text-left text-sm focus-visible:ring-accent/60',
+      'min-h-[3.5rem] w-full justify-between gap-2 rounded-xl border-2 px-3 py-3 text-left text-[12px] sm:gap-3 sm:px-4 sm:text-[15px] focus-visible:ring-accent/60',
       active
         ? 'border-accent bg-accent/15 text-foreground shadow-[0_0_0_1px_rgba(61,127,255,0.3),0_8px_22px_rgba(61,127,255,0.25)]'
-        : 'border-foreground/25 bg-card text-foreground/90 shadow-[0_2px_6px_rgba(0,0,0,0.18)] hover:-translate-y-0.5 hover:border-accent/50 hover:bg-popover hover:shadow-[0_8px_20px_rgba(0,0,0,0.28)]',
+        : 'border-foreground/25 bg-card font-bold text-foreground shadow-[0_3px_10px_rgba(0,0,0,0.28)] hover:-translate-y-0.5 hover:border-accent/60 hover:bg-popover hover:shadow-[0_10px_24px_rgba(0,0,0,0.35)]',
     )
   }
 
   return cn(
     base,
-    'min-h-[3.5rem] w-full justify-between gap-3 rounded-xl border-2 px-4 py-3 text-left text-sm focus-visible:ring-chart-2/60',
+    'min-h-[3.5rem] w-full justify-between gap-2 rounded-xl border-2 px-3 py-3 text-left text-[12px] sm:gap-3 sm:px-4 sm:text-[15px] focus-visible:ring-chart-2/60',
     active
       ? 'border-chart-2 bg-chart-2/15 text-foreground shadow-[0_0_0_1px_rgba(46,204,138,0.3),0_8px_22px_rgba(46,204,138,0.25)]'
-      : 'border-foreground/25 bg-card text-foreground/90 shadow-[0_2px_6px_rgba(0,0,0,0.18)] hover:-translate-y-0.5 hover:border-chart-2/50 hover:bg-popover hover:shadow-[0_8px_20px_rgba(0,0,0,0.28)]',
+      : 'border-foreground/25 bg-card font-bold text-foreground shadow-[0_3px_10px_rgba(0,0,0,0.28)] hover:-translate-y-0.5 hover:border-chart-2/60 hover:bg-popover hover:shadow-[0_10px_24px_rgba(0,0,0,0.35)]',
   )
 }
 
@@ -71,35 +78,67 @@ export interface SimuladoConfigProps {
   onStart: (payload: SimuladoPayload) => void
 }
 
-const BANCA_AVATAR_COLORS = [
-  '#3D7FFF',
-  '#8B5CF6',
-  '#2ECC8A',
-  '#C9A84C',
-  '#FF4D6D',
-  '#0D9488',
-] as const
+type QuantityTheme = 'chart-2' | 'chart-3' | 'chart-5'
 
-function bancaInitials(name: string) {
-  const parts = name.trim().split(/\s+/).filter(Boolean)
-  if (parts.length >= 2) {
-    return `${parts[0][0] ?? ''}${parts[1][0] ?? ''}`.toUpperCase().slice(0, 2)
-  }
-  return name.trim().slice(0, 2).toUpperCase()
-}
-
-function bancaAvatarColor(index: number) {
-  return BANCA_AVATAR_COLORS[index % BANCA_AVATAR_COLORS.length]
-}
-
-const quantities = [
-  { value: 20, label: 'Rápido' },
-  { value: 40, label: 'Padrão' },
-  { value: 60, label: 'Completo' }
+const quantities: {
+  value: number
+  label: string
+  theme: QuantityTheme
+}[] = [
+  { value: 20, label: 'Fácil', theme: 'chart-2' },
+  { value: 40, label: 'Padrão', theme: 'chart-3' },
+  { value: 60, label: 'Avançado', theme: 'chart-5' },
 ]
 
+const quantityThemeStyles: Record<
+  QuantityTheme,
+  {
+    borderActive: string
+    bgActive: string
+    text: string
+    badgeBorder: string
+    markerActive: string
+    markerInactive: string
+  }
+> = {
+  'chart-2': {
+    borderActive: 'border-chart-2',
+    bgActive: 'bg-chart-2/10',
+    text: 'text-chart-2',
+    badgeBorder: 'border-chart-2/35',
+    markerActive: 'border-chart-2 bg-chart-2 text-white',
+    markerInactive: 'border-muted-foreground/40 bg-transparent',
+  },
+  'chart-3': {
+    borderActive: 'border-chart-3',
+    bgActive: 'bg-chart-3/10',
+    text: 'text-chart-3',
+    badgeBorder: 'border-chart-3/35',
+    markerActive: 'border-chart-3 bg-chart-3 text-white',
+    markerInactive: 'border-muted-foreground/40 bg-transparent',
+  },
+  'chart-5': {
+    borderActive: 'border-chart-5',
+    bgActive: 'bg-chart-5/10',
+    text: 'text-chart-5',
+    badgeBorder: 'border-chart-5/35',
+    markerActive: 'border-chart-5 bg-chart-5 text-white',
+    markerInactive: 'border-muted-foreground/40 bg-transparent',
+  },
+}
+
+function getQuantityPlan(questionCount: number) {
+  const maxBasic = maxBasicSubjectsFor(questionCount)
+  const { specificCount, basicCount } = getSimuladoDistribution(questionCount)
+  return {
+    maxSubjects: maxBasic + 1,
+    specificCount,
+    totalBasicQuestions: basicCount * maxBasic,
+  }
+}
+
 const BANCA_PAGE_SIZE = 12
-const SUBJECT_PAGE_SIZE = 8
+const SUBJECT_PAGE_SIZE = 10
 
 function maxBasicSubjectsFor(questionCount: number) {
   if (questionCount <= 20) return 2
@@ -140,20 +179,20 @@ function Pager({
 
   const tone =
     color === 'accent'
-      ? 'border-accent/40 text-accent hover:bg-accent/10'
-      : 'border-chart-2/40 text-chart-2 hover:bg-chart-2/10'
+      ? 'border-accent/50 bg-accent/10 text-accent hover:bg-accent/20'
+      : 'border-chart-2/50 bg-chart-2/10 text-chart-2 hover:bg-chart-2/20'
 
   if (totalPages <= 1) {
     return (
-      <p className="text-right text-[13px] text-muted-foreground">
+      <p className="text-right text-sm text-muted-foreground">
         {totalItems} {itemLabel}
       </p>
     )
   }
 
   return (
-    <div className="mt-1 flex items-center justify-between gap-2 text-[11px]">
-      <span className="text-muted-foreground">
+    <div className="mt-2 flex items-center justify-between gap-3">
+      <span className="text-sm text-muted-foreground">
         {totalItems} {itemLabel} · página {page} de {totalPages}
       </span>
       <div className="flex gap-1.5">
@@ -162,22 +201,22 @@ function Pager({
           onClick={onPrev}
           disabled={page <= 1}
           className={cn(
-            'rounded-lg border bg-card px-2.5 py-1 font-semibold transition-colors disabled:cursor-not-allowed disabled:border-border disabled:text-muted-foreground disabled:opacity-60',
+            'min-h-9 min-w-9 rounded-lg border px-3 py-1.5 text-sm font-bold transition-colors disabled:cursor-not-allowed disabled:border-border disabled:bg-muted disabled:text-muted-foreground disabled:opacity-70',
             tone,
           )}
         >
-          Anterior
+          Voltar
         </button>
         <button
           type="button"
           onClick={onNext}
           disabled={page >= totalPages}
           className={cn(
-            'rounded-lg border bg-card px-2.5 py-1 font-semibold transition-colors disabled:cursor-not-allowed disabled:border-border disabled:text-muted-foreground disabled:opacity-60',
+            'min-h-9 min-w-9 rounded-lg border px-3 py-1.5 text-sm font-bold transition-colors disabled:cursor-not-allowed disabled:border-border disabled:bg-muted disabled:text-muted-foreground disabled:opacity-70',
             tone,
           )}
         >
-          Próxima
+          Avançar
         </button>
       </div>
     </div>
@@ -194,7 +233,7 @@ export default function SimuladoConfig({ onStart }: SimuladoConfigProps) {
   const [specificSubjects, setSpecificSubjects] = useState<
     { id: string; weight: 1 | 2 | 3 }[]
   >([])
-  const [questionCount, setQuestionCount] = useState(30)
+  const [questionCount, setQuestionCount] = useState(20)
   const [bancaSearch, setBancaSearch] = useState('')
   const [basicSubjectSearch, setBasicSubjectSearch] = useState('')
   const [specificSubjectSearch, setSpecificSubjectSearch] = useState('')
@@ -307,6 +346,8 @@ export default function SimuladoConfig({ onStart }: SimuladoConfigProps) {
 
   const maxBasicSubjects = maxBasicSubjectsFor(questionCount)
   const atBasicSubjectLimit = basicSubjects.length >= maxBasicSubjects
+  const { specificCount, basicCount } = getSimuladoDistribution(questionCount)
+  const totalBasicQuestions = basicCount * maxBasicSubjects
 
   useEffect(() => {
     setBasicSubjects((prev) =>
@@ -455,18 +496,10 @@ export default function SimuladoConfig({ onStart }: SimuladoConfigProps) {
             </span>
           </span>
         </button>
-
-        <div className="flex items-start gap-3 rounded-xl border border-primary/25 bg-primary/8 p-4">
-          <Lightbulb className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
-          <p className="text-sm leading-relaxed text-foreground">
-          Configure <strong className="text-primary">quantidade, banca</strong> e as <strong className="text-primary">matérias</strong> para um simulado personalizado
-        </p>
       </div>
 
-      </div>
-
-      <section className='flex flex-col'>
-        <div className="flex items-center gap-2.5 mb-5 mt-3">
+      <section className='flex flex-col gap-5'>
+        <div className="flex items-center gap-2.5 mt-3">
           <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent text-sm font-black text-accent-foreground">
             1
           </span>
@@ -475,32 +508,91 @@ export default function SimuladoConfig({ onStart }: SimuladoConfigProps) {
           </h3>
         </div>
 
-        <div className="grid grid-cols-3 gap-2">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
           {quantities.map((q) => {
             const active = questionCount === q.value
+            const theme = quantityThemeStyles[q.theme]
+            const plan = getQuantityPlan(q.value)
+
             return (
               <button
                 key={q.value}
                 type="button"
                 onClick={() => setQuestionCount(q.value)}
-                className={`flex flex-col items-center gap-1 p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                aria-pressed={active}
+                className={cn(
+                  'relative flex flex-col gap-3 rounded-2xl border-2 bg-card p-4 text-left transition-all',
                   active
-                    ? 'border-chart-2 bg-chart-2/10'
-                    : 'border-foreground/25 bg-card hover:border-chart-2/60 hover:bg-chart-2/10 hover:shadow-[0_10px_24px_rgba(0,0,0,0.35)]'
-                }`}
+                    ? cn(theme.borderActive, theme.bgActive, 'shadow-sm')
+                    : 'border-border/80 hover:border-muted-foreground/30',
+                )}
               >
-                <p
-                  className={`text-xl font-black ${
-                    active ? 'text-chart-2' : 'text-foreground'
-                  }`}
+                <span
+                  className={cn(
+                    'absolute right-3 top-3 flex h-6 w-6 items-center justify-center rounded-full border-2 transition-colors',
+                    active ? theme.markerActive : theme.markerInactive,
+                  )}
+                  aria-hidden
                 >
-                  {q.value}
-                </p>
-                <p className="text-[13px] text-muted-foreground">{q.label}</p>
+                  {active ? <Check className="h-3.5 w-3.5" strokeWidth={3} /> : null}
+                </span>
+
+                <div className="pr-8">
+                  <p className="leading-none">
+                    <span className={cn('font-heading text-3xl font-black', theme.text)}>
+                      {q.value}
+                    </span>
+                    <span className="text-sm font-semibold text-foreground">
+                      {' '}
+                      Questões
+                    </span>
+                  </p>
+                  <p className={cn('mt-1 text-base font-semibold', theme.text)}>{q.label}</p>
+                </div>
+
+                <div
+                  className={cn(
+                    'rounded-full border bg-background/60 px-3 py-2 text-center text-base text-foreground',
+                    theme.badgeBorder,
+                  )}
+                >
+                  Até{' '}
+                  <strong className={cn('font-bold', theme.text)}>
+                    {plan.maxSubjects}
+                  </strong>{' '}
+                  matérias
+                </div>
+
+                <ul className="flex flex-col gap-2">
+                  <li className="flex items-center gap-2 text-base text-foreground sm:text-sm">
+                    <Target className={cn('h-4 w-4 shrink-0', theme.text)} aria-hidden />
+                    <span>
+                      <strong className="font-bold">{plan.specificCount}</strong>{' '}
+                      específicas
+                    </span>
+                  </li>
+                  <li className="flex items-center gap-2 text-base text-foreground sm:text-sm">
+                    <BookOpen className={cn('h-4 w-4 shrink-0', theme.text)} aria-hidden />
+                    <span>
+                      <strong className="font-bold">{plan.totalBasicQuestions}</strong>{' '}
+                      básicas
+                    </span>
+                  </li>
+                </ul>
               </button>
             )
           })}
         </div>
+
+        <div className="flex items-center gap-2.5 rounded-xl border border-primary/40 bg-card px-4 py-3">
+          <Sparkles className="h-4 w-4 shrink-0 text-primary" aria-hidden />
+          <p className="text-sm text-muted-foreground">
+            Mais questões permitem incluir{' '}
+            <strong className="font-bold text-primary">mais matérias básicas</strong>{' '}
+            no simulado.
+          </p>
+        </div>
+
         </section>
 
       <section className='flex flex-col gap-3'>
@@ -527,8 +619,7 @@ export default function SimuladoConfig({ onStart }: SimuladoConfigProps) {
               Nenhuma banca encontrada para essa busca.
             </p>
           ) : (
-            pagedBancas.map((b, idx) => {
-              const absoluteIndex = (bancaPage - 1) * BANCA_PAGE_SIZE + idx
+            pagedBancas.map((b) => {
               const selected = banca === b.id
               return (
                 <button
@@ -543,10 +634,9 @@ export default function SimuladoConfig({ onStart }: SimuladoConfigProps) {
                   }`}
                 >
                   <span
-                    className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-[10px] font-black text-white"
-                    style={{ background: bancaAvatarColor(absoluteIndex) }}
+                    className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-chart-5/15 text-chart-5"
                   >
-                    {bancaInitials(b.name)}
+                    <FilePenLine className="h-4 w-4" aria-hidden />
                   </span>
                   <span
                     className={`min-w-0 flex-1 text-xs font-bold ${
@@ -566,6 +656,17 @@ export default function SimuladoConfig({ onStart }: SimuladoConfigProps) {
             })
           )}
         </div>
+        {!isBancasLoading && filteredBancas.length > 0 && (
+          <Pager
+            page={bancaPage}
+            totalPages={bancaTotalPages}
+            totalItems={filteredBancas.length}
+            itemLabel={filteredBancas.length === 1 ? 'banca' : 'bancas'}
+            color="accent"
+            onPrev={() => setBancaPage((p) => Math.max(1, p - 1))}
+            onNext={() => setBancaPage((p) => Math.min(bancaTotalPages, p + 1))}
+          />
+        )}
 
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-xs font-medium text-primary">
@@ -603,21 +704,12 @@ export default function SimuladoConfig({ onStart }: SimuladoConfigProps) {
         <div className="flex flex-col gap-4">
           <div className="flex flex-col gap-2">
             <div className="flex flex-wrap items-center justify-between gap-2 border-l-2 border-accent pl-3">
+              
               <p className="flex items-center gap-2 text-[14px] font-black uppercase tracking-widest text-accent">
                 CONHECIMENTOS BÁSICOS {'(peso 1.0)'}
               </p>
-              <div className="flex flex-wrap items-center gap-2">
-                <p className="text-[14px] font-bold text-accent">
-                  {basicSubjects.length}/{maxBasicSubjects} matérias selecionadas
-                </p>
-                {atBasicSubjectLimit && (
-                  <span className="inline-flex items-center gap-1 rounded-full border border-accent/40 bg-accent/10 px-2 py-0.5 text-[12px] font-black uppercase tracking-wider text-accent">
-                    Limite atingido
-                  </span>
-                )}
-              </div>
-            </div>
-            <p className="flex items-start gap-1.5 pl-3 text-sm leading-relaxed text-muted-foreground">
+
+              <p className="flex items-start gap-1.5 text-sm leading-relaxed text-muted-foreground">
               <Lightbulb
                 className="mt-0.5 h-3.5 w-3.5 shrink-0 text-accent"
                 aria-hidden
@@ -630,6 +722,21 @@ export default function SimuladoConfig({ onStart }: SimuladoConfigProps) {
                 . Para escolher mais, aumente o total de questões na etapa 1.
               </span>
             </p>
+
+            <div className="flex flex-wrap items-center gap-2">
+                <p className="text-[14px] font-bold text-accent">
+                  {basicSubjects.length}/{maxBasicSubjects} matérias selecionadas
+                </p>
+                {atBasicSubjectLimit && (
+                  <span className="inline-flex items-center gap-1 rounded-full border border-accent/40 bg-accent/10 px-2 py-0.5 text-[12px] font-black uppercase tracking-wider text-accent">
+                    Limite atingido
+                  </span>
+                )}
+              </div>
+
+            </div>
+          
+        
           </div>
 
           {isSubjectsLoading ? (
@@ -688,6 +795,21 @@ export default function SimuladoConfig({ onStart }: SimuladoConfigProps) {
               })}
             </div>
           )}
+          {!isSubjectsLoading && filteredBasicSubjects.length > 0 && (
+            <Pager
+              page={basicSubjectPage}
+              totalPages={basicSubjectTotalPages}
+              totalItems={filteredBasicSubjects.length}
+              itemLabel={
+                filteredBasicSubjects.length === 1 ? 'matéria' : 'matérias'
+              }
+              color="accent"
+              onPrev={() => setBasicSubjectPage((p) => Math.max(1, p - 1))}
+              onNext={() =>
+                setBasicSubjectPage((p) => Math.min(basicSubjectTotalPages, p + 1))
+              }
+            />
+          )}
 
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-xs font-medium text-primary">
@@ -713,7 +835,7 @@ export default function SimuladoConfig({ onStart }: SimuladoConfigProps) {
           {basicSubjects.length > 0 && (
             <div className="flex flex-col gap-2 rounded-xl border border-accent/25 bg-accent/5 p-3">
               <p className="text-[10px] font-black uppercase tracking-widest text-accent">
-                Básicas selecionadas ({basicSubjects.length}/{maxBasicSubjects})
+                Matérias Selecionadas ({basicSubjects.length}/{maxBasicSubjects})
               </p>
               <div className="flex flex-wrap gap-2">
                 {basicSubjects.map((sel) => {
@@ -797,6 +919,23 @@ export default function SimuladoConfig({ onStart }: SimuladoConfigProps) {
               })}
             </div>
           )}
+          {!isSubjectsLoading && filteredSpecificSubjects.length > 0 && (
+            <Pager
+              page={specificSubjectPage}
+              totalPages={specificSubjectTotalPages}
+              totalItems={filteredSpecificSubjects.length}
+              itemLabel={
+                filteredSpecificSubjects.length === 1 ? 'matéria' : 'matérias'
+              }
+              color="chart-2"
+              onPrev={() => setSpecificSubjectPage((p) => Math.max(1, p - 1))}
+              onNext={() =>
+                setSpecificSubjectPage((p) =>
+                  Math.min(specificSubjectTotalPages, p + 1),
+                )
+              }
+            />
+          )}
 
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-xs font-medium text-primary">
@@ -822,7 +961,7 @@ export default function SimuladoConfig({ onStart }: SimuladoConfigProps) {
           {specificSubjects.length > 0 && (
             <div className="flex flex-col gap-2 rounded-xl border border-chart-2/25 bg-chart-2/5 p-3">
               <p className="text-[10px] font-black uppercase tracking-widest text-chart-2">
-                Específica selecionada
+                Matéria Selecionada
               </p>
               <div className="flex flex-wrap gap-2">
                 {specificSubjects.map((sel) => {
