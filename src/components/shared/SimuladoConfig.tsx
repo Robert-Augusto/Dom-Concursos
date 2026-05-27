@@ -524,7 +524,7 @@ export default function SimuladoConfig({ onStart }: SimuladoConfigProps) {
                   'relative flex flex-col gap-3 rounded-2xl border-2 bg-card p-4 text-left transition-all',
                   active
                     ? cn(theme.borderActive, theme.bgActive, 'shadow-sm')
-                    : 'border-border/80 hover:border-muted-foreground/30',
+                    : 'border-foreground/25 hover:border-muted-foreground/30',
                 )}
               >
                 <span
