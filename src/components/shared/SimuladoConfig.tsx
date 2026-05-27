@@ -508,7 +508,7 @@ export default function SimuladoConfig({ onStart }: SimuladoConfigProps) {
           </h3>
         </div>
 
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <div className="grid grid-cols-3 gap-2">
           {quantities.map((q) => {
             const active = questionCount === q.value
             const theme = quantityThemeStyles[q.theme]
@@ -521,59 +521,74 @@ export default function SimuladoConfig({ onStart }: SimuladoConfigProps) {
                 onClick={() => setQuestionCount(q.value)}
                 aria-pressed={active}
                 className={cn(
-                  'relative flex flex-col gap-3 rounded-2xl border-2 bg-card p-4 text-left transition-all',
+                  'relative flex min-w-0 flex-col items-stretch gap-2.5 rounded-2xl border-2 bg-card p-3 text-left transition-all sm:gap-3 sm:p-4',
                   active
                     ? cn(theme.borderActive, theme.bgActive, 'shadow-sm')
-                    : 'border-foreground/25 hover:border-muted-foreground/30',
+                    : 'border-border/80 bg-card hover:border-muted-foreground/40',
                 )}
               >
                 <span
                   className={cn(
-                    'absolute right-3 top-3 flex h-6 w-6 items-center justify-center rounded-full border-2 transition-colors',
+                    'absolute right-2 top-2 flex h-5 w-5 items-center justify-center rounded-full border-2 transition-colors sm:right-3 sm:top-3 sm:h-6 sm:w-6',
                     active ? theme.markerActive : theme.markerInactive,
                   )}
                   aria-hidden
                 >
-                  {active ? <Check className="h-3.5 w-3.5" strokeWidth={3} /> : null}
+                  {active ? (
+                    <Check className="h-3 w-3 sm:h-3.5 sm:w-3.5" strokeWidth={3} />
+                  ) : null}
                 </span>
 
-                <div className="pr-8">
-                  <p className="leading-none">
-                    <span className={cn('font-heading text-3xl font-black', theme.text)}>
+                <div className="min-w-0 pr-7 sm:pr-8">
+                  <p className="leading-tight">
+                    <span
+                      className={cn(
+                        'font-heading text-2xl font-black sm:text-3xl',
+                        theme.text,
+                      )}
+                    >
                       {q.value}
                     </span>
-                    <span className="text-sm font-semibold text-foreground">
+                    <span className="text-[11px] font-semibold text-foreground sm:text-sm">
                       {' '}
                       Questões
                     </span>
                   </p>
-                  <p className={cn('mt-1 text-base font-semibold', theme.text)}>{q.label}</p>
+                  <p className={cn('mt-1 text-xs font-bold sm:text-sm', theme.text)}>
+                    {q.label}
+                  </p>
                 </div>
 
                 <div
                   className={cn(
-                    'rounded-full border bg-background/60 px-3 py-2 text-center text-base text-foreground',
+                    'w-full rounded-full border bg-background/60 px-2 py-1.5 text-center text-[10px] leading-snug text-foreground sm:px-3 sm:py-2 sm:text-xs',
                     theme.badgeBorder,
                   )}
                 >
                   Até{' '}
-                  <strong className={cn('font-bold', theme.text)}>
+                  <strong className={cn('font-black', theme.text)}>
                     {plan.maxSubjects}
                   </strong>{' '}
                   matérias
                 </div>
 
-                <ul className="flex flex-col gap-2">
-                  <li className="flex items-center gap-2 text-base text-foreground sm:text-sm">
-                    <Target className={cn('h-4 w-4 shrink-0', theme.text)} aria-hidden />
-                    <span>
+                <ul className="flex min-w-0 flex-col gap-1.5 sm:gap-2">
+                  <li className="flex min-w-0 items-center gap-1.5 sm:gap-2">
+                    <Target
+                      className={cn('h-3.5 w-3.5 shrink-0 sm:h-4 sm:w-4', theme.text)}
+                      aria-hidden
+                    />
+                    <span className="min-w-0 text-[10px] leading-snug text-foreground sm:text-xs">
                       <strong className="font-bold">{plan.specificCount}</strong>{' '}
                       específicas
                     </span>
                   </li>
-                  <li className="flex items-center gap-2 text-base text-foreground sm:text-sm">
-                    <BookOpen className={cn('h-4 w-4 shrink-0', theme.text)} aria-hidden />
-                    <span>
+                  <li className="flex min-w-0 items-center gap-1.5 sm:gap-2">
+                    <BookOpen
+                      className={cn('h-3.5 w-3.5 shrink-0 sm:h-4 sm:w-4', theme.text)}
+                      aria-hidden
+                    />
+                    <span className="min-w-0 text-[10px] leading-snug text-foreground sm:text-xs">
                       <strong className="font-bold">{plan.totalBasicQuestions}</strong>{' '}
                       básicas
                     </span>
