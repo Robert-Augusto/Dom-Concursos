@@ -716,31 +716,27 @@ export default function SimuladoConfig({ onStart }: SimuladoConfigProps) {
             3
           </span>
           <h3 className="text-sm font-bold text-primary sm:text-base">
-            ESCOLHA AS MATÉRIAS
+            ESCOLHA AS MATÉRIAS BÁSICAS {"(PESO 1.0)"}
           </h3>
         </div>
 
         <div className="flex flex-col gap-4">
           <div className="flex flex-col gap-2">
             <div className="flex flex-wrap items-center justify-between gap-2 border-l-2 border-accent pl-3">
-              
-              <p className="flex items-center gap-2 text-[14px] font-black uppercase tracking-widest text-accent">
-                CONHECIMENTOS BÁSICOS {'(peso 1.0)'}
-              </p>
 
               <p className="flex items-start gap-1.5 text-sm leading-relaxed text-muted-foreground">
-              <Lightbulb
-                className="mt-0.5 h-3.5 w-3.5 shrink-0 text-accent"
-                aria-hidden
-              />
-              <span>
-                Para {questionCount} questões, você pode escolher até{' '}
-                <strong className="font-bold text-foreground">
-                  {maxBasicSubjects} matérias básicas
-                </strong>
-                . Para escolher mais, aumente o total de questões na etapa 1.
-              </span>
-            </p>
+                <Lightbulb
+                  className="mt-0.5 h-3.5 w-3.5 shrink-0 text-accent"
+                  aria-hidden
+                />
+                <span>
+                  Para {questionCount} questões, você pode escolher até{' '}
+                  <strong className="font-bold text-foreground">
+                    {maxBasicSubjects} matérias básicas
+                  </strong>
+                  . Para escolher mais, aumente o total de questões na etapa 1.
+                </span>
+              </p>
 
             <div className="flex flex-wrap items-center gap-2">
                 <p className="text-[14px] font-bold text-accent">
@@ -884,14 +880,24 @@ export default function SimuladoConfig({ onStart }: SimuladoConfigProps) {
         </div>
 
         <div className="mt-6 flex flex-col gap-4">
-          <div className="flex flex-wrap items-center justify-between gap-2 border-l-2 border-chart-2 pl-3">
+
+        <div className="flex items-center gap-2.5 mb-5 mt-3">
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent text-sm font-black text-accent-foreground">
+            4
+          </span>
+          <h3 className="text-sm font-bold text-primary sm:text-base">
+            ESCOLHA AS MATÉRIAS ESPECÍFICAS {"(PESO 2.0)"}
+          </h3>
+        </div>
+
+          {/*<div className="flex flex-wrap items-center justify-between gap-2 border-l-2 border-chart-2 pl-3">
             <p className="flex items-center gap-2 text-[14px] font-black uppercase tracking-widest text-chart-2">
               CONHECIMENTOS ESPECÍFICOS {'(peso 2.0)'}
             </p>
             <p className="text-[14px] font-bold text-chart-2">
               {specificSubjects.length}/1 selecionada
             </p>
-          </div>
+          </div>*/}
 
           {isSubjectsLoading ? (
             <p className="text-xs text-muted-foreground">Carregando matérias...</p>
