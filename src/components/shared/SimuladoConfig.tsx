@@ -881,14 +881,15 @@ export default function SimuladoConfig({ onStart }: SimuladoConfigProps) {
 
         <div className="mt-6 flex flex-col gap-4">
 
-        <div className="flex items-center gap-2.5 mb-5 mt-3">
-          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent text-sm font-black text-accent-foreground">
-            4
-          </span>
-          <h3 className="text-sm font-semibold text-primary sm:text-base">
-            ESCOLHA A MATÉRIA ESPECÍFICA {"(PESO 2.0)"}
-          </h3>
-        </div>
+          <div className="flex items-center gap-2 mb-5 mt-3">
+            <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent text-sm font-black text-accent-foreground">
+              4
+            </span>
+            
+            <h3 className="text-sm font-semibold text-primary sm:text-base">
+              ESCOLHA A MATÉRIA ESPECÍFICA {"(PESO 2.0)"}
+            </h3>
+          </div>
 
           {/*<div className="flex flex-wrap items-center justify-between gap-2 border-l-2 border-chart-2 pl-3">
             <p className="flex items-center gap-2 text-[14px] font-black uppercase tracking-widest text-chart-2">
