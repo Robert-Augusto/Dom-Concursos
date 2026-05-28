@@ -715,9 +715,12 @@ export default function SimuladoConfig({ onStart }: SimuladoConfigProps) {
           <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent text-sm font-black text-accent-foreground">
             3
           </span>
-          <h3 className="text-sm font-bold text-primary sm:text-base">
-            ESCOLHA AS MATÉRIAS BÁSICAS {"(PESO 1.0)"}
-          </h3>
+          <h3 className="text-sm font-semibold text-primary sm:text-base">
+              ESCOLHA AS MATÉRIAS BÁSICAS{' '}
+              <span className="text-[12px]">(PESO 1.0)</span>
+            </h3>
+
+          
         </div>
 
         <div className="flex flex-col gap-4">
@@ -887,7 +890,8 @@ export default function SimuladoConfig({ onStart }: SimuladoConfigProps) {
             </span>
             
             <h3 className="text-sm font-semibold text-primary sm:text-base">
-              ESCOLHA A MATÉRIA ESPECÍFICA {"(PESO 2.0)"}
+              ESCOLHA A MATÉRIA ESPECÍFICA{' '}
+              <span className="text-[12px]">(PESO 2.0)</span>
             </h3>
           </div>
 
