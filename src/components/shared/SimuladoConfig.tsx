@@ -521,7 +521,7 @@ export default function SimuladoConfig({ onStart }: SimuladoConfigProps) {
                 onClick={() => setQuestionCount(q.value)}
                 aria-pressed={active}
                 className={cn(
-                  'relative flex min-w-0 flex-col items-stretch gap-2.5 rounded-2xl border-2 bg-card p-3 text-left transition-all sm:gap-3 sm:p-4',
+                  'relative flex min-w-0 flex-col items-stretch gap-2 rounded-2xl border-2 bg-card p-2.5 text-left transition-all sm:gap-2.5 sm:p-3.5',
                   active
                     ? cn(theme.borderActive, theme.bgActive, 'shadow-sm')
                     : 'border-border/80 bg-card hover:border-muted-foreground/40',
@@ -529,39 +529,44 @@ export default function SimuladoConfig({ onStart }: SimuladoConfigProps) {
               >
                 <span
                   className={cn(
-                    'absolute right-2 top-2 flex h-5 w-5 items-center justify-center rounded-full border-2 transition-colors sm:right-3 sm:top-3 sm:h-6 sm:w-6',
+                    'absolute right-1.5 top-1.5 flex h-4 w-4 items-center justify-center rounded-full border-2 transition-colors sm:right-2.5 sm:top-2.5 sm:h-5 sm:w-5',
                     active ? theme.markerActive : theme.markerInactive,
                   )}
                   aria-hidden
                 >
                   {active ? (
-                    <Check className="h-3 w-3 sm:h-3.5 sm:w-3.5" strokeWidth={3} />
+                    <Check className="h-2.5 w-2.5 sm:h-3 sm:w-3" strokeWidth={3} />
                   ) : null}
                 </span>
 
-                <div className="min-w-0 pr-7 sm:pr-8">
+                <div className="min-w-0 pr-6 sm:pr-7">
                   <p className="leading-tight">
                     <span
                       className={cn(
-                        'font-heading text-2xl font-black sm:text-3xl',
+                        'font-heading text-lg font-black sm:text-2xl',
                         theme.text,
                       )}
                     >
                       {q.value}
                     </span>
-                    <span className="text-[11px] font-semibold text-foreground sm:text-sm">
+                    <span className="text-[9px] font-semibold text-foreground sm:text-[11px]">
                       {' '}
                       Questões
                     </span>
                   </p>
-                  <p className={cn('mt-1 text-xs font-bold sm:text-sm', theme.text)}>
+                  <p
+                    className={cn(
+                      'mt-0.5 text-[10px] font-bold sm:mt-1 sm:text-xs',
+                      theme.text,
+                    )}
+                  >
                     {q.label}
                   </p>
                 </div>
 
                 <div
                   className={cn(
-                    'w-full rounded-full border bg-background/60 px-2 py-1.5 text-center text-[10px] leading-snug text-foreground sm:px-3 sm:py-2 sm:text-xs',
+                    'w-full rounded-full border bg-background/60 px-1.5 py-1 text-center text-[9px] leading-snug text-foreground sm:px-2.5 sm:py-1.5 sm:text-[10px]',
                     theme.badgeBorder,
                   )}
                 >
@@ -572,23 +577,23 @@ export default function SimuladoConfig({ onStart }: SimuladoConfigProps) {
                   matérias
                 </div>
 
-                <ul className="flex min-w-0 flex-col gap-1.5 sm:gap-2">
-                  <li className="flex min-w-0 items-center gap-1.5 sm:gap-2">
+                <ul className="flex min-w-0 flex-col gap-1 sm:gap-1.5">
+                  <li className="flex min-w-0 items-center gap-1 sm:gap-1.5">
                     <Target
-                      className={cn('h-3.5 w-3.5 shrink-0 sm:h-4 sm:w-4', theme.text)}
+                      className={cn('h-3 w-3 shrink-0 sm:h-3.5 sm:w-3.5', theme.text)}
                       aria-hidden
                     />
-                    <span className="min-w-0 text-[10px] leading-snug text-foreground sm:text-xs">
+                    <span className="min-w-0 text-[9px] leading-snug text-foreground sm:text-[10px]">
                       <strong className="font-bold">{plan.specificCount}</strong>{' '}
                       específicas
                     </span>
                   </li>
-                  <li className="flex min-w-0 items-center gap-1.5 sm:gap-2">
+                  <li className="flex min-w-0 items-center gap-1 sm:gap-1.5">
                     <BookOpen
-                      className={cn('h-3.5 w-3.5 shrink-0 sm:h-4 sm:w-4', theme.text)}
+                      className={cn('h-3 w-3 shrink-0 sm:h-3.5 sm:w-3.5', theme.text)}
                       aria-hidden
                     />
-                    <span className="min-w-0 text-[10px] leading-snug text-foreground sm:text-xs">
+                    <span className="min-w-0 text-[9px] leading-snug text-foreground sm:text-[10px]">
                       <strong className="font-bold">{plan.totalBasicQuestions}</strong>{' '}
                       básicas
                     </span>
