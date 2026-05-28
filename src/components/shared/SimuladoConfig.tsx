@@ -539,7 +539,7 @@ export default function SimuladoConfig({ onStart }: SimuladoConfigProps) {
                   ) : null}
                 </span>
 
-                <div className="min-w-0 pr-6 sm:pr-7">
+                <div>
                   <p className="flex flex-wrap items-baseline gap-x-1 leading-tight">
                     <span
                       className={cn(
@@ -549,7 +549,7 @@ export default function SimuladoConfig({ onStart }: SimuladoConfigProps) {
                     >
                       {q.value}
                     </span>
-                    <span className="text-[6px] font-semibold text-foreground sm:text-[11px]">
+                    <span className="text-[8px] font-semibold text-foreground sm:text-[11px]">
                       QUESTÕES
                     </span>
                   </p>
@@ -620,7 +620,7 @@ export default function SimuladoConfig({ onStart }: SimuladoConfigProps) {
             2
           </span>
           <h3 className="text-sm font-bold text-primary sm:text-base">
-            ESCOLHA A BANCA
+            ESCOLHA UMA BANCA
           </h3>
         </div>
 
