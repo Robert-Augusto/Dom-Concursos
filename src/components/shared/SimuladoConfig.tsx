@@ -86,8 +86,8 @@ const quantities: {
   theme: QuantityTheme
 }[] = [
   { value: 20, label: 'Fácil', theme: 'chart-2' },
-  { value: 40, label: 'Padrão', theme: 'chart-3' },
-  { value: 60, label: 'Avançado', theme: 'chart-5' },
+  { value: 40, label: 'Médio', theme: 'chart-3' },
+  { value: 60, label: 'Difícil', theme: 'chart-5' },
 ]
 
 const quantityThemeStyles: Record<
@@ -524,7 +524,7 @@ export default function SimuladoConfig({ onStart }: SimuladoConfigProps) {
                   'relative flex min-w-0 flex-col items-stretch gap-2 rounded-2xl border-2 bg-card p-2.5 text-left transition-all sm:gap-2.5 sm:p-3.5',
                   active
                     ? cn(theme.borderActive, theme.bgActive, 'shadow-sm')
-                    : 'border-border/80 bg-card hover:border-muted-foreground/40',
+                    : 'border-foreground/25 bg-card hover:border-muted-foreground/40',
                 )}
               >
                 <span
@@ -549,8 +549,8 @@ export default function SimuladoConfig({ onStart }: SimuladoConfigProps) {
                     >
                       {q.value}
                     </span>
-                    <span className="text-[7px] font-semibold text-foreground sm:text-[11px]">
-                      Questões
+                    <span className="text-[6px] font-semibold text-foreground sm:text-[11px]">
+                      QUESTÕES
                     </span>
                   </p>
                   <p
