@@ -543,13 +543,13 @@ export default function SimuladoConfig({ onStart }: SimuladoConfigProps) {
                   <p className="flex flex-wrap items-baseline gap-x-1 leading-tight">
                     <span
                       className={cn(
-                        'font-heading text-sm font-black sm:text-2xl',
+                        'font-heading text-sm font-black sm:text-3xl',
                         theme.text,
                       )}
                     >
                       {q.value}
                     </span>
-                    <span className="text-[8px] font-semibold text-foreground sm:text-[11px]">
+                    <span className="text-[8px] font-semibold text-foreground sm:text-[14px]">
                       QUESTÕES
                     </span>
                   </p>
@@ -565,7 +565,7 @@ export default function SimuladoConfig({ onStart }: SimuladoConfigProps) {
 
                 <div
                   className={cn(
-                    'w-full rounded-full border bg-background/60 px-1.5 py-1 text-center text-[9px] leading-snug text-foreground sm:px-2.5 sm:py-1.5 sm:text-[10px]',
+                    'w-full rounded-full border bg-background/60 px-1.5 py-1 text-center text-[9px] leading-snug text-foreground sm:px-2.5 sm:py-1.5 sm:text-[14px]',
                     theme.badgeBorder,
                   )}
                 >
@@ -582,7 +582,7 @@ export default function SimuladoConfig({ onStart }: SimuladoConfigProps) {
                       className={cn('h-3 w-3 shrink-0 sm:h-3.5 sm:w-3.5', theme.text)}
                       aria-hidden
                     />
-                    <span className="min-w-0 text-[9px] leading-snug text-foreground sm:text-[10px]">
+                    <span className="min-w-0 text-[9px] leading-snug text-foreground sm:text-[14px]">
                       <strong className="font-bold">{plan.specificCount}</strong>{' '}
                       específicas
                     </span>
@@ -592,7 +592,7 @@ export default function SimuladoConfig({ onStart }: SimuladoConfigProps) {
                       className={cn('h-3 w-3 shrink-0 sm:h-3.5 sm:w-3.5', theme.text)}
                       aria-hidden
                     />
-                    <span className="min-w-0 text-[9px] leading-snug text-foreground sm:text-[10px]">
+                    <span className="min-w-0 text-[9px] leading-snug text-foreground sm:text-[14px]">
                       <strong className="font-bold">{plan.totalBasicQuestions}</strong>{' '}
                       básicas
                     </span>
@@ -737,7 +737,7 @@ export default function SimuladoConfig({ onStart }: SimuladoConfigProps) {
                   <strong className="font-bold text-foreground">
                     {maxBasicSubjects} matérias básicas
                   </strong>
-                  . Para escolher mais, aumente o total de questões na etapa 1.
+                  . {questionCount !== 60  && (<span> Para escolher mais, aumente o total de questões na etapa 1.</span>)}
                 </span>
               </p>
 
