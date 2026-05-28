@@ -540,23 +540,22 @@ export default function SimuladoConfig({ onStart }: SimuladoConfigProps) {
                 </span>
 
                 <div className="min-w-0 pr-6 sm:pr-7">
-                  <p className="leading-tight">
+                  <p className="flex flex-wrap items-baseline gap-x-1 leading-tight">
                     <span
                       className={cn(
-                        'font-heading text-lg font-black sm:text-2xl',
+                        'font-heading text-sm font-black sm:text-2xl',
                         theme.text,
                       )}
                     >
                       {q.value}
                     </span>
-                    <span className="text-[9px] font-semibold text-foreground sm:text-[11px]">
-                      {' '}
+                    <span className="text-[7px] font-semibold text-foreground sm:text-[11px]">
                       Questões
                     </span>
                   </p>
                   <p
                     className={cn(
-                      'mt-0.5 text-[10px] font-bold sm:mt-1 sm:text-xs',
+                      'mt-0.5 text-[9px] font-semibold sm:mt-1 sm:text-xs',
                       theme.text,
                     )}
                   >
