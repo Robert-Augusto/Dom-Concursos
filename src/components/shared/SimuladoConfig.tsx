@@ -885,8 +885,8 @@ export default function SimuladoConfig({ onStart }: SimuladoConfigProps) {
           <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-accent text-sm font-black text-accent-foreground">
             4
           </span>
-          <h3 className="text-sm font-bold text-primary sm:text-base">
-            ESCOLHA AS MATÉRIAS ESPECÍFICAS {"(PESO 2.0)"}
+          <h3 className="text-sm font-semibold text-primary sm:text-base">
+            ESCOLHA A MATÉRIA ESPECÍFICA {"(PESO 2.0)"}
           </h3>
         </div>
 
