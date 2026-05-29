@@ -3,7 +3,7 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { X } from 'lucide-react'
 import { toast } from 'sonner'
-import { CreateLesson, UpdateLesson } from '@/lib/lessons'
+import { CreateLesson, UpdateLesson } from '@/lib/lib-lessons'
 import { VideoType, AccessLevel, Subjects, Lessons, SubjectType } from '@/types'
 import { Switch } from '@/components/ui/switch'
 import { CreateSubject } from '@/lib/lib-subjects'

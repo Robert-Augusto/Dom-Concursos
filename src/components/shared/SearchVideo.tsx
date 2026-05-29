@@ -1,4 +1,4 @@
-'use client'
+﻿'use client'
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
@@ -85,7 +85,7 @@ export function SearchVideo({
   const activeFilterLabel = useMemo(() => {
     if (!selectedRootFilter) return 'Tudo'
     if (selectedRootFilter === LESSON_FILTER_QUESTOES_BANCAS) {
-      return 'Questões de Bancas'
+      return 'Quest├Áes de Bancas'
     }
     return subjectNameById.get(selectedRootFilter) ?? 'Tudo'
   }, [selectedRootFilter, subjectNameById])
@@ -98,7 +98,7 @@ export function SearchVideo({
     if (selectedRootFilter === '') {
       allowedSubjectIds = null
     } else if (selectedRootFilter === LESSON_FILTER_QUESTOES_BANCAS) {
-      const label = 'Questões de Bancas'
+      const label = 'Quest├Áes de Bancas'
       const ids = new Set<string>()
       for (const s of allSubjects) {
         if (s.name !== label) continue
@@ -180,7 +180,7 @@ export function SearchVideo({
           type="search"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Pesquise aulas, questões..."
+          placeholder="Pesquise aulas, quest├Áes..."
           className="w-full rounded-full border border-border bg-card py-3 pl-11 pr-5 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-primary/50"
         />
       </div>
@@ -211,15 +211,15 @@ export function SearchVideo({
                 Desbloqueie todas as aulas
               </p>
               <p className="text-sm leading-relaxed text-muted-foreground md:text-base">
-                Crie sua conta em poucos segundos e comece a estudar com vídeos,
-                filtros por matéria e muito mais.
+                Crie sua conta em poucos segundos e comece a estudar com v├¡deos,
+                filtros por mat├®ria e muito mais.
               </p>
             </div>
             <Link
               href="/auth/signup"
               className="group inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-primary to-primary/90 px-6 py-3 text-sm font-bold text-primary-foreground shadow-lg shadow-primary/35 ring-2 ring-primary/25 ring-offset-2 ring-offset-background transition-transform hover:scale-[1.03] hover:shadow-xl hover:shadow-primary/45 active:scale-[0.98]"
             >
-              Criar conta grátis
+              Criar conta gr├ítis
               <ArrowRight
                 className="h-4 w-4 transition-transform group-hover:translate-x-0.5"
                 aria-hidden
@@ -231,7 +231,7 @@ export function SearchVideo({
         <div className="flex flex-col gap-3 md:grid md:grid-cols-2 md:gap-4">
           {filteredVideos.map((video) => {
           const embedUrl = getYoutubeEmbedUrl(video.video_url)
-          const subjectName = subjectNameById.get(video.subject_id) ?? 'Sem matéria'
+          const subjectName = subjectNameById.get(video.subject_id) ?? 'Sem mat├®ria'
           return (
           <div
             key={video.id}
@@ -251,7 +251,7 @@ export function SearchVideo({
                 />
               ) : (
                 <div className="flex h-full w-full items-center justify-center text-xs font-semibold text-muted-foreground">
-                  URL do YouTube inválida
+                  URL do YouTube inv├ílida
                 </div>
               )}
               <span className="pointer-events-none absolute bottom-1.5 right-1.5 rounded bg-black/80 px-1.5 py-0.5 text-[10px] font-bold text-white">
@@ -265,7 +265,7 @@ export function SearchVideo({
                 {subjectName}
               </span>
               <div className="flex items-center gap-3">
-                {/* Left — title + description */}
+                {/* Left ÔÇö title + description */}
                 <div className="flex flex-col gap-1 flex-1">
                   <p className="line-clamp-2 text-xs leading-snug font-semibold text-foreground md:text-sm">
                     {video.title}
@@ -275,7 +275,7 @@ export function SearchVideo({
                   </p>
                 </div>
 
-                {/* Right — button */}
+                {/* Right ÔÇö button */}
                 {isAdminPage ? (
                   <div className='flex'>
                     <button

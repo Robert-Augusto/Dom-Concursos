@@ -1,7 +1,7 @@
 'use client'
 
 import { TriangleAlert, X } from 'lucide-react'
-import { DeleteLesson } from '@/lib/lessons'
+import { DeleteLesson } from '@/lib/lib-lessons'
 import { toast } from 'sonner'
 
 type ModalLessonDeleteProps = {

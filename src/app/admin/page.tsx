@@ -1,28 +1,59 @@
 'use client'
 
 import { BottomNav } from '@/components/layout/BottomNav'
-import { Header } from '@/components/layout/Header'
+import { useRouter } from 'next/navigation'
 import { Sidebar } from '@/components/layout/Sidebar'
 import AdminQuestoes from '@/components/shared/AdminQuestoes'
-import { SearchVideo } from '@/components/shared/SearchVideo'
+import AdminLessons from '@/components/shared/AdminLessons'
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Lessons, Subjects } from '@/types'
 import EstudoInteligente from '@/components/shared/EstudoInteligente'
+import {
+  ArrowLeft,
+  BookOpen,
+  ChevronRight,
+  HelpCircle,
+  PlayCircle,
+  ChevronLeft,
+  type LucideIcon,
+} from 'lucide-react'
 
-const ADMIN_SECTIONS = [
-  { id: 'register-lesson', label: 'Aulas' },
-  { id: 'smart-study', label: 'Estudo Inteligente' },
-  { id: 'questions', label: 'Questões' },
-] as const
+const ADMIN_MENU_OPTIONS = [
+  {
+    id: 'register-lesson',
+    label: 'Vídeos da Home',
+    description: 'Aulas da tela inicial',
+    Icon: PlayCircle,
+  },
+  {
+    id: 'smart-study',
+    label: 'Estudo Inteligente',
+    description: 'PDFs, flashcards e questões',
+    Icon: BookOpen,
+  },
+  {
+    id: 'questions',
+    label: 'Questões',
+    description: 'Banco de questões e simulados',
+    Icon: HelpCircle,
+  },
+] as const satisfies ReadonlyArray<{
+  id: string
+  label: string
+  description: string
+  Icon: LucideIcon
+}>
 
-type AdminSectionId = (typeof ADMIN_SECTIONS)[number]['id']
+type AdminSectionId = (typeof ADMIN_MENU_OPTIONS)[number]['id']
 
 export default function AdminPage() {
-  const [selectedSection, setSelectedSection] =
-    useState<AdminSectionId>('register-lesson')
+  const [selectedSection, setSelectedSection] = useState<AdminSectionId | null>(
+    null,
+  )
   const [lessons, setLessons] = useState<Lessons[] | null>(null)
   const [subjects, setSubjects] = useState<Subjects[] | null>(null)
+  const router = useRouter()
 
   useEffect(() => {
     const supabase = createClient()
@@ -46,14 +77,14 @@ export default function AdminPage() {
         { event: '*', schema: 'public', table: 'lessons' },
         () => {
           fetchLessons()
-        }
+        },
       )
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'subjects' },
         () => {
           fetchSubjects()
-        }
+        },
       )
       .subscribe()
 
@@ -62,53 +93,111 @@ export default function AdminPage() {
     }
   }, [])
 
+  const selectedMenuOption = ADMIN_MENU_OPTIONS.find(
+    (option) => option.id === selectedSection,
+  )
+
+  function handleBack() {
+    if(selectedSection === null){
+      router.push('settings')
+    }
+
+    if(selectedSection === 'questions'){
+      setSelectedSection(null)
+    }
+
+    if(selectedSection === 'register-lesson'){
+      setSelectedSection(null)
+    }
+
+    if(selectedSection === 'smart-study'){
+      setSelectedSection(null)
+    }
+
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <Sidebar />
       <div className="min-h-screen pb-20 lg:ml-[240px] lg:pb-0">
-        <Header />
-        <main className="mx-auto max-w-[1210px] p-6">
-          <div className="flex flex-col gap-8">
-            <section className="flex flex-col gap-3">
-              <h1 className="text-xl font-black text-foreground font-heading">
-                Painel Administrativo
+        
+      <header className="sticky top-0 z-30 border-b border-border bg-background mb-3">
+          <div className="flex items-center gap-3 px-4 py-3 sm:px-6">
+            <button
+              type="button"
+              onClick={handleBack}
+              className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl border-2 border-muted-foreground/50 bg-border/80 text-primary transition-colors hover:text-foreground"
+            >
+              <ChevronLeft className="h-6 w-6" />
+            </button>
+            <div className="min-w-0 flex-1">
+              <h1 className="font-heading truncate text-base font-bold text-primary">
+                {selectedSection === null && 'Painel Admin'}
+                {selectedSection === 'questions' && 'Questões'}
+                {selectedSection === 'register-lesson' && 'Vídeos da Home'}
               </h1>
-              <div className="flex flex-wrap gap-2">
-                {ADMIN_SECTIONS.map((section) => {
-                  const isSelected = selectedSection === section.id
+              <p className="text-sm text-muted-foreground">
+                {selectedSection === null && 'Controle total da plataforma'}
+                {selectedSection === 'questions' && 'Questões objetivas'}
+                {selectedSection === 'register-lesson' && 'Aulas da tela inicial'}
+              </p>
+            </div>
+            <span className="shrink-0 rounded-full border border-primary px-3 py-1 text-xs font-bold text-primary bg-primary/15">
+              ADMIN
+            </span>
+          </div>
+        </header>
 
-                  return (
-                    <button
-                      key={section.id}
-                      type="button"
-                      onClick={() => setSelectedSection(section.id)}
-                      className={`rounded-full border px-4 py-2 text-sm font-semibold transition-colors ${
-                        isSelected
-                          ? 'border-primary bg-primary text-primary-foreground'
-                          : 'border-border bg-card text-muted-foreground hover:border-primary/40 hover:text-foreground'
-                      }`}
-                    >
-                      {section.label}
-                    </button>
-                  )
-                })}
-              </div>
-            </section>
+        <main className="mx-auto max-w-[700px] p-6">
+          <div className="flex flex-col gap-6">
+            {selectedSection === null ? (
+              <section className="flex flex-col gap-4">
+                <ul className="flex flex-col gap-2">
+                  {ADMIN_MENU_OPTIONS.map(({ id, label, description, Icon }) => (
+                    <li key={id}>
+                      <button
+                        type="button"
+                        onClick={() => setSelectedSection(id)}
+                        className="group flex w-full items-center gap-4 rounded-xl border border-border bg-card p-4 text-left transition-colors hover:border-primary/40 hover:bg-muted/30"
+                      >
+                        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-primary/50 bg-background">
+                          <Icon
+                            className="h-5 w-5 text-primary"
+                            aria-hidden
+                          />
+                        </span>
+                        <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+                          <span className="text-sm font-bold text-foreground">
+                            {label}
+                          </span>
+                          <span className="text-xs text-muted-foreground">
+                            {description}
+                          </span>
+                        </span>
+                        <ChevronRight
+                          className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5"
+                          aria-hidden
+                        />
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            ) : (
+              <>
+                {selectedSection === 'register-lesson' ? (
+                  <AdminLessons subjectsData={subjects} />
+                ) : null}
 
-            {selectedSection === 'register-lesson' ? (
-              <SearchVideo
-                lessonsData={lessons}
-                subjectsData={subjects}
-              />
-            ) : null}
+                {selectedSection === 'smart-study' ? (
+                  <EstudoInteligente subjectsData={subjects} />
+                ) : null}
 
-            {selectedSection === 'smart-study' ? (
-              <EstudoInteligente subjectsData={subjects} />
-            ) : null}
-
-            {selectedSection === 'questions' ? (
-              <AdminQuestoes subjectsData={subjects} />
-            ) : null}
+                {selectedSection === 'questions' ? (
+                  <AdminQuestoes subjectsData={subjects} />
+                ) : null}
+              </>
+            )}
           </div>
         </main>
       </div>
