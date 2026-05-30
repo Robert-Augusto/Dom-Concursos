@@ -186,7 +186,7 @@ export default function AdminPage() {
             ) : (
               <>
                 {selectedSection === 'register-lesson' ? (
-                  <AdminLessons subjectsData={subjects} />
+                  <AdminLessons subjectsData={subjects} lessonsData={lessons} />
                 ) : null}
 
                 {selectedSection === 'smart-study' ? (

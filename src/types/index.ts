@@ -14,6 +14,16 @@ export interface Lessons {
     is_published: boolean
     is_searchable: boolean
     subject_id: string
+    thumbnail?: string | null
+}
+
+export interface LessonMaterials {
+    id: string
+    created_at: Date
+    lessons_id: string
+    title: string
+    file_url: string
+    file_type: string
 }
 
 // subjects

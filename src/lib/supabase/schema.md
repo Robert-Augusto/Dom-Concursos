@@ -50,6 +50,45 @@
 | `is_published` | `bool` |  Nullable |
 | `is_searchable` | `bool` |  Nullable |
 | `subject_id` | `int8` |  Nullable |
+| `thumbnail` | `text` |  Nullable |
+
+## Table `lessons_materials`
+
+### Columns
+
+| Name | Type | Constraints |
+|------|------|-------------|
+| `id` | `int8` | Primary Identity |
+| `created_at` | `timestamptz` |  |
+| `lessons_id` | `int8` |  Nullable |
+| `title` | `text` |  Nullable |
+| `file_url` | `text` |  Nullable |
+| `file_type` | `text` |  Nullable |
+
+## Table `lessons_notes`
+
+### Columns
+
+| Name | Type | Constraints |
+|------|------|-------------|
+| `id` | `int8` | Primary Identity |
+| `created_at` | `timestamptz` |  |
+| `profile_id` | `uuid` |  Nullable |
+| `lessons_id` | `int8` |  Nullable |
+| `content` | `text` |  Nullable |
+
+## Table `lessons_progress`
+
+### Columns
+
+| Name | Type | Constraints |
+|------|------|-------------|
+| `id` | `int8` | Primary Identity |
+| `created_at` | `timestamptz` |  |
+| `profile_id` | `uuid` |  Nullable |
+| `lessons_id` | `int8` |  Nullable |
+| `completed` | `bool` |  Nullable |
+| `saved_for_review` | `bool` |  Nullable |
 
 ## Table `notifications`
 

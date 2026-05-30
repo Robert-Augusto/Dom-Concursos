@@ -94,14 +94,15 @@ export function ModalLesson({
       return
     }
 
-    const {error} = await CreateLesson(
+    const { error } = await CreateLesson(
       title,
       description,
       videoType,
       accessLevel,
       videoUrl,
       selectedSubject,
-      String(isPublished)
+      isPublished,
+      null,
     )
     if(error){
       toast.error(error.message)
@@ -119,7 +120,7 @@ export function ModalLesson({
       return
     }
 
-    const {error} = await UpdateLesson(
+    const { error } = await UpdateLesson(
       String(lessonsData?.id),
       title,
       description,
@@ -127,7 +128,7 @@ export function ModalLesson({
       accessLevel,
       videoUrl,
       selectedSubject,
-      String(isPublished)
+      lessonsData?.thumbnail ?? null,
     )
 
     if (error) {

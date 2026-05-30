@@ -1,10 +1,11 @@
 import { createClient } from "./supabase/client";
+import type { LessonMaterials } from '@/types'
 
 //-------------------------------------------------------| LESSONS |-------------------------------------------------------
 // create
-export async function CreateLesson(title: string, description: string, videoType: string, accessLevel: string, url: string, subject: string, isPublished: string, thumbnail: string){
+export async function CreateLesson(title: string, description: string, videoType: string, accessLevel: string, url: string, subject: string, isPublished: boolean, thumbnail: string | null){
     const supabase = createClient()
-    const {error} = await supabase
+    const {data, error} = await supabase
         .from('lessons')
         .insert({
             title: title,
@@ -13,15 +14,26 @@ export async function CreateLesson(title: string, description: string, videoType
             video_url: url,
             access_level: accessLevel,
             is_published: isPublished,
-            is_searchable: 'true',
+            is_searchable: true,
             subject_id: subject,
             thumbnail: thumbnail
         })
-    return {error}
+        .select('id')
+        .single()
+    return {data, error}
 }
 
 // update
-export async function UpdateLesson(id: string, title: string, description: string, videoType: string, accessLevel: string, url: string, subject: string, isPublished: string){
+export async function UpdateLesson(
+    id: string,
+    title: string,
+    description: string,
+    videoType: string,
+    accessLevel: string,
+    url: string,
+    subject: string,
+    thumbnail: string | null,
+){
     const supabase = createClient()
     const {error} = await supabase
         .from('lessons')
@@ -31,11 +43,20 @@ export async function UpdateLesson(id: string, title: string, description: strin
             video_type: videoType,
             video_url: url,
             access_level: accessLevel,
-            is_published: isPublished,
-            subject_id: subject
+            subject_id: subject,
+            thumbnail: thumbnail,
         })
-        .eq('id',id)
+        .eq('id', id)
     return {error}
+}
+
+export async function UpdateLessonPublished(id: string, isPublished: boolean) {
+    const supabase = createClient()
+    const { error } = await supabase
+        .from('lessons')
+        .update({ is_published: isPublished })
+        .eq('id', id)
+    return { error }
 }
 
 // delete
@@ -49,17 +70,24 @@ export async function DeleteLesson(id: string){
 }
 
 //-------------------------------------------------------| LESSONS MATERIALS |-------------------------------------------------------
+// select
+export async function GetLessonMaterials(lessonId: string) {
+    const supabase = createClient()
+    const { data, error } = await supabase
+        .from('lessons_materials')
+        .select('*')
+        .eq('lessons_id', lessonId)
+        .order('created_at', { ascending: true })
+
+    return { data: (data as LessonMaterials[] | null) ?? [], error }
+}
+
 // create
-export async function CreateLessonMaterials(lessonsId: string, title: string, fileUrl: string, fileType: string){
+export async function CreateLessonMaterials(records: object[]){
     const supabase = createClient()
     const {error} = await supabase
         .from('lessons_materials')
-        .insert({
-            lessons_id: lessonsId,
-            title: title,
-            file_url: fileUrl,
-            file_type: fileType
-        })
+        .insert(records)
     return {error}
 }
 
@@ -107,7 +135,7 @@ export async function UpdateLessonProgress(lessonProgressId: string, completed: 
     const supabase = createClient()
     const {error} = await supabase
         .from('lessons_progress')
-        .insert({
+        .update({
             completed: completed,
             saved_for_review: savedForReview
         })
