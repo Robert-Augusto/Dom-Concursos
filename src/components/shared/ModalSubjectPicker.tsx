@@ -475,10 +475,10 @@ export function ModalSubjectPicker({
                               openEdit(root)
                             }}
                             disabled={isSaving}
-                            className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:border-chart-5/40 hover:text-foreground disabled:opacity-50"
+                            className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:border-chart-5/40 hover:text-foreground disabled:opacity-50"
                             aria-label={`Editar ${root.name}`}
                           >
-                            <Pencil className="h-3.5 w-3.5" aria-hidden />
+                            <Pencil className="h-4 w-4" aria-hidden />
                           </button>
                           <button
                             type="button"
@@ -487,10 +487,10 @@ export function ModalSubjectPicker({
                               void handleDeleteRoot(root)
                             }}
                             disabled={isSaving}
-                            className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-border text-destructive transition-colors hover:border-destructive/40 hover:bg-destructive/10 disabled:opacity-50"
+                            className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-border text-destructive transition-colors hover:border-destructive/40 hover:bg-destructive/10 disabled:opacity-50"
                             aria-label={`Excluir ${root.name}`}
                           >
-                            <Trash2 className="h-3.5 w-3.5" aria-hidden />
+                            <Trash2 className="h-4 w-4" aria-hidden />
                           </button>
                         </div>
                       ) : null}
@@ -516,7 +516,7 @@ export function ModalSubjectPicker({
                               return (
                                 <span
                                   key={item.id}
-                                  className={`inline-flex items-center overflow-hidden rounded-full border text-xs font-semibold transition-colors ${
+                                  className={`inline-flex items-center overflow-hidden rounded-full border text-xs font-semibold transition-colors gap-2 ${
                                     isSelected
                                       ? 'border-chart-5 bg-chart-5/20 text-foreground'
                                       : 'border-border bg-muted text-foreground'
@@ -543,7 +543,7 @@ export function ModalSubjectPicker({
                                     className="border-l border-border px-1.5 py-1.5 text-muted-foreground transition-colors hover:text-foreground disabled:opacity-50"
                                     aria-label={`Editar ${item.name}`}
                                   >
-                                    <Pencil className="h-3 w-3" aria-hidden />
+                                    <Pencil className="h-5 w-5" aria-hidden />
                                   </button>
                                   <button
                                     type="button"
@@ -552,7 +552,7 @@ export function ModalSubjectPicker({
                                     className="border-l border-border px-1.5 py-1.5 text-destructive transition-colors hover:bg-destructive/10 disabled:opacity-50"
                                     aria-label={`Excluir ${item.name}`}
                                   >
-                                    <X className="h-3 w-3" aria-hidden />
+                                    <X className="h-5 w-5" aria-hidden />
                                   </button>
                                 </span>
                               )
@@ -580,23 +580,23 @@ export function ModalSubjectPicker({
                           Adicionar assunto relacionado
                         </button>
 
-                        <div className="flex flex-wrap items-center gap-3 border-t border-border pt-3">
+                        <div className="flex flex-wrap items-center gap-7 border-t border-border pt-3">
                           <button
                             type="button"
                             onClick={() => openEdit(root)}
                             disabled={isSaving}
-                            className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground transition-colors hover:text-foreground disabled:opacity-50"
+                            className="inline-flex items-center gap-1.5 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground disabled:opacity-50"
                           >
-                            <Pencil className="h-3.5 w-3.5" aria-hidden />
+                            <Pencil className="h-4 w-4" aria-hidden />
                             Editar matéria
                           </button>
                           <button
                             type="button"
                             onClick={() => void handleDeleteRoot(root)}
                             disabled={isSaving}
-                            className="inline-flex items-center gap-1.5 text-xs font-semibold text-destructive transition-colors hover:text-destructive/80 disabled:opacity-50"
+                            className="inline-flex items-center gap-1.5 text-sm font-semibold text-destructive transition-colors hover:text-destructive/80 disabled:opacity-50"
                           >
-                            <Trash2 className="h-3.5 w-3.5" aria-hidden />
+                            <Trash2 className="h-4 w-4" aria-hidden />
                             Excluir matéria
                           </button>
                         </div>

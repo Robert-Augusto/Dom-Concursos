@@ -1079,7 +1079,7 @@ export default function AdminLessons({
                     </div>
                   </div>
 
-                  <div className="flex shrink-0 items-center justify-end gap-2 sm:justify-start">
+                  <div className="flex shrink-0 items-center justify-end gap-6 sm:justify-start">
                     <Switch
                       checked={publishedState[lesson.id] ?? lesson.is_published}
                       onCheckedChange={(checked) =>
@@ -1087,7 +1087,7 @@ export default function AdminLessons({
                       }
                       disabled={togglingLessonId === lesson.id}
                       aria-label={`Publicado: ${lesson.title}`}
-                      className="data-checked:bg-chart-2"
+                      className="data-checked:bg-chart-2 scale-150"
                     />
                     <button
                       type="button"
