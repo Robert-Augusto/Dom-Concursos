@@ -257,13 +257,6 @@ export default function AdminLessons({
       : getPandaEmbedUrl(videoUrl)
   }, [videoUrl, videoType])
 
-  const isVideoLinkValid = useMemo(() => {
-    if (!videoUrl.trim()) return false
-    return videoType === 'youtube'
-      ? isYoutubeLinkValid(videoUrl)
-      : isPandaLinkValid(videoUrl)
-  }, [videoUrl, videoType])
-
   const thumbnailPreviewUrl = useMemo(() => {
     if (thumbnailFile) return URL.createObjectURL(thumbnailFile)
     return null
@@ -422,7 +415,6 @@ export default function AdminLessons({
 
   function validateLessonForm() {
     if (
-      !isVideoLinkValid ||
       !accessLevel ||
       !videoUrl.trim() ||
       !selectedSubject ||
@@ -763,7 +755,7 @@ export default function AdminLessons({
         </div>
 
         {/* Informações do vídeo */}
-        {isVideoLinkValid ? (
+        {videoUrl ? (
         <div className="rounded-xl border-1 border-foreground/25 p-px">
           <div className="flex flex-col gap-4 rounded-[calc(var(--radius-lg)-1px)] bg-card p-4 sm:p-5">
             <div className="flex items-center gap-2">
