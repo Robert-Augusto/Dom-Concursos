@@ -50,11 +50,22 @@ export interface Profile {
 }
 
 // study_materials
+export type StudyMaterialFileType = 'image' | 'text'
+
 export interface StudyMaterials {
     id: string
     created_at: Date
     subjects_id: string
     file_url: string
+    file_type: StudyMaterialFileType
+}
+
+// study_materials_agent
+export interface StudyMaterialsAgent {
+    id: string
+    created_at: Date
+    subject_id: string
+    html: string | null
 }
 
 // study_flashcards

@@ -10,8 +10,6 @@ import {
   Clock,
   FileText,
   Home,
-  Layers,
-  Sparkles,
   Target,
   Trophy,
   TrendingUp,
@@ -30,8 +28,6 @@ export interface StudyScoreProps {
   subject: string
   studySessionId: string
   onRestart: () => void
-  flashcardsFlipped?: number
-  flashcardsTotal?: number
 }
 
 type ScoreTier = {
@@ -213,16 +209,13 @@ function StatCard({
 
 const FLOW_STAGES = [
   { id: 'material', label: 'Estudo Teórico', Icon: BookOpen, color: '#3D7FFF' },
-  { id: 'flashcard', label: 'Flashcards', Icon: Layers, color: '#2ECC8A' },
-  { id: 'session', label: 'Questões', Icon: FileText, color: '#C9A84C' },
+  { id: 'session', label: 'Questões', Icon: FileText, color: '#F59E0B' },
 ] as const
 
 export default function StudyScore({
   subject,
   studySessionId,
   onRestart,
-  flashcardsFlipped = 0,
-  flashcardsTotal = 0,
 }: StudyScoreProps) {
   const router = useRouter()
   const [loading, setLoading] = useState(true)
@@ -292,17 +285,8 @@ export default function StudyScore({
   const tier = getScoreTier(correctAnswers, totalQuestions || 6)
   const ringProgress = (accuracyPct / 100) * RING_CIRCUMFERENCE
 
-  const flashcardsPct =
-    flashcardsTotal > 0
-      ? Math.min(
-          100,
-          Math.floor((flashcardsFlipped / flashcardsTotal) * 100),
-        )
-      : 0
-
   const stageScores = {
     material: 100,
-    flashcard: flashcardsPct,
     session: accuracyPct,
   }
 
@@ -459,9 +443,7 @@ export default function StudyScore({
             const pct =
               stage.id === 'material'
                 ? stageScores.material
-                : stage.id === 'flashcard'
-                  ? stageScores.flashcard
-                  : stageScores.session
+                : stageScores.session
             const { Icon } = stage
 
             return (
@@ -519,7 +501,7 @@ export default function StudyScore({
             style={{
               width: '100%',
               background:
-                'linear-gradient(90deg, #3D7FFF 0%, #2ECC8A 50%, #C9A84C 100%)',
+                'linear-gradient(90deg, #3D7FFF 0%, #F59E0B 100%)',
             }}
           />
           <div
@@ -531,7 +513,7 @@ export default function StudyScore({
 
         <p className="text-center text-sm text-muted-foreground">
           Você concluiu{' '}
-          <span className="font-bold text-foreground">3 de 3 etapas</span> com
+          <span className="font-bold text-foreground">2 de 2 etapas</span> com
           sucesso! 🚀
         </p>
       </section>

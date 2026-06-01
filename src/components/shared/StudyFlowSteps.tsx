@@ -1,9 +1,9 @@
 'use client'
 
-import { BookOpen, Check, FileText, Layers, Lock } from 'lucide-react'
+import { BookOpen, Check, FileText, Lock } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
-export type StudyFlowStepId = 'material' | 'flashcard' | 'session'
+export type StudyFlowStepId = 'material' | 'session'
 
 const FLOW_STEPS: {
   id: StudyFlowStepId
@@ -11,7 +11,6 @@ const FLOW_STEPS: {
   Icon: typeof BookOpen
 }[] = [
   { id: 'material', label: 'Estudo Teórico', Icon: BookOpen },
-  { id: 'flashcard', label: 'Flashcards', Icon: Layers },
   { id: 'session', label: 'Questões', Icon: FileText },
 ]
 
@@ -44,22 +43,17 @@ export default function StudyFlowSteps({
   className,
 }: StudyFlowStepsProps) {
   const activeIndex = stepIndex(activeStep)
-  const isGoldFlashcardStep = activeStep === 'flashcard' && !allCompleted
   const isAmberSessionStep = activeStep === 'session' && !allCompleted
 
   const activeColorClass = allCompleted
     ? 'bg-chart-2'
-    : isGoldFlashcardStep
-      ? 'bg-primary'
-      : isAmberSessionStep
-        ? 'bg-amber-500'
-        : 'bg-accent'
+    : isAmberSessionStep
+      ? 'bg-amber-500'
+      : 'bg-accent'
 
   const gradientClass = isAmberSessionStep
     ? 'bg-gradient-to-r from-amber-500 via-amber-500/45 to-border'
-    : isGoldFlashcardStep
-      ? 'bg-gradient-to-r from-primary via-primary/45 to-border'
-      : null
+    : null
 
   function connectorBaseClass(fromIdx: number, toIdx: number): string {
     if (allCompleted) return 'bg-chart-2'
@@ -78,11 +72,7 @@ export default function StudyFlowSteps({
   function rightConnectorClass(stepIdx: number): string {
     const fromIdx = stepIdx
     const toIdx = stepIdx + 1
-    if (
-      fromIdx === activeIndex &&
-      toIdx > activeIndex &&
-      gradientClass
-    ) {
+    if (fromIdx === activeIndex && toIdx > activeIndex && gradientClass) {
       return gradientClass
     }
     return connectorBaseClass(fromIdx, toIdx)
@@ -117,12 +107,8 @@ export default function StudyFlowSteps({
                     status === 'completed' &&
                       'border-2 border-chart-2 bg-popover text-chart-2 shadow-[0_0_0_2px_rgba(46,204,138,0.2),0_0_16px_rgba(46,204,138,0.35)]',
                     status === 'active' &&
-                      !isGoldFlashcardStep &&
                       !isAmberSessionStep &&
                       'border-2 border-accent bg-popover text-foreground shadow-[0_0_0_3px_rgba(61,127,255,0.35),0_0_20px_rgba(61,127,255,0.45)]',
-                    status === 'active' &&
-                      isGoldFlashcardStep &&
-                      'border-2 border-primary bg-popover text-primary shadow-[0_0_0_3px_rgba(201,168,76,0.35),0_0_22px_rgba(201,168,76,0.5)]',
                     status === 'active' &&
                       isAmberSessionStep &&
                       'border-2 border-amber-500 bg-popover text-amber-500 shadow-[0_0_0_3px_rgba(245,158,11,0.35),0_0_22px_rgba(245,158,11,0.5)]',
@@ -151,11 +137,7 @@ export default function StudyFlowSteps({
                   'mt-2 max-w-full text-center text-[11px] font-bold leading-tight transition-colors sm:text-xs',
                   status === 'completed' && 'text-chart-2',
                   status === 'active' &&
-                    (isGoldFlashcardStep
-                      ? 'text-primary'
-                      : isAmberSessionStep
-                        ? 'text-amber-500'
-                        : 'text-accent'),
+                    (isAmberSessionStep ? 'text-amber-500' : 'text-accent'),
                   status === 'pending' && 'text-muted-foreground',
                 )}
               >
@@ -166,21 +148,15 @@ export default function StudyFlowSteps({
                 <span
                   className={cn(
                     'mt-2 inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[10px] font-semibold',
-                    isGoldFlashcardStep
-                      ? 'border-primary/35 bg-primary/10 text-primary'
-                      : isAmberSessionStep
-                        ? 'border-amber-500/35 bg-amber-500/10 text-amber-500'
-                        : 'border-accent/30 bg-accent/10 text-accent',
+                    isAmberSessionStep
+                      ? 'border-amber-500/35 bg-amber-500/10 text-amber-500'
+                      : 'border-accent/30 bg-accent/10 text-accent',
                   )}
                 >
                   <span
                     className={cn(
                       'h-1.5 w-1.5 shrink-0 rounded-full',
-                      isGoldFlashcardStep
-                        ? 'bg-primary'
-                        : isAmberSessionStep
-                          ? 'bg-amber-500'
-                          : 'bg-accent',
+                      isAmberSessionStep ? 'bg-amber-500' : 'bg-accent',
                     )}
                     aria-hidden
                   />

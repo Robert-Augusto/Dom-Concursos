@@ -11,10 +11,9 @@ import {
   Rocket,
   Search,
 } from 'lucide-react'
-import { Subjects, StudyFlashcards, StudyMaterials } from '@/types'
+import { Subjects } from '@/types'
 import { cn } from '@/lib/utils'
-import { GetStudyMaterialsBySubject } from '@/lib/study_material'
-import { GetStudyFlashcardsBySubject } from '@/lib/flashcards'
+import { GetStudyMaterialsAgentBySubject } from '@/lib/study_material'
 import { toast } from 'sonner'
 import { CreateStudySession } from '@/lib/lib-study-session'
 import { useProfile } from '@/context/ProfileContext'
@@ -24,8 +23,6 @@ export type StudyStartPayload = {
   subjectName: string
   rootSubjectName: string
   studySessionId: string
-  flashcardsData: StudyFlashcards[]
-  materialsData: StudyMaterials
 }
 
 export interface StudyConfigProps {
@@ -208,29 +205,13 @@ export default function StudyConfig({
     setIsStarting(true)
     onStartingChange?.(true)
     try {
-      const [materialsRes, flashcardsRes] = await Promise.all([
-        GetStudyMaterialsBySubject(selectedRelated.id),
-        GetStudyFlashcardsBySubject(selectedRelated.id, 3),
-      ])
+      const agentRes = await GetStudyMaterialsAgentBySubject(selectedRelated.id)
 
-      if (materialsRes.error || !materialsRes.data) {
+      if (agentRes.error || !agentRes.data?.html?.trim()) {
         toast.error(
-          materialsRes.error?.message ??
-            'Cadastre o material em PDF para este assunto.',
+          agentRes.error?.message ??
+            'Cadastre o material de estudo para este assunto.',
         )
-        return
-      }
-
-      if (flashcardsRes.error) {
-        toast.error(
-          flashcardsRes.error.message ??
-            'Não foi possível carregar os flashcards.',
-        )
-        return
-      }
-
-      if (!flashcardsRes.data || flashcardsRes.data.length < 3) {
-        toast.error('Cadastre pelo menos 3 flashcards para este assunto.')
         return
       }
 
@@ -246,8 +227,6 @@ export default function StudyConfig({
         subjectName: selectedRelated.name,
         rootSubjectName: selectedRootName,
         studySessionId: String(data.id),
-        flashcardsData: flashcardsRes.data,
-        materialsData: materialsRes.data,
       })
     } finally {
       setIsStarting(false)

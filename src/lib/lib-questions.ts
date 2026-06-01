@@ -95,3 +95,47 @@ export async function GetQuestionsBySubject(subjectId: string){
     .order("created_at", { ascending: false });
   return { data: (data as Questions[] | null) ?? [], error };
 }
+
+/** Two questions per difficulty for the study session flow. */
+export async function GetStudyQuestionsBySubject(subjectId: string) {
+  const supabase = createClient()
+  const [easy, medium, hard] = await Promise.all([
+    supabase
+      .from('subjects_questions')
+      .select(QUESTIONS_WITH_BANCA_SELECT)
+      .eq('subjects_id', subjectId)
+      .eq('difficulty', 'Fácil')
+      .limit(2),
+    supabase
+      .from('subjects_questions')
+      .select(QUESTIONS_WITH_BANCA_SELECT)
+      .eq('subjects_id', subjectId)
+      .eq('difficulty', 'Médio')
+      .limit(2),
+    supabase
+      .from('subjects_questions')
+      .select(QUESTIONS_WITH_BANCA_SELECT)
+      .eq('subjects_id', subjectId)
+      .eq('difficulty', 'Difícil')
+      .limit(2),
+  ])
+
+  const error = easy.error ?? medium.error ?? hard.error
+  if (error) {
+    return { data: [] as Questions[], error }
+  }
+
+  const data = [
+    ...(easy.data ?? []).map((row) =>
+      mapQuestionWithBanca(row as QuestionRowWithBanca),
+    ),
+    ...(medium.data ?? []).map((row) =>
+      mapQuestionWithBanca(row as QuestionRowWithBanca),
+    ),
+    ...(hard.data ?? []).map((row) =>
+      mapQuestionWithBanca(row as QuestionRowWithBanca),
+    ),
+  ]
+
+  return { data, error: null }
+}

@@ -1,10 +1,10 @@
 'use client'
 
 import { ModalEditQuestion } from '@/components/shared/ModalEditQuestion'
-import { SubjectFilterGroup } from '@/components/shared/SubjectFilterGroup'
+import { ModalSubjectPicker } from '@/components/shared/ModalSubjectPicker'
 import { QuestionFormFields } from '@/components/shared/QuestionFormFields'
 import { createClient } from '@/lib/supabase/client'
-import { Pencil, Trash2 } from 'lucide-react'
+import { ChevronDown, Pencil, X } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { toast } from 'sonner'
 import {
@@ -23,8 +23,12 @@ type AdminQuestoesProps = {
 export default function AdminQuestoes({
   subjectsData = null,
 }: AdminQuestoesProps) {
-  const [selectedRootFilter, setSelectedRootFilter] = useState('')
   const [relatedSubject, setRelatedSubject] = useState<Subjects | null>(null)
+  const [selectedRootSubjectName, setSelectedRootSubjectName] = useState<
+    string | null
+  >(null)
+  const [selectedRootSubjectId, setSelectedRootSubjectId] = useState('')
+  const [isSubjectModalOpen, setIsSubjectModalOpen] = useState(false)
   const [subjectQuestions, setSubjectQuestions] = useState<
     Questions[] | null
   >(null)
@@ -259,52 +263,46 @@ export default function AdminQuestoes({
   return (
     <section className="flex flex-col gap-6">
       <div className="flex flex-col gap-1">
-        <h2 className="text-lg font-black text-foreground font-heading">
-          Questões
-        </h2>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-base text-muted-foreground">
           Selecione uma matéria relacionada para filtrar, criar e listar questões.
         </p>
       </div>
 
-      <SubjectFilterGroup
-        subjectsData={subjectsData}
-        selectedRootFilter={selectedRootFilter}
-        selectedRelatedFilter={relatedSubject?.id ?? ''}
-        onSelectedRootFilterChange={setSelectedRootFilter}
-        onSelectedRelatedFilterChange={setRelatedSubject}
-        onAfterClear={() => setRelatedSubject(null)}
-        onAfterRootSelect={() => setRelatedSubject(null)}
-      />
-
-      {relatedSubject ? (
-        <div className="flex flex-col gap-5">
-          <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
-            Matéria relacionada: {relatedSubject.name}
+      <div className="flex flex-col gap-5">
+        <div className="flex flex-col gap-4 rounded-xl border border-border bg-card p-4">
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+            Filtros
           </p>
 
-          <div className="flex flex-col gap-4 rounded-xl border border-border bg-card p-4">
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
-              Filtros
-            </p>
-
-            <div className="flex flex-col gap-2">
-              <label
-                htmlFor="question-text-filter"
-                className="text-xs font-semibold text-foreground"
+          <div className="flex flex-col gap-2">
+            <span className="text-xs font-semibold text-foreground">
+              Matéria relacionada
+            </span>
+            <button
+              type="button"
+              onClick={() => setIsSubjectModalOpen(true)}
+              className="flex w-full items-center justify-between rounded-lg border border-border bg-primary-foreground px-3 py-2 text-sm text-foreground outline-none transition-colors hover:border-primary/50 text-left"
+            >
+              <span
+                className={
+                  relatedSubject ? 'text-foreground' : 'text-muted-foreground'
+                }
               >
-                Filtrar por texto da questão
-              </label>
-              <input
-                id="question-text-filter"
-                type="search"
-                value={questionTextFilter}
-                onChange={(e) => setQuestionTextFilter(e.target.value)}
-                placeholder="Digite trechos do enunciado..."
-                className="w-full max-w-2xl rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-primary/50"
+                {relatedSubject
+                  ? selectedRootSubjectName
+                    ? `${selectedRootSubjectName} · ${relatedSubject.name}`
+                    : relatedSubject.name
+                  : 'Selecionar matéria'}
+              </span>
+              <ChevronDown
+                className="h-4 w-4 shrink-0 text-muted-foreground"
+                aria-hidden
               />
-            </div>
+            </button>
+          </div>
 
+          {relatedSubject ? (
+            <>
             <div className="flex flex-col gap-2">
               <span className="text-xs font-semibold text-foreground">
                 Filtrar por dificuldade
@@ -339,7 +337,7 @@ export default function AdminQuestoes({
                   value={bancaSearch}
                   onChange={(e) => setBancaSearch(e.target.value)}
                   placeholder="Digite o nome da banca..."
-                  className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-primary/50"
+                  className="w-full rounded-lg border border-border bg-primary-foreground px-3 py-2 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-primary/50"
               />
               <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
                 <button
@@ -369,16 +367,36 @@ export default function AdminQuestoes({
                 ) : (
                   filteredBancas.map((banca) => {
                     const active = bancaFilter === banca.id
+                    if (active) {
+                      return (
+                        <div
+                          key={banca.id}
+                          className="mb-2 inline-flex shrink-0 items-center overflow-hidden rounded-full border border-primary bg-primary text-primary-foreground"
+                        >
+                          <button
+                            type="button"
+                            onClick={() => setBancaFilter(banca.id)}
+                            className="px-4 py-1.5 text-xs font-semibold whitespace-nowrap"
+                          >
+                            {banca.name}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => void handleDeleteBanca()}
+                            className="inline-flex items-center justify-center border-l border-primary-foreground/25 px-2 py-1.5 transition-colors hover:bg-primary-foreground/15"
+                            aria-label={`Excluir banca ${banca.name}`}
+                          >
+                            <X className="h-3.5 w-3.5" aria-hidden />
+                          </button>
+                        </div>
+                      )
+                    }
                     return (
                       <button
                         key={banca.id}
                         type="button"
                         onClick={() => setBancaFilter(banca.id)}
-                        className={`mb-2 shrink-0 rounded-full border px-4 py-1.5 text-xs font-semibold whitespace-nowrap transition-colors ${
-                          active
-                            ? 'border-primary bg-primary text-primary-foreground'
-                            : 'border-border bg-transparent text-muted-foreground hover:border-primary/40 hover:text-foreground'
-                        }`}
+                        className="mb-2 shrink-0 rounded-full border border-border bg-transparent px-4 py-1.5 text-xs font-semibold whitespace-nowrap text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground"
                       >
                         {banca.name}
                       </button>
@@ -386,26 +404,6 @@ export default function AdminQuestoes({
                   })
                 )}
               </div>
-
-              {selectedBanca ? (
-                <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-accent/20 bg-accent/5 px-3 py-2">
-                  <p className="min-w-0 text-xs text-muted-foreground">
-                    Banca selecionada:{' '}
-                    <span className="font-semibold text-foreground">
-                      {selectedBanca.name}
-                    </span>
-                  </p>
-                  <button
-                    type="button"
-                    onClick={() => void handleDeleteBanca()}
-                    className="inline-flex shrink-0 items-center gap-1.5 rounded-full border border-destructive/40 bg-background px-3 py-1.5 text-xs font-semibold text-destructive transition-colors hover:bg-destructive/10"
-                    aria-label="Excluir banca"
-                  >
-                    <Trash2 className="h-3.5 w-3.5" aria-hidden />
-                    Excluir banca
-                  </button>
-                </div>
-              ) : null}
 
               {showCreateBancaPanel ? (
                 <div className="rounded-xl border border-primary/25 bg-gradient-to-b from-primary/5 to-background p-4 shadow-sm ring-1 ring-primary/10">
@@ -436,7 +434,7 @@ export default function AdminQuestoes({
                       value={newBancaName}
                       onChange={(e) => setNewBancaName(e.target.value)}
                       placeholder="Ex.: CESPE/CEBRASPE"
-                      className="rounded-lg border border-border bg-background px-3 py-2.5 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-primary/60 focus:ring-2 focus:ring-primary/20"
+                      className="rounded-lg border border-border bg-primary-foreground px-3 py-2.5 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-primary/60 focus:ring-2 focus:ring-primary/20"
                     />
                   </label>
 
@@ -459,39 +457,97 @@ export default function AdminQuestoes({
                 </div>
               ) : null}
             </div>
-          </div>
+            </>
+          ) : null}
+        </div>
 
+        {relatedSubject ? (
+          <>
           <div className="flex flex-col gap-4 rounded-xl border border-border bg-card p-4 md:p-5">
             <div className="flex flex-col gap-1">
               <p className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
                 Nova questão
               </p>
               <p className="text-sm text-muted-foreground">
-                Preencha os campos abaixo para cadastrar uma questão nesta
-                matéria.
+                Preencha os campos abaixo para cadastrar uma questão com os
+                filtros selecionados.
               </p>
+            </div>
+
+            <div className="rounded-lg border border-accent/20 bg-accent/5 p-4">
+              <p className="mb-3 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+                Dados selecionados
+              </p>
+              <dl className="grid gap-3 sm:grid-cols-2">
+                <div className="flex flex-col gap-0.5">
+                  <dt className="text-xs text-muted-foreground">
+                    Matéria principal
+                  </dt>
+                  <dd className="text-sm font-semibold text-foreground">
+                    {selectedRootSubjectName ?? '—'}
+                  </dd>
+                </div>
+                <div className="flex flex-col gap-0.5">
+                  <dt className="text-xs text-muted-foreground">
+                    Matéria relacionada
+                  </dt>
+                  <dd className="text-sm font-semibold text-foreground">
+                    {relatedSubject.name}
+                  </dd>
+                </div>
+                <div className="flex flex-col gap-0.5">
+                  <dt className="text-xs text-muted-foreground">Dificuldade</dt>
+                  <dd className="text-sm font-semibold text-foreground">
+                    {difficultyFilter}
+                  </dd>
+                </div>
+                <div className="flex flex-col gap-0.5">
+                  <dt className="text-xs text-muted-foreground">Banca</dt>
+                  <dd className="text-sm font-semibold text-foreground">
+                    {selectedBanca?.name ?? '—'}
+                  </dd>
+                </div>
+              </dl>
             </div>
 
             <QuestionFormFields
               banca={selectedBanca?.id ?? ''}
               difficulty={difficultyFilter}
               subjectsId={String(relatedSubject.id)}
-              subjectRootId={selectedRootFilter}
+              subjectRootId={selectedRootSubjectId}
             />
           </div>
 
-          <p className="text-sm text-muted-foreground">
-            {isQuestionsLoading
-              ? 'Carregando questões…'
-              : `${filteredQuestionsList.length} questão(ões) encontrada(s)`}
-          </p>
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-2">
+              <label
+                htmlFor="question-text-filter"
+                className="text-xs font-semibold text-foreground"
+              >
+                Filtrar por texto da questão
+              </label>
+              <input
+                id="question-text-filter"
+                type="search"
+                value={questionTextFilter}
+                onChange={(e) => setQuestionTextFilter(e.target.value)}
+                placeholder="Digite trechos do enunciado..."
+                className="w-full rounded-lg border border-border bg-primary-foreground px-3 py-2 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-primary/50"
+              />
+            </div>
 
-          {isQuestionsLoading ? (
             <p className="text-sm text-muted-foreground">
-              Carregando questões do banco de dados…
+              {isQuestionsLoading
+                ? 'Carregando questões…'
+                : `${filteredQuestionsList.length} questão(ões) encontrada(s)`}
             </p>
-          ) : (
-            <ul className="flex flex-col gap-3">
+
+            {isQuestionsLoading ? (
+              <p className="text-sm text-muted-foreground">
+                Carregando questões do banco de dados…
+              </p>
+            ) : (
+              <ul className="flex flex-col gap-3">
               {filteredQuestionsList.length === 0 ? (
                 <li className="rounded-xl border border-dashed border-border bg-card px-5 py-8 text-center text-sm text-muted-foreground">
                   Nenhuma questão encontrada para esta matéria com os filtros
@@ -528,16 +584,24 @@ export default function AdminQuestoes({
                 ))
               )}
             </ul>
-          )}
-        </div>
-      ) : (
-        <div className="rounded-xl border border-border bg-card px-5 py-8 text-center">
-          <p className="text-sm text-muted-foreground">
-            Escolha uma matéria principal e, em seguida, uma matéria relacionada
-            para gerenciar as questões.
-          </p>
-        </div>
-      )}
+            )}
+          </div>
+          </>
+        ) : null}
+      </div>
+
+      <ModalSubjectPicker
+        open={isSubjectModalOpen}
+        onClose={() => setIsSubjectModalOpen(false)}
+        subjectsData={subjectsData}
+        selectedSubjectId={relatedSubject?.id}
+        onSelect={({ relatedSubject: subject, rootSubject, rootSubjectName }) => {
+          setRelatedSubject(subject)
+          setSelectedRootSubjectName(rootSubjectName)
+          setSelectedRootSubjectId(rootSubject.id)
+          setIsSubjectModalOpen(false)
+        }}
+      />
 
       <ModalEditQuestion
         open={editingQuestion !== null}

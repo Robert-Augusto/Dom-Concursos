@@ -72,12 +72,11 @@ export function QuestionFormFields({ banca, difficulty, subjectsId, subjectRootI
   return (
     <div className="flex flex-col gap-5">
       <label className="flex flex-col gap-1.5">
-      subject root: {subjectRootId}
         <textarea
           value={text}
           onChange={(e) => setText(e.target.value)}
           rows={4}
-          className="resize-y rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-primary/50 disabled:opacity-60"
+          className="resize-y rounded-lg border border-border bg-primary-foreground px-3 py-2 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-primary/50 disabled:opacity-60"
           placeholder="Texto da questão"
         />
       </label>
@@ -90,7 +89,7 @@ export function QuestionFormFields({ banca, difficulty, subjectsId, subjectRootI
           <select
             value={correctOption}
             onChange={(e) => setCorrectOption(e.target.value as OptionKey)}
-            className="rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none transition-colors focus:border-primary/50 disabled:opacity-60"
+            className="rounded-lg border border-border bg-primary-foreground px-3 py-2 text-sm text-foreground outline-none transition-colors focus:border-primary/50 disabled:opacity-60"
           >
             {OPTION_KEYS.map((k) => (
               <option key={k} value={k}>
@@ -107,7 +106,7 @@ export function QuestionFormFields({ banca, difficulty, subjectsId, subjectRootI
           <select
             value={ano}
             onChange={(e) => setAno(e.target.value)}
-            className="rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none transition-colors focus:border-primary/50 disabled:opacity-60"
+            className="rounded-lg border border-border bg-primary-foreground px-3 py-2 text-sm text-foreground outline-none transition-colors focus:border-primary/50 disabled:opacity-60"
           >
             {Anos.map((k) => (
               <option key={k} value={k}>
@@ -125,7 +124,7 @@ export function QuestionFormFields({ banca, difficulty, subjectsId, subjectRootI
             type="text"
             value={instituicao}
             onChange={(e) => setInstituicao(e.target.value)}
-            className="rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-primary/50 disabled:opacity-60"
+            className="rounded-lg border border-border bg-primary-foreground px-3 py-2 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-primary/50 disabled:opacity-60"
             placeholder="Ex.: TRT, TJ, MP"
           />
         </label>
@@ -139,7 +138,7 @@ export function QuestionFormFields({ banca, difficulty, subjectsId, subjectRootI
           value={explanation}
           onChange={(e) => setExplanation(e.target.value)}
           rows={5}
-          className="resize-y rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-primary/50 disabled:opacity-60"
+          className="resize-y rounded-lg border border-border bg-primary-foreground px-3 py-2 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-primary/50 disabled:opacity-60"
           placeholder="Justificativa / comentário da questão"
         />
       </label>

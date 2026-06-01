@@ -8,7 +8,8 @@ import AdminLessons from '@/components/shared/AdminLessons'
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Lessons, Subjects } from '@/types'
-import EstudoInteligente from '@/components/shared/EstudoInteligente'
+import EstudoInteligente from '@/components/shared/AdminEstudoInteligente'
+import { NotificationsDropdown } from '@/components/shared/NotificationsDropdown'
 import {
   ArrowLeft,
   BookOpen,
@@ -121,7 +122,7 @@ export default function AdminPage() {
       <Sidebar />
       <div className="min-h-screen pb-20 lg:ml-[240px] lg:pb-0">
         
-      <header className="sticky top-0 z-30 border-b border-border bg-background mb-3">
+        <header className="sticky top-0 z-30 border-b border-border bg-background mb-3">
           <div className="flex items-center gap-3 px-4 py-3 sm:px-6">
             <button
               type="button"
@@ -145,6 +146,9 @@ export default function AdminPage() {
             <span className="shrink-0 rounded-full border border-primary px-3 py-1 text-xs font-bold text-primary bg-primary/15">
               ADMIN
             </span>
+            <div className="flex items-center gap-3">
+              <NotificationsDropdown />
+            </div>
           </div>
         </header>
 

@@ -3,7 +3,6 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { useMemo, useState } from 'react'
-import { ModalLesson } from './ModalLesson'
 import { ModalLessonDelete } from './ModalLessonDelete'
 import {
   LessonRootSubjectPillFilter,
@@ -303,14 +302,6 @@ export function SearchVideo({
           )})}
         </div>
       )}
-      <ModalLesson
-        key={modalSession}
-        open={isModalOpen}
-        mode={modalMode}
-        lessonsData={selectedVideo}
-        onClose={() => setIsModalOpen(false)}
-        subjectsData={subjectsData}
-      />
       <ModalLessonDelete
         open={isDeleteModalOpen}
         lessonName={selectedVideo?.title ?? ''}
