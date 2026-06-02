@@ -120,7 +120,7 @@ export default function StudyMaterial({
               srcDoc={previewSrcDoc}
               className="block w-full border-0 bg-transparent"
               style={{ height: 'min(70vh, 640px)' }}
-              sandbox="allow-popups"
+              sandbox="allow-popups allow-scripts"
             />
           </div>
         </section>

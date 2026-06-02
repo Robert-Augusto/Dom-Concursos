@@ -136,11 +136,13 @@ export default function AdminPage() {
                 {selectedSection === null && 'Painel Admin'}
                 {selectedSection === 'questions' && 'Questões'}
                 {selectedSection === 'register-lesson' && 'Vídeos da Home'}
+                {selectedSection === 'smart-study' && 'Estudo Inteligente'}
               </h1>
               <p className="text-sm text-muted-foreground">
                 {selectedSection === null && 'Controle total da plataforma'}
                 {selectedSection === 'questions' && 'Questões objetivas'}
                 {selectedSection === 'register-lesson' && 'Aulas da tela inicial'}
+                {selectedSection === 'smart-study' && 'Insira os materiais de estudos'}
               </p>
             </div>
             <span className="shrink-0 rounded-full border border-primary px-3 py-1 text-xs font-bold text-primary bg-primary/15">

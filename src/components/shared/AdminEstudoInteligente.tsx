@@ -21,27 +21,15 @@ const STUDY_MATERIALS_BUCKET = 'study_materials_images'
 
 const ALLOWED_EXTENSIONS = new Set([
   'pdf',
-  'doc',
-  'docx',
-  'ppt',
-  'pptx',
   'png',
   'jpg',
   'jpeg',
-  'gif',
-  'webp',
 ])
 
 const ALLOWED_MIME_TYPES = new Set([
   'application/pdf',
-  'application/msword',
-  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-  'application/vnd.ms-powerpoint',
-  'application/vnd.openxmlformats-officedocument.presentationml.presentation',
   'image/png',
   'image/jpeg',
-  'image/gif',
-  'image/webp',
 ])
 
 const inputClass =
@@ -218,7 +206,7 @@ export default function EstudoInteligente({
 
     if (invalid.length > 0) {
       toast.error(
-        `Tipo não permitido: ${invalid.join(', ')}. Use PDF, DOCX, PowerPoint ou imagens.`,
+        `Tipo não permitido: ${invalid.join(', ')}. Use apenas PNG, PDF, JPG ou JPEG.`,
       )
     }
 
@@ -434,7 +422,7 @@ export default function EstudoInteligente({
                   ref={filesInputRef}
                   type="file"
                   multiple
-                  accept=".pdf,.doc,.docx,.ppt,.pptx,.png,.jpg,.jpeg,.gif,.webp"
+                  accept=".pdf,.png,.jpg,.jpeg"
                   className="sr-only"
                   onChange={(e) => {
                     handleFilesChange(e)
@@ -456,7 +444,7 @@ export default function EstudoInteligente({
                     Selecionar arquivos
                   </span>
                   <span className="max-w-md text-xs text-muted-foreground">
-                    PDF, DOCX, PowerPoint e imagens — até {MAX_FILES} arquivos
+                    PNG, PDF, JPG e JPEG — até {MAX_FILES} arquivos
                   </span>
                 </button>
 
@@ -573,7 +561,7 @@ export default function EstudoInteligente({
                     srcDoc={agentPreviewSrcDoc}
                     className="block w-full border-0 bg-transparent"
                     style={{ height: 'min(70vh, 640px)' }}
-                    sandbox="allow-popups"
+                    sandbox="allow-popups allow-scripts"
                   />
                 </div>
               </article>
