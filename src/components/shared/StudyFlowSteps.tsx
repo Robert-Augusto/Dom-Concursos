@@ -10,8 +10,8 @@ const FLOW_STEPS: {
   label: string
   Icon: typeof BookOpen
 }[] = [
-  { id: 'material', label: 'Estudo Teórico', Icon: BookOpen },
-  { id: 'session', label: 'Questões', Icon: FileText },
+  { id: 'material', label: 'ESTUDO TEÓRICO', Icon: BookOpen },
+  { id: 'session', label: 'QUESTÕES', Icon: FileText },
 ]
 
 function stepIndex(id: StudyFlowStepId) {

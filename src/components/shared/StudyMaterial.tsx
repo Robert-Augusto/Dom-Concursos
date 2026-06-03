@@ -158,6 +158,20 @@ export default function StudyMaterial({
     contentVariant === 'full' || contentVariant === 'summary'
   const showHtmlPanel = isHtmlView && Boolean(activeHtml)
 
+  function goToPrimaryContentView() {
+    if (hasFullContent) {
+      setContentVariant('full')
+    } else if (hasSummaryContent) {
+      setContentVariant('summary')
+    }
+  }
+
+  function resetRatingForm() {
+    setRatingStars(0)
+    setRatingHover(0)
+    setRatingComment('')
+  }
+
   async function handleSaveNote() {
     if (!noteText.trim()) {
       toast.error('Escreva uma anotação antes de salvar.')
@@ -191,6 +205,8 @@ export default function StudyMaterial({
         if (data?.id) setNoteId(String(data.id))
         toast.success('Anotação salva!')
       }
+
+      goToPrimaryContentView()
     } finally {
       setIsSavingNote(false)
     }
@@ -229,6 +245,8 @@ export default function StudyMaterial({
       }
 
       toast.success('Avaliação enviada! Obrigado pelo feedback.')
+      resetRatingForm()
+      goToPrimaryContentView()
     } finally {
       setIsSavingRating(false)
     }
@@ -261,7 +279,7 @@ export default function StudyMaterial({
   }
 
   return (
-    <div className="flex min-h-0 flex-col gap-4 pb-24">
+    <div className="flex min-h-0 flex-col gap-4">
       {isLoading ? (
         <div className="flex min-h-[40vh] items-center justify-center rounded-2xl border border-border bg-card">
           <StudyFlowLoading label="Carregando material de estudo..." />
@@ -307,7 +325,7 @@ export default function StudyMaterial({
                   </label>
                   <p className="mt-1 text-xs text-muted-foreground">
                     Registre o que você aprendeu ou pontos importantes deste
-                    material.
+                    material para estudar depois.
                   </p>
                 </div>
                 <textarea
