@@ -159,6 +159,7 @@
 | `subject_id` | `int8` |  Nullable |
 | `started_at` | `timestamptz` |  Nullable |
 | `end_at` | `timestamptz` |  Nullable |
+| `note` | `text` |  Nullable |
 
 ## Table `study_session_answers`
 
@@ -288,4 +289,16 @@
 | `subject_id` | `int8` |  Nullable |
 | `html_full` | `text` |  Nullable |
 | `html_summary` | `text` |  Nullable |
+
+## Table `study_notes`
+
+### Columns
+
+| Name | Type | Constraints |
+|------|------|-------------|
+| `id` | `int8` | Primary Identity |
+| `created_at` | `timestamptz` |  |
+| `profile_id` | `uuid` |  Nullable |
+| `subject_id` | `int8` |  Nullable |
+| `note` | `text` |  Nullable |
 

@@ -1,10 +1,17 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import { Loader2 } from 'lucide-react'
+import { Loader2, Star } from 'lucide-react'
 import { StudyAgentContentVariantSwitcher } from '@/components/shared/StudyAgentContentVariantSwitcher'
 import { StudyFlowLoading } from '@/components/shared/StudyFlowLoading'
+import { useProfile } from '@/context/ProfileContext'
 import { GetStudyQuestionsBySubject } from '@/lib/lib-questions'
+import { CreateNotification } from '@/lib/lib-notifications'
+import {
+  CreateStudyNote,
+  GetStudyNoteByProfileAndSubject,
+  UpdateStudyNote,
+} from '@/lib/lib-study-notes'
 import {
   getDefaultStudyAgentVariant,
   getStudyAgentHtml,
@@ -12,20 +19,27 @@ import {
   hasStudyAgentContent,
   wrapAgentHtmlForIframe,
 } from '@/lib/study_material'
+import { cn } from '@/lib/utils'
 import type { Questions, StudyAgentHtmlVariant, StudyMaterialsAgent } from '@/types'
 import { toast } from 'sonner'
 
+const textareaClass =
+  'w-full resize-none rounded-xl border border-border bg-background px-3 py-2.5 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-primary/50'
+
 export interface StudyMaterialProps {
   subjectId: string
+  studySessionId: string
   onContinue: (questions: Questions[]) => void
   onQuestionsLoadingChange?: (loading: boolean) => void
 }
 
 export default function StudyMaterial({
   subjectId,
+  studySessionId,
   onContinue,
   onQuestionsLoadingChange,
 }: StudyMaterialProps) {
+  const { profile } = useProfile()
   const [agentContent, setAgentContent] = useState<StudyMaterialsAgent | null>(
     null,
   )
@@ -33,6 +47,14 @@ export default function StudyMaterial({
     useState<StudyAgentHtmlVariant>('full')
   const [isLoading, setIsLoading] = useState(true)
   const [isLoadingQuestions, setIsLoadingQuestions] = useState(false)
+  const [noteId, setNoteId] = useState<string | null>(null)
+  const [noteText, setNoteText] = useState('')
+  const [isLoadingNote, setIsLoadingNote] = useState(false)
+  const [isSavingNote, setIsSavingNote] = useState(false)
+  const [ratingStars, setRatingStars] = useState(0)
+  const [ratingHover, setRatingHover] = useState(0)
+  const [ratingComment, setRatingComment] = useState('')
+  const [isSavingRating, setIsSavingRating] = useState(false)
 
   const hasFullContent = Boolean(agentContent?.html_full?.trim())
   const hasSummaryContent = Boolean(agentContent?.html_summary?.trim())
@@ -73,6 +95,51 @@ export default function StudyMaterial({
   }, [subjectId])
 
   useEffect(() => {
+    setNoteId(null)
+    setNoteText('')
+    setRatingStars(0)
+    setRatingHover(0)
+    setRatingComment('')
+  }, [subjectId])
+
+  useEffect(() => {
+    if (!subjectId || !profile?.id) return
+    const profileId = profile.id
+
+    let cancelled = false
+
+    async function loadNote() {
+      setIsLoadingNote(true)
+
+      const { data, error } = await GetStudyNoteByProfileAndSubject(
+        profileId,
+        subjectId,
+      )
+
+      if (cancelled) return
+
+      if (error) {
+        toast.error(error.message)
+        setNoteId(null)
+        setNoteText('')
+      } else if (data) {
+        setNoteId(data.id)
+        setNoteText(data.note ?? '')
+      } else {
+        setNoteId(null)
+        setNoteText('')
+      }
+
+      setIsLoadingNote(false)
+    }
+
+    void loadNote()
+    return () => {
+      cancelled = true
+    }
+  }, [subjectId, profile?.id])
+
+  useEffect(() => {
     if (!activeHtml && contentVariant === 'full' && hasSummaryContent) {
       setContentVariant('summary')
     } else if (!activeHtml && contentVariant === 'summary' && hasFullContent) {
@@ -86,7 +153,88 @@ export default function StudyMaterial({
     [activeHtml],
   )
 
-  const hasContent = hasStudyAgentContent(agentContent) && Boolean(activeHtml)
+  const hasContent = hasStudyAgentContent(agentContent)
+  const isHtmlView =
+    contentVariant === 'full' || contentVariant === 'summary'
+  const showHtmlPanel = isHtmlView && Boolean(activeHtml)
+
+  async function handleSaveNote() {
+    if (!noteText.trim()) {
+      toast.error('Escreva uma anotação antes de salvar.')
+      return
+    }
+    if (!profile?.id) {
+      toast.error('Faça login para salvar anotações.')
+      return
+    }
+
+    setIsSavingNote(true)
+
+    try {
+      if (noteId) {
+        const { error } = await UpdateStudyNote(noteId, noteText)
+        if (error) {
+          toast.error(error.message)
+          return
+        }
+        toast.success('Anotação atualizada!')
+      } else {
+        const { data, error } = await CreateStudyNote(
+          profile.id,
+          subjectId,
+          noteText,
+        )
+        if (error) {
+          toast.error(error.message)
+          return
+        }
+        if (data?.id) setNoteId(String(data.id))
+        toast.success('Anotação salva!')
+      }
+    } finally {
+      setIsSavingNote(false)
+    }
+  }
+
+  async function handleSaveRating() {
+    if (ratingStars === 0) {
+      toast.error('Selecione uma nota de 1 a 5 estrelas.')
+      return
+    }
+    if (!profile?.id) {
+      toast.error('Faça login para enviar a avaliação.')
+      return
+    }
+
+    const message = [
+      `profile_id: ${profile.id}`,
+      `subject_id: ${subjectId}`,
+      `estrelas: ${ratingStars}`,
+      `mensagem: ${ratingComment.trim() || '(sem comentário)'}`,
+    ].join('\n')
+
+    setIsSavingRating(true)
+
+    try {
+      const { error } = await CreateNotification(
+        'NPS QUESTÃO',
+        message,
+        'study_nps',
+        'admin',
+      )
+
+      if (error) {
+        toast.error(error.message)
+        return
+      }
+
+      toast.success('Avaliação enviada! Obrigado pelo feedback.')
+    } finally {
+      setIsSavingRating(false)
+    }
+  }
+
+  const displayedRating = ratingHover || ratingStars
 
   async function handleContinue() {
     setIsLoadingQuestions(true)
@@ -125,7 +273,8 @@ export default function StudyMaterial({
               Escolha como estudar
             </p>
             <p className="text-xs leading-relaxed text-muted-foreground">
-              Alterne entre a versão completa (mais detalhes) e a resumida.
+              Escolha o modo de estudo: conteúdo completo, resumido, anotações ou
+              avaliação.
             </p>
             <StudyAgentContentVariantSwitcher
               value={contentVariant}
@@ -136,13 +285,150 @@ export default function StudyMaterial({
           </div>
 
           <div className="-mx-2 overflow-hidden rounded-lg border border-border bg-muted/20 sm:mx-0 sm:rounded-xl">
-            <iframe
-              title="Material de estudo"
-              srcDoc={previewSrcDoc}
-              className="block w-full border-0 bg-transparent"
-              style={{ height: 'min(70vh, 640px)' }}
-              sandbox="allow-popups allow-scripts"
-            />
+            {showHtmlPanel ? (
+              <iframe
+                title="Material de estudo"
+                srcDoc={previewSrcDoc}
+                className="block w-full border-0 bg-transparent"
+                style={{ height: 'min(70vh, 640px)' }}
+                sandbox="allow-popups allow-scripts"
+              />
+            ) : contentVariant === 'notes' ? (
+              <div
+                className="flex flex-col gap-4 p-4 sm:p-6"
+                style={{ minHeight: 'min(40vh, 320px)' }}
+              >
+                <div>
+                  <label
+                    htmlFor="study-note"
+                    className="text-sm font-bold text-foreground"
+                  >
+                    Suas anotações
+                  </label>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Registre o que você aprendeu ou pontos importantes deste
+                    material.
+                  </p>
+                </div>
+                <textarea
+                  id="study-note"
+                  value={noteText}
+                  onChange={(e) => setNoteText(e.target.value)}
+                  placeholder="Escreva sua anotação aqui..."
+                  rows={8}
+                  disabled={isLoadingNote || isSavingNote}
+                  className={cn(textareaClass, 'disabled:cursor-not-allowed disabled:opacity-50')}
+                />
+                <button
+                  type="button"
+                  onClick={() => void handleSaveNote()}
+                  disabled={isLoadingNote || isSavingNote}
+                  className="inline-flex items-center justify-center gap-2 self-start rounded-full border border-chart-2 bg-chart-2 px-5 py-2.5 text-xs font-bold text-primary-foreground transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {isSavingNote ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+                      Salvando...
+                    </>
+                  ) : noteId ? (
+                    'Atualizar anotação'
+                  ) : (
+                    'Salvar anotação'
+                  )}
+                </button>
+              </div>
+            ) : contentVariant === 'rating' ? (
+              <div
+                className="flex flex-col gap-5 p-4 sm:p-6"
+                style={{ minHeight: 'min(40vh, 320px)' }}
+              >
+                <div>
+                  <p className="text-sm font-bold text-foreground">
+                    Avalie este conteúdo
+                  </p>
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Sua opinião ajuda a melhorar os materiais de estudo.
+                  </p>
+                </div>
+
+                <div
+                  className="flex flex-col items-center gap-2 rounded-xl border border-chart-5/30 bg-chart-5/5 px-4 py-5"
+                  role="group"
+                  aria-label="Nota de 1 a 5 estrelas"
+                  onMouseLeave={() => setRatingHover(0)}
+                >
+                  <div className="flex gap-2">
+                    {[1, 2, 3, 4, 5].map((star) => (
+                      <button
+                        key={star}
+                        type="button"
+                        onClick={() => setRatingStars(star)}
+                        onMouseEnter={() => setRatingHover(star)}
+                        className="rounded-lg p-1 transition-transform hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-chart-5/60"
+                        aria-label={`${star} ${star === 1 ? 'estrela' : 'estrelas'}`}
+                      >
+                        <Star
+                          className={cn(
+                            'h-9 w-9 sm:h-10 sm:w-10',
+                            star <= displayedRating
+                              ? 'fill-chart-5 text-chart-5'
+                              : 'text-muted-foreground/40',
+                          )}
+                          aria-hidden
+                        />
+                      </button>
+                    ))}
+                  </div>
+                  <p className="text-xs font-semibold text-chart-5">
+                    {displayedRating > 0
+                      ? `${displayedRating} de 5 estrelas`
+                      : 'Toque para avaliar'}
+                  </p>
+                </div>
+
+                <div className="flex flex-col gap-2">
+                  <label
+                    htmlFor="study-rating-comment"
+                    className="text-xs font-bold uppercase tracking-wider text-muted-foreground"
+                  >
+                    Comentário (opcional)
+                  </label>
+                  <textarea
+                    id="study-rating-comment"
+                    value={ratingComment}
+                    onChange={(e) => setRatingComment(e.target.value)}
+                    placeholder="Conte o que achou do material..."
+                    rows={5}
+                    className={textareaClass}
+                  />
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => void handleSaveRating()}
+                  disabled={isSavingRating}
+                  className="inline-flex items-center justify-center gap-2 self-start rounded-full border border-chart-5 bg-chart-5 px-5 py-2.5 text-xs font-bold text-primary-foreground transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {isSavingRating ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" aria-hidden />
+                      Enviando...
+                    </>
+                  ) : (
+                    'Enviar avaliação'
+                  )}
+                </button>
+              </div>
+            ) : (
+              <div
+                className="flex items-center justify-center px-6 py-16 text-center"
+                style={{ minHeight: 'min(40vh, 320px)' }}
+              >
+                <p className="text-sm text-muted-foreground">
+                  Conteúdo não disponível nesta versão.
+                </p>
+              </div>
+            )}
           </div>
         </section>
       ) : (

@@ -61,7 +61,11 @@ export interface StudyMaterials {
 }
 
 // study_materials_agent
-export type StudyAgentHtmlVariant = 'full' | 'summary'
+export type StudyAgentHtmlVariant =
+    | 'full'
+    | 'summary'
+    | 'notes'
+    | 'rating'
 
 export interface StudyMaterialsAgent {
     id: string
@@ -69,6 +73,15 @@ export interface StudyMaterialsAgent {
     subject_id: string
     html_full: string | null
     html_summary: string | null
+}
+
+// study_notes
+export interface StudyNotes {
+    id: string
+    created_at: Date
+    profile_id: string
+    subject_id: string
+    note: string
 }
 
 // study_flashcards
@@ -81,7 +94,10 @@ export interface StudyFlashcards {
 }
 
 // notifications
-export type NotificationType = 'questions_created' | 'questions_error'
+export type NotificationType =
+    | 'questions_created'
+    | 'questions_error'
+    | 'study_nps'
 export type NotificationRole = 'all' | 'admin'
 export interface Notifications {
     id: string

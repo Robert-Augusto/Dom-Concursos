@@ -16,7 +16,7 @@ export function getStudyAgentHtml(
     data: StudyMaterialsAgent | null,
     variant: StudyAgentHtmlVariant,
 ): string | null {
-    if (!data) return null
+    if (!data || variant === 'notes' || variant === 'rating') return null
     const raw = variant === 'full' ? data.html_full : data.html_summary
     return raw?.trim() ? raw : null
 }

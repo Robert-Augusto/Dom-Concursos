@@ -207,6 +207,7 @@ export default function StudyPage() {
             {step === 'material' && (
               <StudyMaterial
                 subjectId={studyState.subjectId}
+                studySessionId={studyState.studySessionId}
                 onContinue={handleQuestions}
                 onQuestionsLoadingChange={setIsLoadingQuestions}
               />

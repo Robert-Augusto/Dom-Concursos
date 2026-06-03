@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { AlertCircle, Bell, ListChecks, X, type LucideIcon } from 'lucide-react'
+import { AlertCircle, Bell, ListChecks, Star, X, type LucideIcon } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import {
   getUnreadNotificationsForProfile,
@@ -31,6 +31,11 @@ const notificationStyles: Record<NotificationType, NotificationStyle> = {
     icon: AlertCircle,
     iconWrapperClassName: 'bg-destructive/20 text-destructive',
     rowClassName: 'bg-destructive/5',
+  },
+  study_nps: {
+    icon: Star,
+    iconWrapperClassName: 'bg-chart-5/20 text-chart-5',
+    rowClassName: 'bg-chart-5/5',
   },
 }
 

@@ -528,7 +528,7 @@ export default function EstudoInteligente({
                   Carregando conteúdo gerado...
                 </span>
               </div>
-            ) : hasAgentContent && previewHtml ? (
+            ) : hasAgentContent ? (
               <article className="flex flex-col gap-4 rounded-xl border border-chart-2/35 bg-card p-4 sm:p-5">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                   <div className="flex items-start gap-3">
@@ -570,13 +570,29 @@ export default function EstudoInteligente({
                 />
 
                 <div className="overflow-hidden rounded-xl border border-border bg-muted/20">
-                  <iframe
-                    title="Pré-visualização do material de estudo"
-                    srcDoc={agentPreviewSrcDoc}
-                    className="block w-full border-0 bg-transparent"
-                    style={{ height: 'min(70vh, 640px)' }}
-                    sandbox="allow-popups allow-scripts"
-                  />
+                  {previewHtml &&
+                  (previewVariant === 'full' || previewVariant === 'summary') ? (
+                    <iframe
+                      title="Pré-visualização do material de estudo"
+                      srcDoc={agentPreviewSrcDoc}
+                      className="block w-full border-0 bg-transparent"
+                      style={{ height: 'min(70vh, 640px)' }}
+                      sandbox="allow-popups allow-scripts"
+                    />
+                  ) : (
+                    <div
+                      className="flex items-center justify-center px-6 py-16 text-center"
+                      style={{ minHeight: 'min(70vh, 640px)' }}
+                    >
+                      <p className="text-sm text-muted-foreground">
+                        {previewVariant === 'notes'
+                          ? 'Pré-visualização de anotações em breve.'
+                          : previewVariant === 'rating'
+                            ? 'Pré-visualização de avaliação em breve.'
+                            : 'Conteúdo não disponível nesta versão.'}
+                      </p>
+                    </div>
+                  )}
                 </div>
               </article>
             ) : (

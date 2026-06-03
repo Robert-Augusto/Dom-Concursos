@@ -15,7 +15,7 @@ export async function CreateStudySession(profileId: string, subjectId: string, s
     return {data, error}
 }
 
-// UPDATE 
+// UPDATE: finish
 export async function UpdateStudySession(studySessionId: string, endAt: Date){
     const supabase = createClient()
     const {error} = await supabase

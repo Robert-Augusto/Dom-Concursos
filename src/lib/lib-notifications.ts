@@ -1,9 +1,32 @@
 import { createClient } from '@/lib/supabase/client'
 import type { PostgrestError } from '@supabase/supabase-js'
 import type {
+  NotificationRole,
   Notifications as NotificationRow,
+  NotificationType,
   ProfileRole,
 } from '@/types'
+
+export async function CreateNotification(
+  title: string,
+  message: string,
+  type: NotificationType,
+  role: NotificationRole,
+) {
+  const supabase = createClient()
+  const { data, error } = await supabase
+    .from('notifications')
+    .insert({
+      title,
+      message,
+      type,
+      role,
+    })
+    .select('id')
+    .single()
+
+  return { data, error }
+}
 
 function parseNotificationRow(row: NotificationRow): NotificationRow {
   return {
