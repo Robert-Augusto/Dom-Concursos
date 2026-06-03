@@ -61,11 +61,14 @@ export interface StudyMaterials {
 }
 
 // study_materials_agent
+export type StudyAgentHtmlVariant = 'full' | 'summary'
+
 export interface StudyMaterialsAgent {
     id: string
     created_at: Date
     subject_id: string
-    html: string | null
+    html_full: string | null
+    html_summary: string | null
 }
 
 // study_flashcards

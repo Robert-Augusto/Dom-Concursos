@@ -1,5 +1,33 @@
 import { createClient } from "./supabase/client";
-import type { StudyMaterials, StudyMaterialsAgent, StudyMaterialFileType } from "@/types";
+import type {
+    StudyAgentHtmlVariant,
+    StudyMaterials,
+    StudyMaterialsAgent,
+    StudyMaterialFileType,
+} from "@/types";
+
+export type { StudyAgentHtmlVariant }
+
+export function hasStudyAgentContent(data: StudyMaterialsAgent | null): boolean {
+    return Boolean(data?.html_full?.trim() || data?.html_summary?.trim())
+}
+
+export function getStudyAgentHtml(
+    data: StudyMaterialsAgent | null,
+    variant: StudyAgentHtmlVariant,
+): string | null {
+    if (!data) return null
+    const raw = variant === 'full' ? data.html_full : data.html_summary
+    return raw?.trim() ? raw : null
+}
+
+export function getDefaultStudyAgentVariant(
+    data: StudyMaterialsAgent | null,
+): StudyAgentHtmlVariant | null {
+    if (data?.html_full?.trim()) return 'full'
+    if (data?.html_summary?.trim()) return 'summary'
+    return null
+}
 
 const STUDY_MATERIALS_BUCKET = 'study_materials_images'
 

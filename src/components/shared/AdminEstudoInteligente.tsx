@@ -1,20 +1,25 @@
 'use client'
 
 import { useState, useEffect, useMemo, useRef } from 'react'
-import { Subjects, StudyMaterials } from '@/types'
+import { Subjects, StudyAgentHtmlVariant, StudyMaterials, StudyMaterialsAgent } from '@/types'
+import { StudyAgentContentVariantSwitcher } from '@/components/shared/StudyAgentContentVariantSwitcher'
 import { BookText, ChevronDown, Eye, FileUp, Loader2, RefreshCw, Sparkles, Wand2 } from 'lucide-react'
 import { ModalSubjectPicker } from '@/components/shared/ModalSubjectPicker'
 import {
   CreateStudyMaterial,
   DeleteStudyMaterial,
   getStudyMaterialFileType,
+  getDefaultStudyAgentVariant,
+  getStudyAgentHtml,
   GetStudyMaterialsAgentBySubject,
   GetStudyMaterialsBySubject,
+  hasStudyAgentContent,
   wrapAgentHtmlForIframe,
 } from '@/lib/study_material'
 import { toast } from 'sonner'
 import { createClient } from '@/lib/supabase/client'
 import { cn } from '@/lib/utils'
+import { CreateStudyMaterialsAgent } from '@/lib/lib-study-materials-agent'
 
 const MAX_FILES = 5
 const STUDY_MATERIALS_BUCKET = 'study_materials_images'
@@ -80,8 +85,16 @@ export default function EstudoInteligente({
   const [isLoadingMaterials, setIsLoadingMaterials] = useState(false)
   const [isSavingMaterial, setIsSavingMaterial] = useState(false)
   const [isGeneratingContent, setIsGeneratingContent] = useState(false)
-  const [agentHtml, setAgentHtml] = useState<string | null>(null)
+  const [agentContent, setAgentContent] = useState<StudyMaterialsAgent | null>(
+    null,
+  )
+  const [previewVariant, setPreviewVariant] =
+    useState<StudyAgentHtmlVariant>('full')
   const [isLoadingAgentContent, setIsLoadingAgentContent] = useState(false)
+
+  const hasFullContent = Boolean(agentContent?.html_full?.trim())
+  const hasSummaryContent = Boolean(agentContent?.html_summary?.trim())
+  const previewHtml = getStudyAgentHtml(agentContent, previewVariant)
 
   const savedMaterialCount = materials.length
 
@@ -99,13 +112,13 @@ export default function EstudoInteligente({
     savedMaterialCount > 0 &&
     !hasPendingChanges &&
     !isLoadingMaterials &&
-    !agentHtml?.trim()
+    !hasStudyAgentContent(agentContent)
 
-  const hasAgentContent = Boolean(agentHtml?.trim())
+  const hasAgentContent = hasStudyAgentContent(agentContent)
 
   const agentPreviewSrcDoc = useMemo(
-    () => (agentHtml ? wrapAgentHtmlForIframe(agentHtml) : ''),
-    [agentHtml],
+    () => (previewHtml ? wrapAgentHtmlForIframe(previewHtml) : ''),
+    [previewHtml],
   )
 
   function resetStaging() {
@@ -116,7 +129,8 @@ export default function EstudoInteligente({
 
   useEffect(() => {
     resetStaging()
-    setAgentHtml(null)
+    setAgentContent(null)
+    setPreviewVariant('full')
   }, [selectedSmartSubject?.id])
 
   async function loadAgentContent(subjectId: string) {
@@ -125,21 +139,32 @@ export default function EstudoInteligente({
     const agentRes = await GetStudyMaterialsAgentBySubject(subjectId)
 
     if (agentRes.error) {
-      setAgentHtml(null)
+      setAgentContent(null)
       toast.error(agentRes.error.message)
     } else {
-      setAgentHtml(agentRes.data?.html?.trim() ? agentRes.data.html : null)
+      const data = agentRes.data
+      setAgentContent(data)
+      const defaultVariant = getDefaultStudyAgentVariant(data)
+      if (defaultVariant) setPreviewVariant(defaultVariant)
     }
 
     setIsLoadingAgentContent(false)
   }
 
   useEffect(() => {
+    if (!previewHtml && previewVariant === 'full' && hasSummaryContent) {
+      setPreviewVariant('summary')
+    } else if (!previewHtml && previewVariant === 'summary' && hasFullContent) {
+      setPreviewVariant('full')
+    }
+  }, [previewHtml, previewVariant, hasFullContent, hasSummaryContent])
+
+  useEffect(() => {
     const subjectId = selectedSmartSubject?.id
     const supabase = createClient()
     if (!subjectId) {
       setMaterials([])
-      setAgentHtml(null)
+      setAgentContent(null)
       return
     }
 
@@ -312,6 +337,13 @@ export default function EstudoInteligente({
     setIsGeneratingContent(true)
 
     try {
+      const {data, error} = await CreateStudyMaterialsAgent(selectedSmartSubject.id)
+
+      if(error || !data) {
+        toast.error("Erro ao criar o material de estudo, tente novamente.")
+        return
+      }
+
       const response = await fetch(
         'https://n8n-qao4.srv1444382.hstgr.cloud/webhook/49b6eb10-d312-44ac-aedd-a56ee5da4b58',
         {
@@ -321,6 +353,7 @@ export default function EstudoInteligente({
           },
           body: JSON.stringify({
             subjectId: selectedSmartSubject.id,
+            studyMaterialAgentId: data.id
           }),
         },
       )
@@ -383,13 +416,6 @@ export default function EstudoInteligente({
 
         {selectedSmartSubject ? (
           <div className="flex flex-col gap-5">
-            <p className="text-xs font-bold uppercase tracking-widest text-muted-foreground">
-              Matéria selecionada:{' '}
-              {selectedRootSubjectName
-                ? `${selectedRootSubjectName} · ${selectedSmartSubject.name}`
-                : selectedSmartSubject.name}
-            </p>
-
             <article
               className={cn(
                 'flex flex-col gap-3 rounded-xl border p-4',
@@ -398,26 +424,7 @@ export default function EstudoInteligente({
                   : 'border-border bg-card',
               )}
             >
-              <div className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-border bg-muted">
-                <BookText className="h-4 w-4 text-foreground" aria-hidden />
-              </div>
-              <h3 className="text-base font-bold text-foreground">
-                Material de Estudo
-              </h3>
-              <p className="text-sm text-muted-foreground">
-                {totalFileCount === 0
-                  ? 'Nenhum arquivo cadastrado. Envie PDF, DOCX, PowerPoint ou imagens abaixo.'
-                  : 'Gerencie os arquivos de estudo da matéria selecionada.'}
-              </p>
-
               <div className="mt-1 flex flex-col gap-3">
-                <div>
-                  <p className="text-xs text-muted-foreground">
-                    Você pode anexar até {MAX_FILES} arquivos ({totalFileCount}{' '}
-                    no total)
-                  </p>
-                </div>
-
                 <input
                   ref={filesInputRef}
                   type="file"
@@ -521,7 +528,7 @@ export default function EstudoInteligente({
                   Carregando conteúdo gerado...
                 </span>
               </div>
-            ) : hasAgentContent && agentHtml ? (
+            ) : hasAgentContent && previewHtml ? (
               <article className="flex flex-col gap-4 rounded-xl border border-chart-2/35 bg-card p-4 sm:p-5">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                   <div className="flex items-start gap-3">
@@ -554,6 +561,13 @@ export default function EstudoInteligente({
                     Atualizar visualização
                   </button>
                 </div>
+
+                <StudyAgentContentVariantSwitcher
+                  value={previewVariant}
+                  onChange={setPreviewVariant}
+                  hasFull={hasFullContent}
+                  hasSummary={hasSummaryContent}
+                />
 
                 <div className="overflow-hidden rounded-xl border border-border bg-muted/20">
                   <iframe

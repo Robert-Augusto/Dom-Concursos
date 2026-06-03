@@ -13,7 +13,10 @@ import {
 } from 'lucide-react'
 import { Subjects } from '@/types'
 import { cn } from '@/lib/utils'
-import { GetStudyMaterialsAgentBySubject } from '@/lib/study_material'
+import {
+  GetStudyMaterialsAgentBySubject,
+  hasStudyAgentContent,
+} from '@/lib/study_material'
 import { toast } from 'sonner'
 import { CreateStudySession } from '@/lib/lib-study-session'
 import { useProfile } from '@/context/ProfileContext'
@@ -207,7 +210,7 @@ export default function StudyConfig({
     try {
       const agentRes = await GetStudyMaterialsAgentBySubject(selectedRelated.id)
 
-      if (agentRes.error || !agentRes.data?.html?.trim()) {
+      if (agentRes.error || !hasStudyAgentContent(agentRes.data)) {
         toast.error(
           agentRes.error?.message ??
             'Cadastre o material de estudo para este assunto.',

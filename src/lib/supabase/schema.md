@@ -286,4 +286,6 @@
 | `id` | `int8` | Primary Identity |
 | `created_at` | `timestamptz` |  |
 | `subject_id` | `int8` |  Nullable |
-| `html` | `text` |  Nullable |
+| `html_full` | `text` |  Nullable |
+| `html_summary` | `text` |  Nullable |
+

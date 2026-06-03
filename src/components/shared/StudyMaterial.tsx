@@ -1,15 +1,18 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import { BookOpen, Loader2 } from 'lucide-react'
-import StudyContentProgress from '@/components/shared/StudyContentProgress'
+import { Loader2 } from 'lucide-react'
+import { StudyAgentContentVariantSwitcher } from '@/components/shared/StudyAgentContentVariantSwitcher'
 import { StudyFlowLoading } from '@/components/shared/StudyFlowLoading'
 import { GetStudyQuestionsBySubject } from '@/lib/lib-questions'
 import {
+  getDefaultStudyAgentVariant,
+  getStudyAgentHtml,
   GetStudyMaterialsAgentBySubject,
+  hasStudyAgentContent,
   wrapAgentHtmlForIframe,
 } from '@/lib/study_material'
-import type { Questions } from '@/types'
+import type { Questions, StudyAgentHtmlVariant, StudyMaterialsAgent } from '@/types'
 import { toast } from 'sonner'
 
 export interface StudyMaterialProps {
@@ -23,16 +26,24 @@ export default function StudyMaterial({
   onContinue,
   onQuestionsLoadingChange,
 }: StudyMaterialProps) {
-  const [html, setHtml] = useState<string | null>(null)
+  const [agentContent, setAgentContent] = useState<StudyMaterialsAgent | null>(
+    null,
+  )
+  const [contentVariant, setContentVariant] =
+    useState<StudyAgentHtmlVariant>('full')
   const [isLoading, setIsLoading] = useState(true)
   const [isLoadingQuestions, setIsLoadingQuestions] = useState(false)
+
+  const hasFullContent = Boolean(agentContent?.html_full?.trim())
+  const hasSummaryContent = Boolean(agentContent?.html_summary?.trim())
+  const activeHtml = getStudyAgentHtml(agentContent, contentVariant)
 
   useEffect(() => {
     let cancelled = false
 
     async function loadMaterial() {
       if (!subjectId) {
-        setHtml(null)
+        setAgentContent(null)
         setIsLoading(false)
         return
       }
@@ -45,9 +56,11 @@ export default function StudyMaterial({
 
       if (error) {
         toast.error(error.message)
-        setHtml(null)
+        setAgentContent(null)
       } else {
-        setHtml(data?.html?.trim() ? data.html : null)
+        setAgentContent(data)
+        const defaultVariant = getDefaultStudyAgentVariant(data)
+        if (defaultVariant) setContentVariant(defaultVariant)
       }
 
       setIsLoading(false)
@@ -59,12 +72,21 @@ export default function StudyMaterial({
     }
   }, [subjectId])
 
+  useEffect(() => {
+    if (!activeHtml && contentVariant === 'full' && hasSummaryContent) {
+      setContentVariant('summary')
+    } else if (!activeHtml && contentVariant === 'summary' && hasFullContent) {
+      setContentVariant('full')
+    }
+  }, [activeHtml, contentVariant, hasFullContent, hasSummaryContent])
+
   const previewSrcDoc = useMemo(
-    () => (html ? wrapAgentHtmlForIframe(html, { compactMobile: true }) : ''),
-    [html],
+    () =>
+      activeHtml ? wrapAgentHtmlForIframe(activeHtml, { compactMobile: true }) : '',
+    [activeHtml],
   )
 
-  const hasContent = Boolean(html?.trim())
+  const hasContent = hasStudyAgentContent(agentContent) && Boolean(activeHtml)
 
   async function handleContinue() {
     setIsLoadingQuestions(true)
@@ -91,28 +113,27 @@ export default function StudyMaterial({
   }
 
   return (
-    <div className="flex min-h-0 flex-col gap-4">
+    <div className="flex min-h-0 flex-col gap-4 pb-24">
       {isLoading ? (
         <div className="flex min-h-[40vh] items-center justify-center rounded-2xl border border-border bg-card">
           <StudyFlowLoading label="Carregando material de estudo..." />
         </div>
       ) : hasContent ? (
         <section className="flex flex-col gap-3 overflow-hidden rounded-xl border border-accent/35 bg-card ring-1 ring-accent/15 sm:gap-4 sm:rounded-2xl sm:border-2 sm:p-5">
-          
-          {/*<div className="flex items-start gap-2.5 px-0.5 sm:gap-3 sm:px-0">
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-accent/35 bg-accent/10 sm:h-10 sm:w-10 sm:rounded-xl">
-              <BookOpen className="h-4 w-4 text-accent sm:h-5 sm:w-5" aria-hidden />
-            </span>
-            <div className="min-w-0 flex-1">
-              <p className="text-sm font-bold text-foreground">
-                Material de estudo
-              </p>
-              <p className="mt-0.5 text-xs leading-relaxed text-muted-foreground sm:mt-1">
-                Leia com atenção. O que você absorver agora fará diferença nas
-                questões.
-              </p>
-            </div>
-          </div>*/}
+          <div className="flex flex-col gap-2 px-0.5 sm:px-0 mt-3 mx-3">
+            <p className="text-sm font-bold text-foreground">
+              Escolha como estudar
+            </p>
+            <p className="text-xs leading-relaxed text-muted-foreground">
+              Alterne entre a versão completa (mais detalhes) e a resumida.
+            </p>
+            <StudyAgentContentVariantSwitcher
+              value={contentVariant}
+              onChange={setContentVariant}
+              hasFull={hasFullContent}
+              hasSummary={hasSummaryContent}
+            />
+          </div>
 
           <div className="-mx-2 overflow-hidden rounded-lg border border-border bg-muted/20 sm:mx-0 sm:rounded-xl">
             <iframe
