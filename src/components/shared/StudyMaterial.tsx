@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
-import { Loader2, Star } from 'lucide-react'
+import { Headphones, Loader2, Star } from 'lucide-react'
 import { StudyAgentContentVariantSwitcher } from '@/components/shared/StudyAgentContentVariantSwitcher'
 import { StudyFlowLoading } from '@/components/shared/StudyFlowLoading'
 import { useProfile } from '@/context/ProfileContext'
@@ -25,6 +25,9 @@ import { toast } from 'sonner'
 
 const textareaClass =
   'w-full resize-none rounded-xl border border-border bg-background px-3 py-2.5 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-primary/50'
+
+const STUDY_PODCAST_AUDIO_URL =
+  'https://tzrcebhmkivfflfosstq.supabase.co/storage/v1/object/public/study_materials_images/substantivo-podcast.m4a'
 
 export interface StudyMaterialProps {
   subjectId: string
@@ -301,6 +304,62 @@ export default function StudyMaterial({
               hasSummary={hasSummaryContent}
             />
           </div>
+
+          <aside
+            className="relative mx-3 overflow-hidden rounded-2xl border border-chart-5/30 bg-card"
+            style={{
+              background:
+                'linear-gradient(135deg, rgba(139,92,246,0.14) 0%, rgba(139,92,246,0.05) 42%, hsl(var(--card)) 100%)',
+              boxShadow: '0 4px 24px rgba(139,92,246,0.12)',
+            }}
+            aria-label="Podcast do conteúdo"
+          >
+            <div
+              className="pointer-events-none absolute -right-8 -top-8 h-24 w-24 rounded-full bg-chart-5/20 blur-2xl"
+              aria-hidden
+            />
+            <div
+              className="pointer-events-none absolute left-0 top-0 h-full w-1 rounded-l-2xl bg-chart-5"
+              aria-hidden
+            />
+
+            <div className="relative flex gap-3.5 p-4 pb-3 sm:gap-4 sm:p-5 sm:pb-4">
+              <span
+                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-chart-5/35 bg-chart-5/15 sm:h-12 sm:w-12"
+                style={{
+                  boxShadow: '0 4px 16px rgba(139,92,246,0.25)',
+                }}
+              >
+                <Headphones
+                  className="h-5 w-5 text-chart-5 sm:h-6 sm:w-6"
+                  strokeWidth={2}
+                  aria-hidden
+                />
+              </span>
+              <div className="min-w-0 flex-1">
+                <p className="mt-1 font-heading text-sm font-bold leading-snug text-foreground sm:text-base">
+                  Ouça o conteúdo em áudio
+                </p>
+                {<p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+                  Ideal para revisar no trânsito ou enquanto faz outra atividade.
+                </p>}
+              </div>
+            </div>
+
+            <div className="relative px-4 pb-4 sm:px-5 sm:pb-5">
+              <div>
+                <audio
+                  controls
+                  preload="metadata"
+                  src={STUDY_PODCAST_AUDIO_URL}
+                  className="h-12 w-full max-w-full [&::-webkit-media-controls-panel]:bg-transparent"
+                  controlsList="nodownload"
+                >
+                  Seu navegador não suporta reprodução de áudio.
+                </audio>
+              </div>
+            </div>
+          </aside>
 
           <div className="-mx-2 overflow-hidden rounded-lg border border-border bg-muted/20 sm:mx-0 sm:rounded-xl">
             {showHtmlPanel ? (
