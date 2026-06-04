@@ -305,7 +305,7 @@ export default function StudyMaterial({
             />
           </div>
 
-          <aside
+          {showHtmlPanel && (<aside
             className="relative mx-3 overflow-hidden rounded-2xl border border-chart-5/30 bg-card"
             style={{
               background:
@@ -359,7 +359,7 @@ export default function StudyMaterial({
                 </audio>
               </div>
             </div>
-          </aside>
+          </aside>)}
 
           <div className="-mx-2 overflow-hidden rounded-lg border border-border bg-muted/20 sm:mx-0 sm:rounded-xl">
             {showHtmlPanel ? (
