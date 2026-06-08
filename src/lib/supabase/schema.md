@@ -12,6 +12,7 @@
 | `access_level` | `USER_ACCESS_LEVEL` |  Nullable |
 | `avatar_url` | `text` |  Nullable |
 | `whatsapp` | `text` |  Nullable |
+| `headline` | `text` |  Nullable |
 
 ## Table `lessons`
 
@@ -301,4 +302,41 @@
 | `profile_id` | `uuid` |  Nullable |
 | `subject_id` | `int8` |  Nullable |
 | `note` | `text` |  Nullable |
+
+## Table `community_posts`
+
+### Columns
+
+| Name | Type | Constraints |
+|------|------|-------------|
+| `id` | `int8` | Primary Identity |
+| `created_at` | `timestamptz` |  |
+| `profile_id` | `uuid` |  Nullable |
+| `content` | `text` |  Nullable |
+| `image_url` | `text` |  Nullable |
+| `video_url` | `text` |  Nullable |
+| `type` | `COMMUNITY_POST_TYPE` |  Nullable |
+
+## Table `community_likes`
+
+### Columns
+
+| Name | Type | Constraints |
+|------|------|-------------|
+| `id` | `int8` | Primary Identity |
+| `created_at` | `timestamptz` |  |
+| `profile_id` | `uuid` |  Nullable |
+| `post_id` | `int8` |  Nullable |
+
+## Table `community_comments`
+
+### Columns
+
+| Name | Type | Constraints |
+|------|------|-------------|
+| `id` | `int8` | Primary Identity |
+| `created_at` | `timestamptz` |  |
+| `profile_id` | `uuid` |  Nullable |
+| `content` | `text` |  Nullable |
+| `post_id` | `int8` |  Nullable |
 

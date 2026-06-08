@@ -1,3 +1,11 @@
+import {
+    FileText,
+    Flame,
+    HelpCircle,
+    Lightbulb,
+    Star,
+  } from 'lucide-react'
+
 // lessons
 export type VideoType = 'youtube' | 'panda'
 export type AccessLevel = 'free' | 'plus' | 'premium'
@@ -47,6 +55,7 @@ export interface Profile {
     access_level: AccessLevel
     avatar_url: string
     whatsapp: string
+    headline: string | null
 }
 
 // study_materials
@@ -182,4 +191,56 @@ export interface StudyQuestionReview {
     created_at: Date
     subjects_questions_id: string
     profile_id: string
+}
+
+// community post tags
+export type FilterKey = 'Dicas' | 'Editais' | 'Dúvidas' | 'Aprovação'
+export type CommunityPostType = FilterKey
+
+export const filters: Array<{ label: FilterKey; icon: React.ComponentType<{ className?: string }> }> = [
+    { label: 'Aprovação', icon: Flame },
+    { label: 'Dicas', icon: Lightbulb },
+    { label: 'Editais', icon: FileText },
+    { label: 'Dúvidas', icon: HelpCircle },
+]
+
+export interface CommunityPost {
+    id: number
+    created_at: string
+    profile_id: string | null
+    content: string | null
+    image_url: string | null
+    video_url: string | null
+    type: CommunityPostType | null
+}
+
+export interface CommunityPostProfile {
+    id: string
+    name: string | null
+    role: ProfileRole | null
+    avatar_url: string | null
+    headline: string | null
+}
+
+export interface CommunityLike {
+    id: number
+    profile_id: string | null
+}
+
+export interface CommunityPostWithRelations extends CommunityPost {
+    profile: CommunityPostProfile | null
+    community_likes: CommunityLike[]
+    community_comments: { id: number }[]
+}
+
+export interface CommunityComment {
+    id: number
+    created_at: string
+    profile_id: string | null
+    content: string | null
+    post_id: number | null
+}
+
+export interface CommunityCommentWithProfile extends CommunityComment {
+    profile: CommunityPostProfile | null
 }

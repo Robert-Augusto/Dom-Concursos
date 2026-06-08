@@ -9,7 +9,7 @@ export default function DashboardPage() {
       <Sidebar />
       <div className="min-h-screen pb-20 lg:ml-[240px] lg:pb-0">
         <Header />
-        <main className="p-6 max-w-[1210px] mx-auto">
+        <main className="p-6 max-w-[768px] mx-auto">
           <div className="flex flex-col gap-8">
             <CommunityFeed />
           </div>
