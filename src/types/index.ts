@@ -107,6 +107,7 @@ export type NotificationType =
     | 'questions_created'
     | 'questions_error'
     | 'study_nps'
+    | 'comment_post'
 export type NotificationRole = 'all' | 'admin'
 export interface Notifications {
     id: string
@@ -115,6 +116,7 @@ export interface Notifications {
     message: string
     type: NotificationType
     role: NotificationRole
+    profile_id?: string | null
 }
 
 // notifications read

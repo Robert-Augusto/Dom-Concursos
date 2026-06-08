@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/client'
+import { CreateCommentPostNotification } from '@/lib/lib-notifications'
 import type {
   CommunityCommentWithProfile,
   CommunityPostType,
@@ -511,11 +512,26 @@ export async function CreateCommunityComment(
   content: string
 ) {
   const supabase = createClient()
+  const numericPostId = Number(postId)
+
+  const { data: post, error: postError } = await supabase
+    .from('community_posts')
+    .select('profile_id')
+    .eq('id', numericPostId)
+    .single()
+
+  if (postError || !post) {
+    return {
+      data: null,
+      error: postError ?? { message: 'Publicação não encontrada.' },
+    }
+  }
+
   const { data, error } = await supabase
     .from('community_comments')
     .insert({
       profile_id: profileId,
-      post_id: Number(postId),
+      post_id: numericPostId,
       content: content.trim(),
     })
     .select(
@@ -536,9 +552,27 @@ export async function CreateCommunityComment(
     )
     .single()
 
+  if (error || !data) {
+    return {
+      data: data as CommunityCommentWithProfile | null,
+      error,
+    }
+  }
+
+  const postOwnerId = post.profile_id
+
+  const commentRow = data as unknown as CommunityCommentWithProfile
+
+  if (postOwnerId && postOwnerId !== profileId) {
+    const commenterName =
+      commentRow.profile?.name?.trim() || 'Alguém'
+
+    await CreateCommentPostNotification(postOwnerId, commenterName)
+  }
+
   return {
-    data: data as CommunityCommentWithProfile | null,
-    error,
+    data: commentRow,
+    error: null,
   }
 }
 

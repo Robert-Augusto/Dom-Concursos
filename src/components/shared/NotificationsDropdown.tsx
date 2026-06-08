@@ -1,7 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { AlertCircle, Bell, ListChecks, Star, X, type LucideIcon } from 'lucide-react'
+import { AlertCircle, Bell, ListChecks, MessageCircle, Star, X, type LucideIcon } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import {
   getUnreadNotificationsForProfile,
@@ -36,6 +36,11 @@ const notificationStyles: Record<NotificationType, NotificationStyle> = {
     icon: Star,
     iconWrapperClassName: 'bg-chart-5/20 text-chart-5',
     rowClassName: 'bg-chart-5/5',
+  },
+  comment_post: {
+    icon: MessageCircle,
+    iconWrapperClassName: 'bg-accent/20 text-accent',
+    rowClassName: 'bg-accent/5',
   },
 }
 

@@ -125,6 +125,7 @@
 | `message` | `text` |  Nullable |
 | `type` | `NOTIFICATIONS_TYPE` |  Nullable |
 | `role` | `NOTIFICATIONS_ROLE` |  Nullable |
+| `profile_id` | `uuid` |  Nullable |
 
 ## Table `notifications_reads`
 

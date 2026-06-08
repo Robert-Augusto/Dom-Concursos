@@ -12,6 +12,7 @@ export async function CreateNotification(
   message: string,
   type: NotificationType,
   role: NotificationRole,
+  profileId?: string | null
 ) {
   const supabase = createClient()
   const { data, error } = await supabase
@@ -21,11 +22,25 @@ export async function CreateNotification(
       message,
       type,
       role,
+      profile_id: profileId ?? null,
     })
     .select('id')
     .single()
 
   return { data, error }
+}
+
+export async function CreateCommentPostNotification(
+  postOwnerProfileId: string,
+  commenterName: string
+) {
+  return CreateNotification(
+    'Novo comentário',
+    `${commenterName} comentou na sua publicação.`,
+    'comment_post',
+    'all',
+    postOwnerProfileId
+  )
 }
 
 function parseNotificationRow(row: NotificationRow): NotificationRow {
@@ -38,7 +53,7 @@ function parseNotificationRow(row: NotificationRow): NotificationRow {
   }
 }
 
-/** Admins see every notification. Students and teachers only see notifications with role "all" (never role "admin"). */
+/** Admins see every broadcast notification. Students and teachers only see broadcasts with role "all". */
 function filterNotificationsByAudience(
   rows: NotificationRow[],
   profileRole: ProfileRole | undefined
@@ -47,6 +62,18 @@ function filterNotificationsByAudience(
     return rows
   }
   return rows.filter((n) => n.role === 'all')
+}
+
+function isNotificationVisibleToProfile(
+  notification: NotificationRow,
+  profileId: string,
+  profileRole: ProfileRole | undefined
+): boolean {
+  if (notification.profile_id) {
+    return notification.profile_id === profileId
+  }
+
+  return filterNotificationsByAudience([notification], profileRole).length > 0
 }
 
 export async function getUnreadNotificationsForProfile(
@@ -71,6 +98,7 @@ export async function getUnreadNotificationsForProfile(
   const { data: notifications, error: notificationsError } = await supabase
     .from('notifications')
     .select('*')
+    .or(`profile_id.eq.${profileId},profile_id.is.null`)
     .order('created_at', { ascending: false })
 
   if (notificationsError) {
@@ -79,10 +107,14 @@ export async function getUnreadNotificationsForProfile(
 
   const rows = (notifications ?? [])
     .map((row) => parseNotificationRow(row as NotificationRow))
-    .filter((n) => !readIds.has(n.id))
+    .filter(
+      (n) =>
+        !readIds.has(n.id) &&
+        isNotificationVisibleToProfile(n, profileId, profileRole)
+    )
 
   return {
-    data: filterNotificationsByAudience(rows, profileRole),
+    data: rows,
     error: null,
   }
 }
