@@ -16,7 +16,7 @@ import { createClient } from '@/lib/supabase/client'
 const navigationItems = [
   { label: 'Início', href: '/dashboard', icon: Home, center: false },
   { label: 'Aprovados', href: '/doubts', icon: Medal, center: false },
-  { label: 'Comunidade', href: '/simulado', icon: Users, center: true },
+  { label: 'Comunidade', href: '/comunity', icon: Users, center: true },
   { label: 'Dúvidas', href: '/settings', icon: MessageCircleQuestionMark, center: false },
   { label: 'Painel', href: '/study', icon: ChartNoAxesCombined, center: false },
 ] as const

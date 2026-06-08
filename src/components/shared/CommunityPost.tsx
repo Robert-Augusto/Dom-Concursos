@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import {
   CheckCircle,
@@ -10,10 +10,12 @@ import {
   HelpCircle,
   Lightbulb,
   MessageCircle,
+  MoreVertical,
   Pencil,
   Share2,
   Trash2,
   Trophy,
+  type LucideIcon,
 } from 'lucide-react'
 
 import type { Post, UserRole } from '@/components/shared/CommunityFeed'
@@ -93,6 +95,107 @@ function CommunityUserInfo({
         </div>
         <p className="text-xs leading-snug text-muted-foreground">{headline}</p>
       </div>
+    </div>
+  )
+}
+
+interface KebabMenuItem {
+  label: string
+  icon: LucideIcon
+  onClick: () => void
+  variant?: 'default' | 'destructive'
+}
+
+interface CommunityKebabMenuProps {
+  items: KebabMenuItem[]
+  size?: 'sm' | 'md'
+  ariaLabel?: string
+}
+
+function CommunityKebabMenu({
+  items,
+  size = 'md',
+  ariaLabel = 'Abrir menu',
+}: CommunityKebabMenuProps) {
+  const [isOpen, setIsOpen] = useState(false)
+  const menuRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!isOpen) {
+      return
+    }
+
+    function handleClickOutside(event: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setIsOpen(false)
+      }
+    }
+
+    function handleEscape(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        setIsOpen(false)
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    document.addEventListener('keydown', handleEscape)
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+      document.removeEventListener('keydown', handleEscape)
+    }
+  }, [isOpen])
+
+  if (items.length === 0) {
+    return null
+  }
+
+  const buttonSize = size === 'sm' ? 'h-7 w-7' : 'h-8 w-8'
+  const iconSize = size === 'sm' ? 'h-3.5 w-3.5' : 'h-4 w-4'
+
+  return (
+    <div ref={menuRef} className="relative shrink-0">
+      <button
+        type="button"
+        onClick={() => setIsOpen((prev) => !prev)}
+        className={`flex ${buttonSize} items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:border-accent/40 hover:bg-muted/40 hover:text-foreground`}
+        aria-label={ariaLabel}
+        aria-expanded={isOpen}
+        aria-haspopup="menu"
+      >
+        <MoreVertical className={iconSize} />
+      </button>
+
+      {isOpen ? (
+        <div
+          role="menu"
+          className="absolute right-0 top-full z-20 mt-1 min-w-[9.5rem] overflow-hidden rounded-xl border border-border bg-popover py-1 shadow-[0_8px_24px_rgba(0,0,0,0.35)]"
+        >
+          {items.map((item) => {
+            const Icon = item.icon
+
+            return (
+              <button
+                key={item.label}
+                type="button"
+                role="menuitem"
+                onClick={() => {
+                  setIsOpen(false)
+                  item.onClick()
+                }}
+                className={`flex w-full items-center gap-2 px-3 py-2 text-left text-xs font-semibold transition-colors hover:bg-muted/60 ${
+                  item.variant === 'destructive'
+                    ? 'text-destructive'
+                    : 'text-foreground'
+                }`}
+              >
+                <Icon className="h-3.5 w-3.5 shrink-0" />
+                <span>{item.label}</span>
+              </button>
+            )
+          })}
+        </div>
+      ) : null}
     </div>
   )
 }
@@ -442,8 +545,8 @@ export default function CommunityPost({
     <>
     <div className="bg-card rounded-2xl border border-border overflow-hidden hover:border-border/80 transition-colors">
       <div className="flex flex-col gap-2.5 p-3 sm:gap-3 sm:p-4">
-        <div className="flex flex-col gap-2.5 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
-          <div className="min-w-0 flex-1">
+        <div className="relative">
+          <div className={`min-w-0 ${isOwner || canDelete ? 'pr-10' : ''}`}>
             <CommunityUserInfo
               name={post.authorName}
               initial={post.authorInitial}
@@ -454,31 +557,38 @@ export default function CommunityPost({
             />
           </div>
 
-          <div className="flex shrink-0 items-center gap-2 self-start">
-            {isOwner ? (
-              <button
-                type="button"
-                onClick={() => onEdit?.(post)}
-                className="flex h-8 w-8 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:border-accent/40 hover:text-foreground"
-                aria-label="Editar publicação"
-              >
-                <Pencil className="h-3.5 w-3.5" />
-              </button>
-            ) : null}
+          {isOwner || canDelete ? (
+            <div className="absolute top-0 right-0">
+              <CommunityKebabMenu
+                ariaLabel="Opções da publicação"
+                items={[
+                  ...(isOwner
+                    ? [
+                        {
+                          label: 'Editar',
+                          icon: Pencil,
+                          onClick: () => onEdit?.(post),
+                        },
+                      ]
+                    : []),
+                  ...(canDelete
+                    ? [
+                        {
+                          label: 'Excluir',
+                          icon: Trash2,
+                          variant: 'destructive' as const,
+                          onClick: () => setDeleteTarget({ kind: 'post' }),
+                        },
+                      ]
+                    : []),
+                ]}
+              />
+            </div>
+          ) : null}
 
-            {canDelete ? (
-              <button
-                type="button"
-                onClick={() => setDeleteTarget({ kind: 'post' })}
-                className="flex h-8 w-8 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:border-destructive/40 hover:text-destructive"
-                aria-label="Excluir publicação"
-              >
-                <Trash2 className="h-3.5 w-3.5" />
-              </button>
-            ) : null}
-
+          <div className="mt-2.5">
             <div
-              className={`flex items-center gap-1 rounded-full px-2.5 py-1 text-[9px] font-black uppercase tracking-wider ${currentType.className}`}
+              className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[9px] font-black uppercase tracking-wider ${currentType.className}`}
             >
               <TypeIcon className="h-3 w-3 shrink-0" />
               <span>{currentType.label}</span>
@@ -536,7 +646,7 @@ export default function CommunityPost({
             <button
               type="button"
               onClick={() => setIsPostExpanded((prev) => !prev)}
-              className="mt-1 text-xs font-bold text-accent transition-colors hover:text-accent/80"
+              className="mt-1 text-base font-bold text-accent transition-colors hover:text-accent/80"
             >
               {isPostExpanded ? 'Ver menos' : 'Ver mais'}
             </button>
@@ -615,31 +725,35 @@ export default function CommunityPost({
                       />
 
                       {!isEditingComment && (isCommentOwner || canDeleteComment) ? (
-                        <div className="flex shrink-0 items-center gap-1">
-                          {isCommentOwner ? (
-                            <button
-                              type="button"
-                              onClick={() => handleStartEditComment(comment)}
-                              className="flex h-7 w-7 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:border-accent/40 hover:text-foreground"
-                              aria-label="Editar comentário"
-                            >
-                              <Pencil className="h-3 w-3" />
-                            </button>
-                          ) : null}
-
-                          {canDeleteComment ? (
-                            <button
-                              type="button"
-                              onClick={() =>
-                                setDeleteTarget({ kind: 'comment', comment })
-                              }
-                              className="flex h-7 w-7 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:border-destructive/40 hover:text-destructive"
-                              aria-label="Excluir comentário"
-                            >
-                              <Trash2 className="h-3 w-3" />
-                            </button>
-                          ) : null}
-                        </div>
+                        <CommunityKebabMenu
+                          size="sm"
+                          ariaLabel="Opções do comentário"
+                          items={[
+                            ...(isCommentOwner
+                              ? [
+                                  {
+                                    label: 'Editar',
+                                    icon: Pencil,
+                                    onClick: () => handleStartEditComment(comment),
+                                  },
+                                ]
+                              : []),
+                            ...(canDeleteComment
+                              ? [
+                                  {
+                                    label: 'Excluir',
+                                    icon: Trash2,
+                                    variant: 'destructive' as const,
+                                    onClick: () =>
+                                      setDeleteTarget({
+                                        kind: 'comment',
+                                        comment,
+                                      }),
+                                  },
+                                ]
+                              : []),
+                          ]}
+                        />
                       ) : null}
                     </div>
 
