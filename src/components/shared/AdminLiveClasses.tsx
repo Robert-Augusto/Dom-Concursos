@@ -6,11 +6,13 @@ import {
   CalendarClock,
   ExternalLink,
   ImagePlus,
+  MoreVertical,
   Pencil,
   Radio,
   Trash2,
   TriangleAlert,
   X,
+  type LucideIcon,
 } from 'lucide-react'
 import { Switch } from '@/components/ui/switch'
 import {
@@ -47,6 +49,100 @@ function toDatetimeLocalValue(value: string | null) {
   const pad = (part: number) => String(part).padStart(2, '0')
 
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`
+}
+
+type LiveClassKebabMenuItem = {
+  label: string
+  icon: LucideIcon
+  onClick: () => void
+  variant?: 'default' | 'destructive'
+  disabled?: boolean
+}
+
+type LiveClassKebabMenuProps = {
+  items: LiveClassKebabMenuItem[]
+  disabled?: boolean
+  ariaLabel?: string
+}
+
+function LiveClassKebabMenu({
+  items,
+  disabled = false,
+  ariaLabel = 'Abrir menu',
+}: LiveClassKebabMenuProps) {
+  const [isOpen, setIsOpen] = useState(false)
+  const menuRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!isOpen) return
+
+    function handleClickOutside(event: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setIsOpen(false)
+      }
+    }
+
+    function handleEscape(event: KeyboardEvent) {
+      if (event.key === 'Escape') setIsOpen(false)
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    document.addEventListener('keydown', handleEscape)
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+      document.removeEventListener('keydown', handleEscape)
+    }
+  }, [isOpen])
+
+  return (
+    <div ref={menuRef} className="relative shrink-0">
+      <button
+        type="button"
+        onClick={() => setIsOpen((prev) => !prev)}
+        disabled={disabled}
+        className="flex h-8 w-8 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:border-accent/40 hover:bg-muted/40 hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50"
+        aria-label={ariaLabel}
+        aria-expanded={isOpen}
+        aria-haspopup="menu"
+      >
+        <MoreVertical className="h-4 w-4" />
+      </button>
+
+      {isOpen ? (
+        <div
+          role="menu"
+          className="absolute right-0 top-full z-20 mt-1 min-w-[9.5rem] overflow-hidden rounded-xl border border-border bg-popover py-1 shadow-[0_8px_24px_rgba(0,0,0,0.35)]"
+        >
+          {items.map((item) => {
+            const Icon = item.icon
+
+            return (
+              <button
+                key={item.label}
+                type="button"
+                role="menuitem"
+                disabled={item.disabled}
+                onClick={() => {
+                  if (item.disabled) return
+                  setIsOpen(false)
+                  item.onClick()
+                }}
+                className={`flex w-full items-center gap-2 px-3 py-2 text-left text-xs font-semibold transition-colors hover:bg-muted/60 disabled:cursor-not-allowed disabled:opacity-50 ${
+                  item.variant === 'destructive'
+                    ? 'text-destructive'
+                    : 'text-foreground'
+                }`}
+              >
+                <Icon className="h-3.5 w-3.5 shrink-0" />
+                <span>{item.label}</span>
+              </button>
+            )
+          })}
+        </div>
+      ) : null}
+    </div>
+  )
 }
 
 export default function AdminLiveClasses() {
@@ -610,32 +706,35 @@ export default function AdminLiveClasses() {
                   </div>
                   <div className="flex shrink-0 flex-col items-end justify-center gap-2">
                     <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={() => startEditLiveClass(liveClass)}
+                      <LiveClassKebabMenu
                         disabled={
                           isSaving ||
                           isDeleting ||
                           editingLiveClassId === liveClass.id
                         }
-                        className="inline-flex items-center gap-1.5 rounded-lg border border-accent/40 bg-accent/10 px-3 py-1.5 text-xs font-semibold text-accent transition-colors hover:bg-accent/15 disabled:cursor-not-allowed disabled:opacity-50"
-                      >
-                        <Pencil className="h-3.5 w-3.5" aria-hidden />
-                        Editar
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setDeleteTarget(liveClass)}
-                        disabled={
-                          isSaving ||
-                          isDeleting ||
-                          editingLiveClassId === liveClass.id
-                        }
-                        className="inline-flex items-center gap-1.5 rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-1.5 text-xs font-semibold text-destructive transition-colors hover:bg-destructive/15 disabled:cursor-not-allowed disabled:opacity-50"
-                      >
-                        <Trash2 className="h-3.5 w-3.5" aria-hidden />
-                        Excluir
-                      </button>
+                        ariaLabel={`Ações da transmissão: ${liveClass.title ?? 'Sem título'}`}
+                        items={[
+                          {
+                            label: 'Editar',
+                            icon: Pencil,
+                            disabled:
+                              isSaving ||
+                              isDeleting ||
+                              editingLiveClassId === liveClass.id,
+                            onClick: () => startEditLiveClass(liveClass),
+                          },
+                          {
+                            label: 'Excluir',
+                            icon: Trash2,
+                            variant: 'destructive',
+                            disabled:
+                              isSaving ||
+                              isDeleting ||
+                              editingLiveClassId === liveClass.id,
+                            onClick: () => setDeleteTarget(liveClass),
+                          },
+                        ]}
+                      />
                       <Switch
                         checked={isScheduled}
                         onCheckedChange={(checked) =>
