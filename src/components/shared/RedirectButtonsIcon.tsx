@@ -5,6 +5,7 @@ import {
   type LucideIcon,
   MonitorPlay,
   Video,
+  Settings
 } from 'lucide-react'
 
 type RedirectButtonItem = {
@@ -31,7 +32,6 @@ const redirectButtonItems: RedirectButtonItem[] = [
     href: '/courses',
     Icon: MonitorPlay,
     colorToken: '--color-accent',
-    badgeCount: 3,
   },
   {
     label: 'Aula ao Vivo',
@@ -45,7 +45,14 @@ const redirectButtonItems: RedirectButtonItem[] = [
     description: 'Perguntas frequentes e canal de ajuda rápida.',
     href: '/doubts',
     Icon: CircleHelp,
-    colorToken: '--color-chart-3',
+    colorToken: '--color-gold',
+  },
+  {
+    label: 'Configurações',
+    description: 'Gerencie sua conta.',
+    href: '/settings',
+    Icon: Settings,
+    colorToken: '--color-chart-5',
   },
 ]
 
@@ -82,12 +89,14 @@ export function RedirectButtonsIcon({
               ) : null}
 
               <span
-                className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-xl ring-1 ring-white/10 transition-colors group-hover:opacity-90 lg:h-12 lg:w-12"
+                className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-xl ring-2 ring-white/30 transition-transform duration-200 group-hover:scale-105 lg:h-12 lg:w-12"
                 style={{
                   background: `linear-gradient(145deg,
-                  color-mix(in oklab, var(${colorToken}) 50%, black 50%),
-                  color-mix(in oklab, var(${colorToken}) 72%, black 28%)
-                )`,
+                    color-mix(in oklab, var(${colorToken}) 40%, white 60%),
+                    color-mix(in oklab, var(${colorToken}) 75%, white 25%) 50%,
+                    color-mix(in oklab, var(${colorToken}) 88%, black 12%)
+                  )`,
+                  boxShadow: `inset 0 1px 0 rgba(255,255,255,0.55), inset 0 -6px 12px color-mix(in oklab, var(${colorToken}) 35%, transparent)`,
                 }}
               >
                 <Icon className="h-6 w-6 text-white lg:h-5 lg:w-5" />

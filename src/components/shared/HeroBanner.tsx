@@ -1,13 +1,39 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from "next/navigation"
 import { createClient } from '@/lib/supabase/client'
 import { ModalSignup } from '@/components/shared/ModalSignup'
 
+const heroBackgroundImages = [
+  'https://tzrcebhmkivfflfosstq.supabase.co/storage/v1/object/public/lesson_thumbnails/banner-images/hero-administrativo.jpg',
+  'https://tzrcebhmkivfflfosstq.supabase.co/storage/v1/object/public/lesson_thumbnails/banner-images/hero-aprovados.jpg',
+  'https://tzrcebhmkivfflfosstq.supabase.co/storage/v1/object/public/lesson_thumbnails/banner-images/hero-educacao.jpg',
+  'https://tzrcebhmkivfflfosstq.supabase.co/storage/v1/object/public/lesson_thumbnails/banner-images/hero-enfermagem.jpg',
+  'https://tzrcebhmkivfflfosstq.supabase.co/storage/v1/object/public/lesson_thumbnails/banner-images/hero-estudando.jpg',
+  'https://tzrcebhmkivfflfosstq.supabase.co/storage/v1/object/public/lesson_thumbnails/banner-images/hero-prova.jpg',
+]
+
+const heroImageIntervalMs = 6000
+
+const heroBackgroundGradient = `linear-gradient(100deg, 
+          rgba(5,6,9,0.96) 0%, 
+          rgba(10,12,20,0.78) 38%, 
+          rgba(10,12,20,0.45) 62%, 
+          rgba(10,12,20,0.65) 100%)`
+
 export function HeroBanner() {
   const router = useRouter()
   const [openSignupModal, setOpenSignupModal] = useState(false)
+  const [activeImageIndex, setActiveImageIndex] = useState(0)
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setActiveImageIndex((prev) => (prev + 1) % heroBackgroundImages.length)
+    }, heroImageIntervalMs)
+
+    return () => clearInterval(interval)
+  }, [])
 
   async function handleStartNow() {
     const supabase = createClient()
@@ -23,19 +49,18 @@ export function HeroBanner() {
 
   return (
     <div className="relative flex w-full min-h-[260px] items-center gap-5 overflow-hidden rounded-b-2xl px-5 py-5 sm:min-h-[300px] sm:px-8 lg:rounded-2xl md:min-h-[340px] md:px-10">
-      <div
-        className="absolute inset-0 pointer-events-none"
-        style={{
-          backgroundImage: `linear-gradient(100deg, 
-          rgba(5,6,9,0.96) 0%, 
-          rgba(10,12,20,0.78) 38%, 
-          rgba(10,12,20,0.45) 62%, 
-          rgba(10,12,20,0.65) 100%
-        ), url('/hero-banner.jpg')`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center right',
-        }}
-      />
+      {heroBackgroundImages.map((imageUrl, index) => (
+        <div
+          key={imageUrl}
+          className="absolute inset-0 pointer-events-none transition-opacity duration-1000 ease-in-out"
+          style={{
+            opacity: index === activeImageIndex ? 1 : 0,
+            backgroundImage: `${heroBackgroundGradient}, url('${imageUrl}')`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center right',
+          }}
+        />
+      ))}
 
       <div
         className="absolute -top-14 -right-10 h-44 w-44 rounded-full pointer-events-none"
