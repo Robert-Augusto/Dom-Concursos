@@ -341,3 +341,17 @@
 | `content` | `text` |  Nullable |
 | `post_id` | `int8` |  Nullable |
 
+## Table `live_classes`
+
+### Columns
+
+| Name | Type | Constraints |
+|------|------|-------------|
+| `id` | `int8` | Primary Identity |
+| `created_at` | `timestamptz` |  |
+| `title` | `text` |  Nullable |
+| `scheduled_at` | `timestamptz` |  Nullable |
+| `thumbnail_url` | `text` |  Nullable |
+| `video_url` | `text` |  Nullable |
+| `status` | `LIVE_CLASSES_STATUS` (`scheduled`, `ended`) |  Nullable |
+

@@ -9,6 +9,7 @@ import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Lessons, Subjects } from '@/types'
 import EstudoInteligente from '@/components/shared/AdminEstudoInteligente'
+import AdminLiveClasses from '@/components/shared/AdminLiveClasses'
 import { NotificationsDropdown } from '@/components/shared/NotificationsDropdown'
 import {
   ArrowLeft,
@@ -16,6 +17,7 @@ import {
   ChevronRight,
   HelpCircle,
   PlayCircle,
+  Radio,
   ChevronLeft,
   type LucideIcon,
 } from 'lucide-react'
@@ -38,6 +40,12 @@ const ADMIN_MENU_OPTIONS = [
     label: 'Questões',
     description: 'Banco de questões e simulados',
     Icon: HelpCircle,
+  },
+  {
+    id: 'live-classes',
+    label: 'Aulas ao Vivo',
+    description: 'Programar transmissões ao vivo',
+    Icon: Radio,
   },
 ] as const satisfies ReadonlyArray<{
   id: string
@@ -115,6 +123,10 @@ export default function AdminPage() {
       setSelectedSection(null)
     }
 
+    if(selectedSection === 'live-classes'){
+      setSelectedSection(null)
+    }
+
   }
 
   return (
@@ -137,12 +149,14 @@ export default function AdminPage() {
                 {selectedSection === 'questions' && 'Questões'}
                 {selectedSection === 'register-lesson' && 'Vídeos da Home'}
                 {selectedSection === 'smart-study' && 'Estudo Inteligente'}
+                {selectedSection === 'live-classes' && 'Aulas ao Vivo'}
               </h1>
               <p className="text-sm text-muted-foreground">
                 {selectedSection === null && 'Controle total da plataforma'}
                 {selectedSection === 'questions' && 'Questões objetivas'}
                 {selectedSection === 'register-lesson' && 'Aulas da tela inicial'}
                 {selectedSection === 'smart-study' && 'Insira os materiais de estudos'}
+                {selectedSection === 'live-classes' && 'Programar transmissões ao vivo'}
               </p>
             </div>
             <span className="shrink-0 rounded-full border border-primary px-3 py-1 text-xs font-bold text-primary bg-primary/15">
@@ -202,6 +216,8 @@ export default function AdminPage() {
                 {selectedSection === 'questions' ? (
                   <AdminQuestoes subjectsData={subjects} />
                 ) : null}
+
+                {selectedSection === 'live-classes' ? <AdminLiveClasses /> : null}
               </>
             )}
           </div>

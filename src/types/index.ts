@@ -34,6 +34,19 @@ export interface LessonMaterials {
     file_type: string
 }
 
+// live_classes
+export type LiveClassesStatus = 'scheduled' | 'ended'
+
+export interface LiveClasses {
+    id: string
+    created_at: string
+    title: string | null
+    scheduled_at: string | null
+    thumbnail_url: string | null
+    video_url: string | null
+    status: LiveClassesStatus | null
+}
+
 // subjects
 export type SubjectType = 'basic' | 'specific'
 export interface Subjects {
