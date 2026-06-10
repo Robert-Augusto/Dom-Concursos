@@ -1,11 +1,14 @@
+'use client'
+
 import Link from 'next/link'
 import type { MouseEvent } from 'react'
+import { toast } from 'sonner'
 import {
   CircleHelp,
   type LucideIcon,
   MonitorPlay,
+  Settings,
   Video,
-  Settings
 } from 'lucide-react'
 
 type RedirectButtonItem = {
@@ -23,6 +26,8 @@ type RedirectButtonItem = {
     | '--color-destructive'
     | '--color-chart-3'
   badgeCount?: number
+  comingSoon?: boolean
+  comingSoonMessage?: string
 }
 
 const redirectButtonItems: RedirectButtonItem[] = [
@@ -32,6 +37,7 @@ const redirectButtonItems: RedirectButtonItem[] = [
     href: '/courses',
     Icon: MonitorPlay,
     colorToken: '--color-accent',
+    comingSoon: true,
   },
   {
     label: 'Aula ao Vivo',
@@ -65,7 +71,19 @@ export function RedirectButtonsIcon({
   isAuthenticated,
   onRequireSignup,
 }: RedirectButtonsIconProps) {
-  const handleFeatureClick = (event: MouseEvent<HTMLAnchorElement>) => {
+  const handleFeatureClick = (
+    event: MouseEvent<HTMLAnchorElement>,
+    item: RedirectButtonItem,
+  ) => {
+    if (item.comingSoon) {
+      event.preventDefault()
+      toast.info(
+        item.comingSoonMessage ??
+          'Este recurso estará disponível em breve nas próximas atualizações.',
+      )
+      return
+    }
+
     if (isAuthenticated) return
     event.preventDefault()
     onRequireSignup()
@@ -74,14 +92,26 @@ export function RedirectButtonsIcon({
   return (
     <section>
       <div className="flex gap-4 overflow-x-auto p-2 scrollbar-none lg:grid lg:grid-cols-2 lg:overflow-visible xl:grid-cols-4 lg:gap-4">
-        {redirectButtonItems.map(
-          ({ label, description, href, Icon, colorToken, badgeCount }) => (
+        {redirectButtonItems.map((item) => {
+          const { label, description, href, Icon, colorToken, badgeCount, comingSoon } =
+            item
+
+          return (
             <Link
               key={label}
               href={href}
-              onClick={handleFeatureClick}
-              className="group relative flex w-[4.5rem] flex-shrink-0 flex-col items-center gap-1.5 rounded-xl border border-transparent transition-colors hover:opacity-95 lg:w-auto lg:flex-row lg:items-start lg:gap-4 lg:border-border lg:bg-card/60 lg:p-4 lg:shadow-sm lg:hover:bg-card"
+              onClick={(event) => handleFeatureClick(event, item)}
+              aria-disabled={comingSoon ? true : undefined}
+              className={`group relative flex w-[4.5rem] flex-shrink-0 flex-col items-center gap-1.5 rounded-xl border border-transparent transition-colors hover:opacity-95 lg:w-auto lg:flex-row lg:items-start lg:gap-4 lg:border-border lg:bg-card/60 lg:p-4 lg:shadow-sm lg:hover:bg-card ${
+                comingSoon ? 'cursor-default' : ''
+              }`}
             >
+              {comingSoon ? (
+                <span className="absolute right-3 top-3 z-10 hidden whitespace-nowrap rounded-full border border-primary/40 bg-primary/15 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-primary lg:block">
+                  Em breve
+                </span>
+              ) : null}
+
               {badgeCount ? (
                 <span className="absolute -right-0.5 -top-0.5 z-10 rounded-full bg-destructive px-1.5 py-0.5 text-[10px] font-bold leading-none text-destructive-foreground lg:right-3 lg:top-3">
                   {badgeCount}
@@ -89,7 +119,9 @@ export function RedirectButtonsIcon({
               ) : null}
 
               <span
-                className="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-xl ring-2 ring-white/30 transition-transform duration-200 group-hover:scale-105 lg:h-12 lg:w-12"
+                className={`flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-xl ring-2 ring-white/30 transition-transform duration-200 lg:h-12 lg:w-12 ${
+                  comingSoon ? 'opacity-80' : 'group-hover:scale-105'
+                }`}
                 style={{
                   background: `linear-gradient(145deg,
                     color-mix(in oklab, var(${colorToken}) 40%, white 60%),
@@ -106,13 +138,18 @@ export function RedirectButtonsIcon({
                 <span className="w-16 text-center text-[11px] leading-tight text-muted-foreground lg:w-auto lg:text-left lg:text-sm lg:font-semibold lg:text-foreground">
                   {label}
                 </span>
+                {comingSoon ? (
+                  <span className="rounded-full border border-primary/40 bg-primary/15 px-1.5 py-px text-[8px] font-bold uppercase tracking-wide text-primary lg:hidden">
+                    Em breve
+                  </span>
+                ) : null}
                 <p className="hidden text-pretty text-xs leading-snug text-muted-foreground lg:block">
                   {description}
                 </p>
               </div>
             </Link>
-          ),
-        )}
+          )
+        })}
       </div>
     </section>
   )

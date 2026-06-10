@@ -85,7 +85,7 @@ export default function DashboardPage() {
             <SearchVideo
               lessonsData={lessons}
               subjectsData={subjects}
-              isAuthenticated={canAccessFeatures}
+              isAuthenticated={authChecked && isAuthenticated}
             />
           </div>
         </main>

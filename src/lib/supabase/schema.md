@@ -353,5 +353,15 @@
 | `scheduled_at` | `timestamptz` |  Nullable |
 | `thumbnail_url` | `text` |  Nullable |
 | `video_url` | `text` |  Nullable |
-| `status` | `LIVE_CLASSES_STATUS` (`scheduled`, `ended`) |  Nullable |
+| `status` | `LIVE_CLASSES_STATUS` |  Nullable |
 
+## Table `faqs`
+
+### Columns
+
+| Name | Type | Constraints |
+|------|------|-------------|
+| `id` | `int8` | Primary Identity |
+| `created_at` | `timestamptz` |  |
+| `question` | `text` |  Nullable |
+| `answer` | `text` |  Nullable |

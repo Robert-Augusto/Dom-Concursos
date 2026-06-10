@@ -1,22 +1,41 @@
 'use client'
 
 import { type MouseEvent, useEffect, useState } from 'react'
+import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
+import { toast } from 'sonner'
 import {
-  Home,
-  TvMinimalPlay,
+  BookCheck,
   ChartNoAxesCombined,
-  Users,
+  Home,
   NotebookPen,
-  BookCheck
+  TvMinimalPlay,
+  Users,
+  type LucideIcon,
 } from 'lucide-react'
 import { ModalSignup } from '@/components/shared/ModalSignup'
 import { createClient } from '@/lib/supabase/client'
 
-const navigationItems = [
+const LOGO_URL =
+  'https://tzrcebhmkivfflfosstq.supabase.co/storage/v1/object/public/study_materials_images/Logo%20Dom%20Concursos%20_20260121_075709_0000.png'
+
+type NavigationItem = {
+  label: string
+  href: string
+  icon: LucideIcon
+  comingSoon?: boolean
+  comingSoonMessage?: string
+}
+
+const navigationItems: NavigationItem[] = [
   { label: 'Início', href: '/dashboard', icon: Home },
-  { label: 'Cursos', href: '/courses', icon: TvMinimalPlay },
+  {
+    label: 'Cursos',
+    href: '/courses',
+    icon: TvMinimalPlay,
+    comingSoon: true,
+  },
   { label: 'Estudo Inteligente', href: '/study', icon: NotebookPen },
   { label: 'Simulado', href: '/simulado', icon: BookCheck },
   { label: 'Comunidade', href: '/comunity', icon: Users },
@@ -39,7 +58,19 @@ export function Sidebar() {
     checkAuth()
   }, [])
 
-  function handleNavClick(event: MouseEvent<HTMLAnchorElement>) {
+  function handleNavClick(
+    event: MouseEvent<HTMLAnchorElement>,
+    item: NavigationItem,
+  ) {
+    if (item.comingSoon) {
+      event.preventDefault()
+      toast.info(
+        item.comingSoonMessage ??
+          'Este recurso estará disponível em breve nas próximas atualizações.',
+      )
+      return
+    }
+
     if (isAuthenticated) return
 
     event.preventDefault()
@@ -50,40 +81,44 @@ export function Sidebar() {
     <>
       <aside className="hidden lg:block fixed left-0 top-0 z-40 h-screen w-[240px] bg-sidebar border-r border-border">
         <div className="flex h-full flex-col p-4">
-        <div className="mb-6 flex items-center gap-3 px-2 py-3">
-          <div
-            className="h-9 w-9 rounded-lg"
-            style={{
-              background:
-                'linear-gradient(135deg, color-mix(in oklab, var(--color-primary) 100%, white 0%), color-mix(in oklab, var(--color-primary) 82%, white 18%))',
-            }}
+        <Link href="/dashboard" className=" block mb-3">
+          <Image
+            src={LOGO_URL}
+            alt="DOM Concursos"
+            width={400}
+            height={120}
+            style={{ width: '150px', height: 'auto' }}
+            className="object-contain"
+            priority
           />
-          <div className="leading-none">
-            <p className="font-heading text-lg font-black text-foreground">DOM</p>
-            <p className="mt-1 text-[10px] tracking-widest text-muted-foreground">
-              CONCURSOS
-            </p>
-          </div>
-        </div>
+        </Link>
 
         <nav className="flex flex-col gap-1">
           {navigationItems.map((item) => {
-            const isActive = pathname === item.href
+            const isActive = !item.comingSoon && pathname === item.href
             const Icon = item.icon
 
             return (
               <Link
                 key={item.href}
                 href={item.href}
-                onClick={handleNavClick}
+                onClick={(event) => handleNavClick(event, item)}
+                aria-disabled={item.comingSoon ? true : undefined}
                 className={`relative flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors ${
-                  isActive
-                    ? 'bg-gold/10 text-gold'
-                    : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                  item.comingSoon
+                    ? 'cursor-default text-muted-foreground opacity-80'
+                    : isActive
+                      ? 'bg-gold/10 text-gold'
+                      : 'text-muted-foreground hover:bg-muted hover:text-foreground'
                 }`}
               >
-                <Icon className="h-4 w-4" />
-                <span>{item.label}</span>
+                <Icon className="h-4 w-4 shrink-0" />
+                <span className="min-w-0 flex-1 truncate">{item.label}</span>
+                {item.comingSoon ? (
+                  <span className="shrink-0 rounded-full border border-primary/40 bg-primary/15 px-1.5 py-0.5 text-[9px] font-bold uppercase tracking-wide text-primary">
+                    Em breve
+                  </span>
+                ) : null}
               </Link>
             )
           })}

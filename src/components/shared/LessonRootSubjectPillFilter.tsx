@@ -7,6 +7,8 @@ import { Subjects } from '@/types'
 /** Sentinel value for SearchVideo filter logic (not a DB subject id). */
 export const LESSON_FILTER_QUESTOES_BANCAS = '__questoes_bancas__' as const
 
+const QUESTOES_BANCAS_LABEL = 'Questões de Bancas'
+
 export type LessonRootSubjectPillFilterProps = {
   subjectsData?: Subjects[] | null
   /** Empty string = "Tudo" */
@@ -29,17 +31,18 @@ export function LessonRootSubjectPillFilter({
 
   const filteredRootSubjects = useMemo(() => {
     const query = subjectSearch.trim().toLowerCase()
-    if (!query) return rootSubjects
-    return rootSubjects.filter((subject) =>
-      subject.name.toLowerCase().includes(query),
-    )
-  }, [rootSubjects, subjectSearch])
+    const filtered = query
+      ? rootSubjects.filter((subject) =>
+          subject.name.toLowerCase().includes(query),
+        )
+      : rootSubjects
 
-  const showQuestoesBancas = useMemo(() => {
-    const query = subjectSearch.trim().toLowerCase()
-    if (!query) return true
-    return 'questões de bancas'.includes(query)
-  }, [subjectSearch])
+    return [...filtered].sort((a, b) => {
+      if (a.name === QUESTOES_BANCAS_LABEL) return -1
+      if (b.name === QUESTOES_BANCAS_LABEL) return 1
+      return a.name.localeCompare(b.name, 'pt-BR')
+    })
+  }, [rootSubjects, subjectSearch])
 
   return (
     <div className="flex flex-col gap-3 rounded-xl border border-border bg-card p-4 md:p-5">
@@ -98,21 +101,6 @@ export function LessonRootSubjectPillFilter({
         >
           Tudo
         </button>
-        {showQuestoesBancas ? (
-          <button
-            type="button"
-            onClick={() =>
-              onSelectedRootFilterChange(LESSON_FILTER_QUESTOES_BANCAS)
-            }
-            className={`shrink-0 rounded-full border px-4 py-2 text-xs font-bold whitespace-nowrap transition-all ${
-              selectedRootFilter === LESSON_FILTER_QUESTOES_BANCAS
-                ? 'border-primary bg-primary text-primary-foreground shadow-[0_0_14px_hsl(42_50%_55%_/_0.5)]'
-                : 'border-border bg-background/80 text-foreground hover:border-primary/50'
-            }`}
-          >
-            Questões de Bancas
-          </button>
-        ) : null}
         {filteredRootSubjects.map((subject) => {
           const active = selectedRootFilter === subject.id
           return (

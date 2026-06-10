@@ -3,6 +3,7 @@ import { CreateLessonMaterials } from '@/lib/lib-lessons'
 
 const THUMBNAIL_BUCKET = 'lesson_thumbnails'
 const MATERIALS_BUCKET = 'lessons_materials'
+const USER_AVATAR_BUCKET = 'user_avatar'
 
 export function getLessonMaterialStoragePath(fileUrl: string): string | null {
   const trimmed = fileUrl.trim()
@@ -94,6 +95,49 @@ export async function DeleteLessonMaterialFile(storagePath: string) {
   const { error } = await supabase.storage
     .from(MATERIALS_BUCKET)
     .remove([storagePath])
+  return { error }
+}
+
+export function getUserAvatarStoragePath(publicUrl: string): string | null {
+  const trimmed = publicUrl.trim()
+  if (!trimmed) return null
+
+  try {
+    const url = new URL(trimmed)
+    const marker = `/object/public/${USER_AVATAR_BUCKET}/`
+    const idx = url.pathname.indexOf(marker)
+    if (idx === -1) return null
+    return decodeURIComponent(url.pathname.slice(idx + marker.length))
+  } catch {
+    return null
+  }
+}
+
+export async function UploadUserAvatar(file: File, userId: string) {
+  const supabase = createClient()
+  const path = `${userId}/${Date.now()}-${file.name}`
+
+  const { data: uploadData, error: uploadError } = await supabase.storage
+    .from(USER_AVATAR_BUCKET)
+    .upload(path, file, { upsert: false })
+
+  if (uploadError) return { uploadError }
+
+  const { data } = supabase.storage
+    .from(USER_AVATAR_BUCKET)
+    .getPublicUrl(uploadData.path)
+
+  return { publicUrl: data.publicUrl, storagePath: uploadData.path }
+}
+
+export async function DeleteUserAvatar(publicUrl: string) {
+  const path = getUserAvatarStoragePath(publicUrl)
+  if (!path) {
+    return { error: { message: 'Não foi possível localizar o avatar no storage.' } }
+  }
+
+  const supabase = createClient()
+  const { error } = await supabase.storage.from(USER_AVATAR_BUCKET).remove([path])
   return { error }
 }
 

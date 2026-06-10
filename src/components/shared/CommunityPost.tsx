@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import {
@@ -41,6 +42,7 @@ interface CommunityUserInfoProps {
   name: string
   initial: string
   color: string
+  avatarUrl?: string | null
   headline: string
   time: string
   userRole?: UserRole
@@ -67,6 +69,7 @@ function CommunityUserInfo({
   name,
   initial,
   color,
+  avatarUrl,
   headline,
   time,
   userRole,
@@ -75,14 +78,25 @@ function CommunityUserInfo({
   const avatarSizeClass =
     size === 'md' ? 'h-10 w-10 text-sm' : 'h-8 w-8 text-xs'
   const nameSizeClass = size === 'md' ? 'text-sm' : 'text-xs'
+  const imageSizes = size === 'md' ? '40px' : '32px'
 
   return (
     <div className="flex min-w-0 items-start gap-3">
       <div
-        className={`${avatarSizeClass} flex shrink-0 items-center justify-center rounded-full font-black text-white`}
-        style={{ background: color }}
+        className={`${avatarSizeClass} relative flex shrink-0 items-center justify-center overflow-hidden rounded-full font-black text-white`}
+        style={avatarUrl ? undefined : { background: color }}
       >
-        {initial}
+        {avatarUrl ? (
+          <Image
+            src={avatarUrl}
+            alt={name ? `Foto de ${name}` : 'Foto de perfil'}
+            fill
+            className="object-cover"
+            sizes={imageSizes}
+          />
+        ) : (
+          initial
+        )}
       </div>
 
       <div className="flex min-w-0 flex-col gap-0.5">
@@ -551,6 +565,7 @@ export default function CommunityPost({
               name={post.authorName}
               initial={post.authorInitial}
               color={post.authorColor}
+              avatarUrl={post.authorAvatarUrl}
               headline={post.authorHeadline}
               time={post.time}
               userRole={post.authorUserRole}
@@ -718,6 +733,7 @@ export default function CommunityPost({
                         name={comment.authorName}
                         initial={comment.authorInitial}
                         color={comment.authorColor}
+                        avatarUrl={comment.authorAvatarUrl}
                         headline={comment.authorHeadline}
                         time={comment.time}
                         userRole={comment.authorUserRole}

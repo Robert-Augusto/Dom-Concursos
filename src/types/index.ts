@@ -259,3 +259,11 @@ export interface CommunityComment {
 export interface CommunityCommentWithProfile extends CommunityComment {
     profile: CommunityPostProfile | null
 }
+
+// faqs
+export interface Faq {
+    id: string
+    created_at: string
+    question: string | null
+    answer: string | null
+}

@@ -3,11 +3,11 @@
 import Image from 'next/image'
 import { useEffect, useState } from 'react'
 import { BottomNav } from '@/components/layout/BottomNav'
-import { Header } from '@/components/layout/Header'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { GetScheduledLiveClasses } from '@/lib/lib-live-classes'
 import type { LiveClasses } from '@/types'
-import { CalendarDays, Clock, Radio, Sparkles, Video } from 'lucide-react'
+import { CalendarDays, Clock, Radio, Sparkles, Video, ChevronLeft } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 
 function formatLiveDate(value: string | null) {
   if (!value) return 'Data a definir'
@@ -58,11 +58,37 @@ export default function LivePage() {
     return () => clearInterval(intervalId)
   }, [])
 
+  const router = useRouter()
+
+  function handleStepBack(){
+    router.push('/dashboard')
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <Sidebar />
       <div className="min-h-screen pb-20 lg:ml-[240px] lg:pb-0">
-        <Header />
+        
+      <header className="sticky top-0 z-30 border-b border-border bg-background mb-3">
+          <div className="flex items-center gap-3 px-4 py-3 sm:px-6">
+            <button
+              type="button"
+              onClick={handleStepBack}
+              className="flex h-12 min-w-12 shrink-0 items-center justify-center rounded-lg border border-border bg-sidebar-accent text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            >
+              <ChevronLeft className="h-6 w-6" />
+            </button>
+            <div className="min-w-0 flex-1">
+              <h1 className="font-heading truncate text-base font-bold text-foreground">
+                Aulas ao Vivo
+              </h1>
+              <p className="text-sm text-muted-foreground">
+                Acesse as aulas que estão acontecendo agora.
+              </p>
+            </div>
+          </div>
+        </header>
+
         <main className="mx-auto max-w-[1210px] p-6">
           <div className="flex flex-col gap-8">
             <section className="flex flex-col gap-4">

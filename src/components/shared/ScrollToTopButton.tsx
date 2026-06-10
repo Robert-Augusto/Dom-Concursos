@@ -31,10 +31,10 @@ export function ScrollToTopButton() {
     <button
       type="button"
       onClick={scrollToTop}
-      className="fixed bottom-24 right-4 z-50 flex h-11 w-11 items-center justify-center rounded-full border border-border bg-primary text-primary-foreground shadow-lg transition-opacity hover:opacity-90 active:scale-95 lg:bottom-8 lg:right-6"
+      className="fixed bottom-40 right-5 z-50 flex h-9 w-9 items-center justify-center rounded-full border border-border bg-secondary/90 text-muted-foreground backdrop-blur-sm transition-colors hover:bg-muted hover:text-foreground active:scale-95 lg:bottom-24 lg:right-7"
       aria-label="Voltar ao topo"
     >
-      <ChevronUp className="h-5 w-5" aria-hidden />
+      <ChevronUp className="h-4 w-4" aria-hidden />
     </button>
   )
 }

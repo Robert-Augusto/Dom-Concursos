@@ -219,7 +219,7 @@ export function NotificationsDropdown() {
         aria-label="Notificações"
         onClick={() => setOpen((prev) => !prev)}
       >
-        <Bell className="h-4 w-4" />
+        <Bell className="h-5 w-5" />
         {count > 0 && (
           <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-[9px] font-black text-destructive-foreground">
             {count > 9 ? '9+' : count}

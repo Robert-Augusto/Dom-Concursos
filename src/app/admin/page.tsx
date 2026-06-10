@@ -10,11 +10,12 @@ import { createClient } from '@/lib/supabase/client'
 import { Lessons, Subjects } from '@/types'
 import EstudoInteligente from '@/components/shared/AdminEstudoInteligente'
 import AdminLiveClasses from '@/components/shared/AdminLiveClasses'
+import AdminFAQ from '@/components/shared/AdminFAQ'
 import { NotificationsDropdown } from '@/components/shared/NotificationsDropdown'
 import {
-  ArrowLeft,
   BookOpen,
   ChevronRight,
+  CircleHelp,
   HelpCircle,
   PlayCircle,
   Radio,
@@ -46,6 +47,12 @@ const ADMIN_MENU_OPTIONS = [
     label: 'Aulas ao Vivo',
     description: 'Programar transmissões ao vivo',
     Icon: Radio,
+  },
+  {
+    id: 'faq',
+    label: 'FAQ',
+    description: 'Perguntas e respostas frequentes',
+    Icon: CircleHelp,
   },
 ] as const satisfies ReadonlyArray<{
   id: string
@@ -127,6 +134,10 @@ export default function AdminPage() {
       setSelectedSection(null)
     }
 
+    if(selectedSection === 'faq'){
+      setSelectedSection(null)
+    }
+
   }
 
   return (
@@ -150,6 +161,7 @@ export default function AdminPage() {
                 {selectedSection === 'register-lesson' && 'Vídeos da Home'}
                 {selectedSection === 'smart-study' && 'Estudo Inteligente'}
                 {selectedSection === 'live-classes' && 'Aulas ao Vivo'}
+                {selectedSection === 'faq' && 'FAQ'}
               </h1>
               <p className="text-sm text-muted-foreground">
                 {selectedSection === null && 'Controle total da plataforma'}
@@ -157,6 +169,7 @@ export default function AdminPage() {
                 {selectedSection === 'register-lesson' && 'Aulas da tela inicial'}
                 {selectedSection === 'smart-study' && 'Insira os materiais de estudos'}
                 {selectedSection === 'live-classes' && 'Programar transmissões ao vivo'}
+                {selectedSection === 'faq' && 'Gerenciar perguntas frequentes'}
               </p>
             </div>
             <span className="shrink-0 rounded-full border border-primary px-3 py-1 text-xs font-bold text-primary bg-primary/15">
@@ -218,6 +231,8 @@ export default function AdminPage() {
                 ) : null}
 
                 {selectedSection === 'live-classes' ? <AdminLiveClasses /> : null}
+
+                {selectedSection === 'faq' ? <AdminFAQ /> : null}
               </>
             )}
           </div>

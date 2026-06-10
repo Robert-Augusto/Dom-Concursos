@@ -5,6 +5,7 @@ import { Toaster } from 'sonner'
 import { cn } from "@/lib/utils";
 import { ProfileProvider } from '@/context/ProfileContext'
 import { ScrollToTopButton } from '@/components/shared/ScrollToTopButton'
+import { WhatsAppFloatingButton } from '@/components/shared/WhatsAppFloatingButton'
 
 const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
@@ -47,6 +48,7 @@ export default function RootLayout({
       >
         <body className="min-h-full flex flex-col">
           {children}
+          <WhatsAppFloatingButton />
           <ScrollToTopButton />
           <Toaster richColors position="top-right" />
         </body>

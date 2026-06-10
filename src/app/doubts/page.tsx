@@ -1,18 +1,45 @@
 'use client'
 
 import Link from 'next/link'
-import { Mail, MessageCircle, Phone } from 'lucide-react'
+import { Mail, MessageCircle, Phone, ChevronLeft } from 'lucide-react'
 import { BottomNav } from '@/components/layout/BottomNav'
-import { Header } from '@/components/layout/Header'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { FaqAccordion } from '@/components/shared/FaqAccordion'
+import { useRouter } from 'next/navigation'
 
 export default function DoubtsPage() {
+  const router = useRouter()
+
+  function handleStepBack(){
+    router.push('/dashboard')
+  }
+
+
   return (
     <div className="min-h-screen bg-background">
       <Sidebar />
       <div className="min-h-screen pb-20 lg:ml-[240px] lg:pb-0">
-        <Header />
+        
+      <header className="sticky top-0 z-30 border-b border-border bg-background mb-3">
+          <div className="flex items-center gap-3 px-4 py-3 sm:px-6">
+            <button
+              type="button"
+              onClick={handleStepBack}
+              className="flex h-12 min-w-12 shrink-0 items-center justify-center rounded-lg border border-border bg-sidebar-accent text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+            >
+              <ChevronLeft className="h-6 w-6" />
+            </button>
+            <div className="min-w-0 flex-1">
+              <h1 className="font-heading truncate text-base font-bold text-foreground">
+                Perguntas Frequentes
+              </h1>
+              <p className="text-sm text-muted-foreground">
+                Tire suas dúvidas aqui ou entre em contato no suporte.
+              </p>
+            </div>
+          </div>
+        </header>
+
         <main className="p-6 max-w-[1210px] mx-auto">
           <div className="flex flex-col gap-6 max-w-2xl mx-auto">
             <div className="bg-card rounded-2xl p-5 border border-border">
@@ -46,8 +73,7 @@ export default function DoubtsPage() {
                 </div>
 
                 <p className="text-xs text-muted-foreground leading-relaxed">
-                  Nossa equipe de suporte está disponível das{' '}
-                  <strong className="text-foreground">7h às 19h</strong>. Resposta em até 5
+                  Nossa equipe de suporte está disponível. Resposta em até 5
                   minutos no horário de atendimento.
                 </p>
 

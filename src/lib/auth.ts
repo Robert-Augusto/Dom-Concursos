@@ -35,3 +35,15 @@ export async function Logout(){
     const {error} = await supabase.auth.signOut()
     return {error}
 }
+
+// update password (authenticated user)
+export async function UpdatePassword(password: string) {
+    const supabase = createClient()
+    const { error } = await supabase.auth.updateUser({ password })
+
+    if (error) {
+        return { error: error.message }
+    }
+
+    return { error: null }
+}

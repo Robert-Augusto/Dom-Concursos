@@ -28,6 +28,7 @@ export interface FeedPost {
   authorName: string
   authorInitial: string
   authorColor: string
+  authorAvatarUrl: string | null
   authorHeadline: string
   authorUserRole?: ProfileRole
   time: string
@@ -46,6 +47,7 @@ export interface FeedComment {
   authorName: string
   authorInitial: string
   authorColor: string
+  authorAvatarUrl: string | null
   authorHeadline: string
   authorUserRole?: ProfileRole
   time: string
@@ -114,6 +116,7 @@ function mapProfileToAuthor(profile: CommunityPostWithRelations['profile']) {
     authorName,
     authorInitial: authorName.charAt(0).toUpperCase(),
     authorColor: getAuthorColor(authorName),
+    authorAvatarUrl: profile?.avatar_url?.trim() || null,
     authorHeadline: headline || getAuthorHeadline(profile?.role),
     authorUserRole:
       profile?.role && profile.role !== 'student' ? profile.role : undefined,
