@@ -49,7 +49,23 @@ export function ProfileProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   useEffect(() => {
-    refreshProfile()
+    const supabase = createClient()
+
+    void refreshProfile()
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user) {
+        void refreshProfile()
+        return
+      }
+
+      setProfile(null)
+      setLoading(false)
+    })
+
+    return () => subscription.unsubscribe()
   }, [refreshProfile])
 
   return (

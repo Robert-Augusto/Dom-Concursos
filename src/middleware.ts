@@ -4,6 +4,12 @@ import { NextResponse, type NextRequest } from 'next/server'
 const publicRoutes = ['/auth/login', '/auth/signup', '/auth/forgot-password', '/auth/reset-password']
 const authRoutes = ['/comunity', '/courses', '/doubts', '/live', '/score', '/settings', '/simulado', '/study', '/tutorial', '/admin']
 
+function isProtectedRoute(pathname: string) {
+  return authRoutes.some(
+    (route) => pathname === route || pathname.startsWith(`${route}/`)
+  )
+}
+
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl
   let supabaseResponse = NextResponse.next({ request })
@@ -13,8 +19,12 @@ export async function middleware(request: NextRequest) {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
-        getAll() { return request.cookies.getAll() },
+        getAll() {
+          return request.cookies.getAll()
+        },
         setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value))
+          supabaseResponse = NextResponse.next({ request })
           cookiesToSet.forEach(({ name, value, options }) =>
             supabaseResponse.cookies.set(name, value, options)
           )
@@ -23,9 +33,11 @@ export async function middleware(request: NextRequest) {
     }
   )
 
-  const {data: {user}} = await supabase.auth.getUser()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
 
-  if (!user && authRoutes.includes(pathname)) {
+  if (!user && isProtectedRoute(pathname)) {
     return NextResponse.redirect(new URL('/auth/login', request.url))
   }
 

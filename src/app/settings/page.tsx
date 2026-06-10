@@ -244,6 +244,7 @@ export default function SettingsPage() {
       return
     }
 
+    router.refresh()
     router.push('/auth/login')
   }
 
