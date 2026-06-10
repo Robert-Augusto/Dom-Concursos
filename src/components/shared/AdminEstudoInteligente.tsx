@@ -3,7 +3,7 @@
 import { useState, useEffect, useMemo, useRef } from 'react'
 import { Subjects, StudyAgentHtmlVariant, StudyMaterials, StudyMaterialsAgent } from '@/types'
 import { StudyAgentContentVariantSwitcher } from '@/components/shared/StudyAgentContentVariantSwitcher'
-import { BookText, ChevronDown, Eye, FileUp, Loader2, RefreshCw, Sparkles, Wand2 } from 'lucide-react'
+import { ChevronDown, Eye, FileUp, Headphones, Loader2, RefreshCw, Sparkles, Wand2 } from 'lucide-react'
 import { ModalSubjectPicker } from '@/components/shared/ModalSubjectPicker'
 import {
   CreateStudyMaterial,
@@ -37,6 +37,18 @@ const ALLOWED_MIME_TYPES = new Set([
   'image/jpeg',
 ])
 
+const ALLOWED_AUDIO_EXTENSIONS = new Set(['mp3', 'm4a', 'wav', 'ogg', 'aac', 'webm'])
+
+const ALLOWED_AUDIO_MIME_TYPES = new Set([
+  'audio/mpeg',
+  'audio/mp4',
+  'audio/x-m4a',
+  'audio/wav',
+  'audio/ogg',
+  'audio/aac',
+  'audio/webm',
+])
+
 const inputClass =
   'w-full rounded-lg border border-border bg-primary-foreground px-3 py-2.5 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-primary/50'
 
@@ -48,10 +60,17 @@ function getFileExtension(name: string): string {
   return name.split('.').pop()?.toLowerCase() ?? ''
 }
 
-function isAllowedStudyFile(file: File): boolean {
+function isAudioFile(file: File): boolean {
+  const ext = getFileExtension(file.name)
+  if (ALLOWED_AUDIO_EXTENSIONS.has(ext)) return true
+  return ALLOWED_AUDIO_MIME_TYPES.has(file.type)
+}
+
+function isAllowedMaterialFile(file: File): boolean {
   const ext = getFileExtension(file.name)
   if (ALLOWED_EXTENSIONS.has(ext)) return true
-  return ALLOWED_MIME_TYPES.has(file.type)
+  if (ALLOWED_MIME_TYPES.has(file.type)) return true
+  return isAudioFile(file)
 }
 
 function getFileNameFromUrl(url: string): string {
@@ -82,6 +101,7 @@ export default function EstudoInteligente({
     () => new Set(),
   )
   const [pendingFiles, setPendingFiles] = useState<File[]>([])
+  const [pendingAudioFile, setPendingAudioFile] = useState<File | null>(null)
   const [isLoadingMaterials, setIsLoadingMaterials] = useState(false)
   const [isSavingMaterial, setIsSavingMaterial] = useState(false)
   const [isGeneratingContent, setIsGeneratingContent] = useState(false)
@@ -96,17 +116,43 @@ export default function EstudoInteligente({
   const hasSummaryContent = Boolean(agentContent?.html_summary?.trim())
   const previewHtml = getStudyAgentHtml(agentContent, previewVariant)
 
-  const savedMaterialCount = materials.length
+  const existingAudioMaterial = useMemo(
+    () => materials.find((material) => material.file_type === 'audio') ?? null,
+    [materials],
+  )
+
+  const documentMaterials = useMemo(
+    () => materials.filter((material) => material.file_type !== 'audio'),
+    [materials],
+  )
+
+  const savedMaterialCount = documentMaterials.length
 
   const keptExistingMaterials = useMemo(
     () => materials.filter((material) => !removedMaterialIds.has(material.id)),
     [materials, removedMaterialIds],
   )
 
-  const totalFileCount = keptExistingMaterials.length + pendingFiles.length
+  const keptExistingAudio = useMemo(
+    () =>
+      keptExistingMaterials.find((material) => material.file_type === 'audio') ??
+      null,
+    [keptExistingMaterials],
+  )
+
+  const keptExistingDocuments = useMemo(
+    () =>
+      keptExistingMaterials.filter((material) => material.file_type !== 'audio'),
+    [keptExistingMaterials],
+  )
+
+  const totalFileCount = keptExistingDocuments.length + pendingFiles.length
   const canAddMoreFiles = totalFileCount < MAX_FILES
+  const canUploadFiles = canAddMoreFiles || !pendingAudioFile
   const hasPendingChanges =
-    pendingFiles.length > 0 || removedMaterialIds.size > 0
+    pendingFiles.length > 0 ||
+    removedMaterialIds.size > 0 ||
+    pendingAudioFile !== null
 
   const canGenerateContent =
     savedMaterialCount > 0 &&
@@ -124,6 +170,7 @@ export default function EstudoInteligente({
   function resetStaging() {
     setPendingFiles([])
     setRemovedMaterialIds(new Set())
+    setPendingAudioFile(null)
     if (filesInputRef.current) filesInputRef.current.value = ''
   }
 
@@ -210,33 +257,50 @@ export default function EstudoInteligente({
     const files = event.target.files
     if (!files?.length) return
 
-    const remainingSlots = MAX_FILES - totalFileCount
-    if (remainingSlots <= 0) {
-      toast.error(`Você pode enviar no máximo ${MAX_FILES} arquivos.`)
-      return
-    }
-
     const incoming = Array.from(files)
-    const valid: File[] = []
+    const validDocuments: File[] = []
     const invalid: string[] = []
+    let nextAudioFile: File | null = null
 
     for (const file of incoming) {
-      if (valid.length >= remainingSlots) break
-      if (isAllowedStudyFile(file)) {
-        valid.push(file)
-      } else {
+      if (!isAllowedMaterialFile(file)) {
         invalid.push(file.name)
+        continue
       }
+
+      if (isAudioFile(file)) {
+        if (nextAudioFile) {
+          toast.error('Selecione apenas um arquivo de áudio por vez.')
+          continue
+        }
+        nextAudioFile = file
+        continue
+      }
+
+      validDocuments.push(file)
     }
 
     if (invalid.length > 0) {
       toast.error(
-        `Tipo não permitido: ${invalid.join(', ')}. Use apenas PNG, PDF, JPG ou JPEG.`,
+        `Tipo não permitido: ${invalid.join(', ')}. Use PNG, PDF, JPG, JPEG ou áudio.`,
       )
     }
 
-    if (valid.length > 0) {
-      setPendingFiles((prev) => [...prev, ...valid])
+    if (nextAudioFile) {
+      setPendingAudioFile(nextAudioFile)
+    }
+
+    if (validDocuments.length > 0) {
+      const remainingSlots = MAX_FILES - totalFileCount
+      if (remainingSlots <= 0) {
+        toast.error(`Você pode enviar no máximo ${MAX_FILES} arquivos de estudo.`)
+      } else {
+        const documentsToAdd = validDocuments.slice(0, remainingSlots)
+        if (documentsToAdd.length < validDocuments.length) {
+          toast.error(`Você pode enviar no máximo ${MAX_FILES} arquivos de estudo.`)
+        }
+        setPendingFiles((prev) => [...prev, ...documentsToAdd])
+      }
     }
   }
 
@@ -273,6 +337,50 @@ export default function EstudoInteligente({
         )
         if (error) {
           toast.error(error.message)
+          return
+        }
+      }
+
+      if (pendingAudioFile) {
+        if (
+          existingAudioMaterial &&
+          !removedMaterialIds.has(existingAudioMaterial.id)
+        ) {
+          const { error } = await DeleteStudyMaterial(
+            existingAudioMaterial.id,
+            existingAudioMaterial.file_url,
+          )
+          if (error) {
+            toast.error(error.message)
+            return
+          }
+        }
+
+        const audioStoragePath = `materials/${selectedSmartSubject.id}/audio/${Date.now()}-${pendingAudioFile.name}`
+
+        const { error: audioUploadError } = await supabase.storage
+          .from(STUDY_MATERIALS_BUCKET)
+          .upload(audioStoragePath, pendingAudioFile)
+
+        if (audioUploadError) {
+          toast.error(audioUploadError.message)
+          return
+        }
+
+        const {
+          data: { publicUrl: audioPublicUrl },
+        } = supabase.storage
+          .from(STUDY_MATERIALS_BUCKET)
+          .getPublicUrl(audioStoragePath)
+
+        const { error: audioCreateError } = await CreateStudyMaterial(
+          String(selectedSmartSubject.id),
+          audioPublicUrl,
+          'audio',
+        )
+
+        if (audioCreateError) {
+          toast.error(audioCreateError.message)
           return
         }
       }
@@ -419,7 +527,9 @@ export default function EstudoInteligente({
             <article
               className={cn(
                 'flex flex-col gap-3 rounded-xl border p-4',
-                totalFileCount === 0
+                totalFileCount === 0 &&
+                !keptExistingAudio &&
+                !pendingAudioFile
                   ? 'border-primary/40 bg-primary/5'
                   : 'border-border bg-card',
               )}
@@ -429,7 +539,7 @@ export default function EstudoInteligente({
                   ref={filesInputRef}
                   type="file"
                   multiple
-                  accept=".pdf,.png,.jpg,.jpeg"
+                  accept=".pdf,.png,.jpg,.jpeg,.mp3,.m4a,.wav,.ogg,.aac,.webm,audio/*"
                   className="sr-only"
                   onChange={(e) => {
                     handleFilesChange(e)
@@ -440,10 +550,13 @@ export default function EstudoInteligente({
                 <button
                   type="button"
                   onClick={() => filesInputRef.current?.click()}
-                  disabled={!canAddMoreFiles || isSavingMaterial || isLoadingMaterials}
+                  disabled={
+                    !canUploadFiles || isSavingMaterial || isLoadingMaterials
+                  }
                   className={cn(
                     'flex min-h-[140px] w-full flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-border bg-background px-4 py-6 text-center transition-colors hover:border-primary/40 disabled:cursor-not-allowed disabled:opacity-50',
-                    pendingFiles.length > 0 && 'border-primary/50 bg-primary/5',
+                    (pendingFiles.length > 0 || pendingAudioFile) &&
+                      'border-primary/50 bg-primary/5',
                   )}
                 >
                   <FileUp className="h-5 w-5 text-muted-foreground" />
@@ -451,38 +564,79 @@ export default function EstudoInteligente({
                     Selecionar arquivos
                   </span>
                   <span className="max-w-md text-xs text-muted-foreground">
-                    PNG, PDF, JPG e JPEG — até {MAX_FILES} arquivos
+                    PNG, PDF, JPG, JPEG e áudio (MP3, M4A, WAV...) — até{' '}
+                    {MAX_FILES} arquivos + 1 áudio
                   </span>
                 </button>
 
-                {keptExistingMaterials.length > 0 || pendingFiles.length > 0 ? (
+                {keptExistingMaterials.length > 0 ||
+                pendingFiles.length > 0 ||
+                pendingAudioFile ? (
                   <ul className="flex flex-col gap-2">
-                    {keptExistingMaterials.map((material) => (
-                      <li
-                        key={material.id}
-                        className="flex items-center justify-between gap-2 rounded-lg border border-border bg-background px-3 py-2"
-                      >
-                        <a
-                          href={material.file_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex min-w-0 items-center gap-2 text-sm text-primary hover:underline"
+                    {keptExistingMaterials.map((material) => {
+                      const isAudio = material.file_type === 'audio'
+
+                      return (
+                        <li
+                          key={material.id}
+                          className="flex items-center justify-between gap-2 rounded-lg border border-border bg-background px-3 py-2"
                         >
-                          <FileUp className="h-4 w-4 shrink-0" aria-hidden />
-                          <span className="truncate">
-                            {getFileNameFromUrl(material.file_url)}
+                          <a
+                            href={material.file_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex min-w-0 items-center gap-2 text-sm text-primary hover:underline"
+                          >
+                            {isAudio ? (
+                              <Headphones
+                                className="h-4 w-4 shrink-0 text-chart-5"
+                                aria-hidden
+                              />
+                            ) : (
+                              <FileUp className="h-4 w-4 shrink-0" aria-hidden />
+                            )}
+                            <span className="truncate">
+                              {getFileNameFromUrl(material.file_url)}
+                            </span>
+                            {isAudio ? (
+                              <span className="shrink-0 text-[10px] font-semibold uppercase text-chart-5">
+                                Áudio
+                              </span>
+                            ) : null}
+                          </a>
+                          <button
+                            type="button"
+                            onClick={() => markMaterialForRemoval(material.id)}
+                            disabled={isSavingMaterial}
+                            className="shrink-0 text-xs font-semibold text-destructive hover:underline disabled:opacity-50"
+                          >
+                            Remover
+                          </button>
+                        </li>
+                      )
+                    })}
+                    {pendingAudioFile ? (
+                      <li className="flex items-center justify-between gap-2 rounded-lg border border-dashed border-chart-5/30 bg-chart-5/5 px-3 py-2">
+                        <span className="flex min-w-0 items-center gap-2 text-sm text-foreground">
+                          <Headphones
+                            className="h-4 w-4 shrink-0 text-chart-5"
+                            aria-hidden
+                          />
+                          <span className="truncate">{pendingAudioFile.name}</span>
+                          <span className="shrink-0 text-[10px] font-semibold uppercase text-chart-5">
+                            Áudio · Novo
                           </span>
-                        </a>
+                        </span>
                         <button
                           type="button"
-                          onClick={() => markMaterialForRemoval(material.id)}
+                          onClick={() => setPendingAudioFile(null)}
                           disabled={isSavingMaterial}
                           className="shrink-0 text-xs font-semibold text-destructive hover:underline disabled:opacity-50"
                         >
                           Remover
                         </button>
                       </li>
-                    ))}
+                    ) : null}
                     {pendingFiles.map((file, index) => (
                       <li
                         key={`${file.name}-${index}`}

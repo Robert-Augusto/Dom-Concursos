@@ -32,13 +32,31 @@ export function getDefaultStudyAgentVariant(
 const STUDY_MATERIALS_BUCKET = 'study_materials_images'
 
 const IMAGE_EXTENSIONS = new Set(['png', 'jpg', 'jpeg', 'gif', 'webp'])
+const AUDIO_EXTENSIONS = new Set(['mp3', 'm4a', 'wav', 'ogg', 'aac', 'webm'])
 
 export function getStudyMaterialFileType(file: File): StudyMaterialFileType {
   const ext = file.name.split('.').pop()?.toLowerCase() ?? ''
   if (IMAGE_EXTENSIONS.has(ext) || file.type.startsWith('image/')) {
     return 'image'
   }
+  if (AUDIO_EXTENSIONS.has(ext) || file.type.startsWith('audio/')) {
+    return 'audio'
+  }
   return 'text'
+}
+
+export async function GetStudyAudioBySubject(subjectId: string) {
+  const supabase = createClient()
+  const { data, error } = await supabase
+    .from('study_materials')
+    .select('*')
+    .eq('subjects_id', subjectId)
+    .eq('file_type', 'audio')
+    .order('created_at', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+
+  return { data: (data as StudyMaterials | null) ?? null, error }
 }
 
 export function getStudyMaterialStoragePath(publicUrl: string): string | null {

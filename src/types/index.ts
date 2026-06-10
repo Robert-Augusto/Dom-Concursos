@@ -72,7 +72,7 @@ export interface Profile {
 }
 
 // study_materials
-export type StudyMaterialFileType = 'image' | 'text'
+export type StudyMaterialFileType = 'image' | 'text' | 'audio'
 
 export interface StudyMaterials {
     id: string

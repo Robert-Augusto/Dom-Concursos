@@ -18,7 +18,7 @@ const navigationItems = [
   { label: 'Aprovados', href: '/doubts', icon: Medal, center: false },
   { label: 'Comunidade', href: '/comunity', icon: Users, center: true },
   { label: 'Dúvidas', href: '/settings', icon: MessageCircleQuestionMark, center: false },
-  { label: 'Painel', href: '/study', icon: ChartNoAxesCombined, center: false },
+  { label: 'Painel', href: '/score', icon: ChartNoAxesCombined, center: false },
 ] as const
 
 export function BottomNav() {

@@ -15,6 +15,7 @@ import {
 import {
   getDefaultStudyAgentVariant,
   getStudyAgentHtml,
+  GetStudyAudioBySubject,
   GetStudyMaterialsAgentBySubject,
   hasStudyAgentContent,
   wrapAgentHtmlForIframe,
@@ -25,9 +26,6 @@ import { toast } from 'sonner'
 
 const textareaClass =
   'w-full resize-none rounded-xl border border-border bg-background px-3 py-2.5 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-primary/50'
-
-const STUDY_PODCAST_AUDIO_URL =
-  'https://tzrcebhmkivfflfosstq.supabase.co/storage/v1/object/public/study_materials_images/substantivo-podcast.m4a'
 
 export interface StudyMaterialProps {
   subjectId: string
@@ -58,6 +56,7 @@ export default function StudyMaterial({
   const [ratingHover, setRatingHover] = useState(0)
   const [ratingComment, setRatingComment] = useState('')
   const [isSavingRating, setIsSavingRating] = useState(false)
+  const [audioUrl, setAudioUrl] = useState<string | null>(null)
 
   const hasFullContent = Boolean(agentContent?.html_full?.trim())
   const hasSummaryContent = Boolean(agentContent?.html_summary?.trim())
@@ -92,6 +91,32 @@ export default function StudyMaterial({
     }
 
     void loadMaterial()
+    return () => {
+      cancelled = true
+    }
+  }, [subjectId])
+
+  useEffect(() => {
+    let cancelled = false
+
+    async function loadAudio() {
+      if (!subjectId) {
+        setAudioUrl(null)
+        return
+      }
+
+      const { data, error } = await GetStudyAudioBySubject(subjectId)
+      if (cancelled) return
+
+      if (error) {
+        setAudioUrl(null)
+        return
+      }
+
+      setAudioUrl(data?.file_url ?? null)
+    }
+
+    void loadAudio()
     return () => {
       cancelled = true
     }
@@ -305,7 +330,8 @@ export default function StudyMaterial({
             />
           </div>
 
-          {showHtmlPanel && (<aside
+          {showHtmlPanel && audioUrl ? (
+            <aside
             className="relative mx-3 overflow-hidden rounded-2xl border border-chart-5/30 bg-card"
             style={{
               background:
@@ -351,7 +377,7 @@ export default function StudyMaterial({
                 <audio
                   controls
                   preload="metadata"
-                  src={STUDY_PODCAST_AUDIO_URL}
+                  src={audioUrl}
                   className="h-12 w-full max-w-full [&::-webkit-media-controls-panel]:bg-transparent"
                   controlsList="nodownload"
                 >
@@ -359,7 +385,8 @@ export default function StudyMaterial({
                 </audio>
               </div>
             </div>
-          </aside>)}
+            </aside>
+          ) : null}
 
           <div className="-mx-2 overflow-hidden rounded-lg border border-border bg-muted/20 sm:mx-0 sm:rounded-xl">
             {showHtmlPanel ? (
