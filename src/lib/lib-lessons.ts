@@ -154,17 +154,32 @@ export async function DeleteLessonProgress(lessonProgressId: string){
 }
 
 //-------------------------------------------------------| LESSONS NOTES |-------------------------------------------------------
+// select
+export async function GetLessonNote(profileId: string, lessonId: string) {
+    const supabase = createClient()
+    const { data, error } = await supabase
+        .from('lessons_notes')
+        .select('id, content')
+        .eq('profile_id', profileId)
+        .eq('lessons_id', lessonId)
+        .maybeSingle()
+
+    return { data, error }
+}
+
 // create
 export async function CreateLessonNote(profileId: string, lessonId: string, content: string){
     const supabase = createClient()
-    const {error} = await supabase
+    const { data, error } = await supabase
         .from('lessons_notes')
         .insert({
             profile_id: profileId,
             lessons_id: lessonId,
             content: content
         })
-    return {error}
+        .select('id')
+        .single()
+    return { data, error }
 }
 
 // update

@@ -4,6 +4,52 @@ import { CreateLessonMaterials } from '@/lib/lib-lessons'
 const THUMBNAIL_BUCKET = 'lesson_thumbnails'
 const MATERIALS_BUCKET = 'lessons_materials'
 
+export function getLessonMaterialStoragePath(fileUrl: string): string | null {
+  const trimmed = fileUrl.trim()
+  if (!trimmed) return null
+
+  try {
+    const url = new URL(trimmed)
+    const markers = [
+      `/object/public/${MATERIALS_BUCKET}/`,
+      `/object/sign/${MATERIALS_BUCKET}/`,
+      `/object/authenticated/${MATERIALS_BUCKET}/`,
+      `/object/${MATERIALS_BUCKET}/`,
+    ]
+
+    for (const marker of markers) {
+      const idx = url.pathname.indexOf(marker)
+      if (idx !== -1) {
+        return decodeURIComponent(url.pathname.slice(idx + marker.length))
+      }
+    }
+
+    return null
+  } catch {
+    return trimmed.replace(/^\//, '')
+  }
+}
+
+export async function GetLessonMaterialSignedUrl(
+  fileUrl: string,
+  expiresIn = 3600,
+) {
+  const path = getLessonMaterialStoragePath(fileUrl)
+  if (!path) {
+    return {
+      signedUrl: null,
+      error: { message: 'Não foi possível localizar o material no storage.' },
+    }
+  }
+
+  const supabase = createClient()
+  const { data, error } = await supabase.storage
+    .from(MATERIALS_BUCKET)
+    .createSignedUrl(path, expiresIn)
+
+  return { signedUrl: data?.signedUrl ?? null, error }
+}
+
 export function getThumbnailStoragePath(publicUrl: string): string | null {
   try {
     const url = new URL(publicUrl)
