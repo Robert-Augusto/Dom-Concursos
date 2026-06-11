@@ -394,10 +394,10 @@ export function SearchVideo({
           <button
             type="button"
             onClick={handleCloseLesson}
-            className="inline-flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground"
+            className="inline-flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-full border border-border text-secondary-foreground transition-colors hover:border-primary/40 hover:text-foreground bg-secondary"
             aria-label="Voltar para a lista de aulas"
           >
-            <X className="h-4 w-4" aria-hidden />
+            <X className="h-5 w-5" aria-hidden />
           </button>
         </div>
 
