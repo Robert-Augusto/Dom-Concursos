@@ -35,7 +35,7 @@ export interface LessonMaterials {
 }
 
 // live_classes
-export type LiveClassesStatus = 'scheduled' | 'started' | 'ended'
+export type LiveClassesStatus = 'scheduled' | 'ended'
 
 export interface LiveClasses {
     id: string
@@ -43,41 +43,8 @@ export interface LiveClasses {
     title: string | null
     scheduled_at: string | null
     thumbnail_url: string | null
+    video_url: string | null
     status: LiveClassesStatus | null
-    mux_stream_id: string | null
-    mux_stream_key: string | null
-    mux_rtmp_url: string | null
-    mux_playback_id: string | null
-    mux_asset_id: string | null
-}
-
-export interface LiveClassChatProfile {
-    id: string
-    name: string
-    avatar_url: string | null
-    role?: ProfileRole | null
-}
-
-export interface LiveClassChatWithProfile {
-    id: number | string
-    created_at: string
-    live_classes_id: number | string | null
-    profile_id: string | null
-    message: string | null
-    profile: LiveClassChatProfile | LiveClassChatProfile[] | null
-}
-
-export interface LiveClassChatMessage {
-    id: string
-    liveClassId: string
-    profileId: string
-    message: string
-    createdAt: string
-    timeLabel: string
-    authorName: string
-    authorInitial: string
-    authorColor: string
-    authorAvatarUrl: string | null
 }
 
 // subjects

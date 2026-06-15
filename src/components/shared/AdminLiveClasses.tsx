@@ -4,17 +4,17 @@ import Image from 'next/image'
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
 import {
   CalendarClock,
-  Copy,
+  ExternalLink,
   ImagePlus,
   MoreVertical,
   Pencil,
   Radio,
-  Square,
   Trash2,
   TriangleAlert,
   X,
   type LucideIcon,
 } from 'lucide-react'
+import { Switch } from '@/components/ui/switch'
 import {
   CreateLiveClass,
   DeleteLiveClass,
@@ -26,7 +26,7 @@ import {
   DeleteLessonThumbnail,
   UploadLessonThumbnail,
 } from '@/lib/lib-storage'
-import type { LiveClasses } from '@/types'
+import type { LiveClasses, LiveClassesStatus } from '@/types'
 import { toast } from 'sonner'
 
 const fieldLabelClass =
@@ -150,6 +150,7 @@ export default function AdminLiveClasses() {
 
   const [title, setTitle] = useState('')
   const [scheduledAt, setScheduledAt] = useState('')
+  const [streamUrl, setStreamUrl] = useState('')
   const [thumbnailFile, setThumbnailFile] = useState<File | null>(null)
   const [savedThumbnailUrl, setSavedThumbnailUrl] = useState<string | null>(null)
   const [thumbnailRemoved, setThumbnailRemoved] = useState(false)
@@ -158,12 +159,14 @@ export default function AdminLiveClasses() {
   )
   const [isSaving, setIsSaving] = useState(false)
   const [liveClasses, setLiveClasses] = useState<LiveClasses[]>([])
+  const [statusState, setStatusState] = useState<
+    Record<string, LiveClassesStatus>
+  >({})
+  const [togglingLiveClassId, setTogglingLiveClassId] = useState<string | null>(
+    null,
+  )
   const [deleteTarget, setDeleteTarget] = useState<LiveClasses | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
-  const [startTarget, setStartTarget] = useState<LiveClasses | null>(null)
-  const [isStarting, setIsStarting] = useState(false)
-  const [endTarget, setEndTarget] = useState<LiveClasses | null>(null)
-  const [isEnding, setIsEnding] = useState(false)
 
   const thumbnailPreviewUrl = useMemo(() => {
     if (!thumbnailFile) return null
@@ -210,6 +213,7 @@ export default function AdminLiveClasses() {
     setEditingLiveClassId(null)
     setTitle('')
     setScheduledAt('')
+    setStreamUrl('')
     setThumbnailFile(null)
     setSavedThumbnailUrl(null)
     setThumbnailRemoved(false)
@@ -221,6 +225,7 @@ export default function AdminLiveClasses() {
     setEditingLiveClassId(liveClass.id)
     setTitle(liveClass.title ?? '')
     setScheduledAt(toDatetimeLocalValue(liveClass.scheduled_at))
+    setStreamUrl(liveClass.video_url ?? '')
     setSavedThumbnailUrl(liveClass.thumbnail_url)
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
@@ -229,72 +234,42 @@ export default function AdminLiveClasses() {
     resetForm()
   }
 
-  async function handleStartTransmission() {
-    if (!startTarget) return
-
-    setIsStarting(true)
-
-    try{
-      const response = await fetch(
-        'https://n8n-qao4.srv1444382.hstgr.cloud/webhook/d0a5da88-a148-4b38-8474-d5ffdb16e745',
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            live_classes_id: startTarget.id,
-          }),
-        },
-      ) 
-
-      if (!response.ok) {
-        toast.error('Erro ao iniciar a transmissão, tente novamente.')
-        return
-      }
-
-      await refreshLiveClasses()
-      setStartTarget(null)
-      toast.success('Transmissão iniciada com sucesso!')
-    } catch {
-      toast.error('Erro ao iniciar a transmissão, tente novamente.')
-    } finally {
-      setIsStarting(false)
-    }
+  function getLiveClassStatus(liveClass: LiveClasses): LiveClassesStatus {
+    return (
+      statusState[liveClass.id] ??
+      liveClass.status ??
+      'scheduled'
+    )
   }
 
-  async function handleEndTransmission() {
-    if (!endTarget) return
+  async function handleToggleStatus(
+    liveClassId: string,
+    isScheduled: boolean,
+  ) {
+    const nextStatus: LiveClassesStatus = isScheduled ? 'scheduled' : 'ended'
+    const previous =
+      statusState[liveClassId] ??
+      liveClasses.find((item) => item.id === liveClassId)?.status ??
+      'scheduled'
 
-    setIsEnding(true)
+    setStatusState((prev) => ({ ...prev, [liveClassId]: nextStatus }))
+    setTogglingLiveClassId(liveClassId)
 
-    try {
-      const { error } = await UpdateLiveClassStatus(endTarget.id, 'ended')
+    const { error } = await UpdateLiveClassStatus(liveClassId, nextStatus)
 
-      if (error) {
-        toast.error(error.message)
-        return
-      }
+    setTogglingLiveClassId(null)
 
-      setLiveClasses((prev) =>
-        prev.map((item) =>
-          item.id === endTarget.id ? { ...item, status: 'ended' } : item,
-        ),
-      )
-      setEndTarget(null)
-      toast.success('Transmissão finalizada com sucesso!')
-    } finally {
-      setIsEnding(false)
+    if (error) {
+      setStatusState((prev) => ({ ...prev, [liveClassId]: previous }))
+      toast.error(error.message)
+      return
     }
-  }
 
-  async function handleCopyStreamKey(streamKey: string) {
-    try {
-      await navigator.clipboard.writeText(streamKey)
-      toast.success('Código copiado para a área de transferência.')
-    } catch {
-      toast.error('Não foi possível copiar o código.')
-    }
+    setLiveClasses((prev) =>
+      prev.map((item) =>
+        item.id === liveClassId ? { ...item, status: nextStatus } : item,
+      ),
+    )
   }
 
   async function refreshLiveClasses() {
@@ -329,6 +304,11 @@ export default function AdminLiveClasses() {
       setLiveClasses((prev) =>
         prev.filter((item) => item.id !== deleteTarget.id),
       )
+      setStatusState((prev) => {
+        const next = { ...prev }
+        delete next[deleteTarget.id]
+        return next
+      })
 
       setDeleteTarget(null)
       toast.success('Transmissão excluída com sucesso!')
@@ -359,6 +339,7 @@ export default function AdminLiveClasses() {
     const { data, error } = await CreateLiveClass(
       title,
       scheduledAtIso,
+      streamUrl,
       thumbnailUrl,
     )
 
@@ -405,6 +386,7 @@ export default function AdminLiveClasses() {
       editingLiveClassId,
       title,
       scheduledAtIso,
+      streamUrl,
       finalThumbnailUrl,
     )
 
@@ -430,7 +412,7 @@ export default function AdminLiveClasses() {
   async function handleSubmit(event: FormEvent) {
     event.preventDefault()
 
-    if (!title.trim() || !scheduledAt) {
+    if (!title.trim() || !scheduledAt || !streamUrl.trim()) {
       toast.error('Preencha todos os campos obrigatórios.')
       return
     }
@@ -450,125 +432,6 @@ export default function AdminLiveClasses() {
 
   return (
     <section className="relative flex flex-col gap-8">
-      {startTarget ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
-          <div className="w-full max-w-md rounded-2xl border border-border bg-card p-4 md:p-6">
-            <div className="mb-4 flex items-start justify-between gap-3">
-              <div className="flex items-start gap-3">
-                <div className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-chart-2/15 text-chart-2">
-                  <Radio className="h-4 w-4" aria-hidden />
-                </div>
-                <div>
-                  <h3 className="text-base font-black text-foreground md:text-lg">
-                    Iniciar transmissão
-                  </h3>
-                  <p className="text-sm text-muted-foreground">
-                    Confirme para disponibilizar esta aula ao vivo para os
-                    alunos.
-                  </p>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => setStartTarget(null)}
-                disabled={isStarting}
-                className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground disabled:opacity-50"
-                aria-label="Fechar modal"
-              >
-                <X className="h-4 w-4" aria-hidden />
-              </button>
-            </div>
-
-            <div className="rounded-xl border border-border bg-background p-3">
-              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Transmissão selecionada
-              </p>
-              <p className="mt-1 text-sm font-semibold text-foreground">
-                {startTarget.title ?? 'Sem título'}
-              </p>
-            </div>
-
-            <div className="mt-5 flex flex-wrap items-center gap-2">
-              <button
-                type="button"
-                disabled={isStarting}
-                className="rounded-full border border-chart-2/50 bg-chart-2/10 px-4 py-2 text-sm font-semibold text-chart-2 transition-colors hover:bg-chart-2/20 disabled:cursor-not-allowed disabled:opacity-50"
-                onClick={() => void handleStartTransmission()}
-              >
-                {isStarting ? 'Iniciando...' : 'Confirmar início'}
-              </button>
-              <button
-                type="button"
-                onClick={() => setStartTarget(null)}
-                disabled={isStarting}
-                className="rounded-full border border-border px-4 py-2 text-sm font-semibold text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground disabled:opacity-50"
-              >
-                Cancelar
-              </button>
-            </div>
-          </div>
-        </div>
-      ) : null}
-
-      {endTarget ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
-          <div className="w-full max-w-md rounded-2xl border border-border bg-card p-4 md:p-6">
-            <div className="mb-4 flex items-start justify-between gap-3">
-              <div className="flex items-start gap-3">
-                <div className="inline-flex h-9 w-9 items-center justify-center rounded-full bg-destructive/15 text-destructive">
-                  <Square className="h-4 w-4" aria-hidden />
-                </div>
-                <div>
-                  <h3 className="text-base font-black text-foreground md:text-lg">
-                    Finalizar transmissão
-                  </h3>
-                  <p className="text-sm text-muted-foreground">
-                    Confirme para encerrar a transmissão ao vivo.
-                  </p>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={() => setEndTarget(null)}
-                disabled={isEnding}
-                className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground disabled:opacity-50"
-                aria-label="Fechar modal"
-              >
-                <X className="h-4 w-4" aria-hidden />
-              </button>
-            </div>
-
-            <div className="rounded-xl border border-border bg-background p-3">
-              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Transmissão selecionada
-              </p>
-              <p className="mt-1 text-sm font-semibold text-foreground">
-                {endTarget.title ?? 'Sem título'}
-              </p>
-            </div>
-
-            <div className="mt-5 flex flex-wrap items-center gap-2">
-              <button
-                type="button"
-                disabled={isEnding}
-                className="rounded-full border border-destructive/50 bg-destructive/10 px-4 py-2 text-sm font-semibold text-destructive transition-colors hover:bg-destructive/20 disabled:cursor-not-allowed disabled:opacity-50"
-                onClick={() => void handleEndTransmission()}
-              >
-                {isEnding ? 'Finalizando...' : 'Confirmar encerramento'}
-              </button>
-              <button
-                type="button"
-                onClick={() => setEndTarget(null)}
-                disabled={isEnding}
-                className="rounded-full border border-border px-4 py-2 text-sm font-semibold text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground disabled:opacity-50"
-              >
-                Cancelar
-              </button>
-            </div>
-          </div>
-        </div>
-      ) : null}
-
       {deleteTarget ? (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
           <div className="w-full max-w-md rounded-2xl border border-border bg-card p-4 md:p-6">
@@ -694,6 +557,21 @@ export default function AdminLiveClasses() {
             </div>
           </div>
 
+          <div className="flex flex-col gap-2">
+            <label htmlFor="live-stream-url" className={fieldLabelClass}>
+              Link da transmissão
+            </label>
+            <input
+              id="live-stream-url"
+              type="url"
+              value={streamUrl}
+              onChange={(e) => setStreamUrl(e.target.value)}
+              placeholder="https://..."
+              className={inputClass}
+              disabled={isSaving}
+            />
+          </div>
+
           <div className="flex flex-col gap-3">
             <span className={fieldLabelClass}>Thumbnail (opcional)</span>
             <input
@@ -783,16 +661,7 @@ export default function AdminLiveClasses() {
         ) : (
           <ul className="flex flex-col gap-2">
             {liveClasses.map((liveClass) => {
-              const status = liveClass.status ?? 'scheduled'
-              const canStart = status === 'scheduled'
-              const isStarted = status === 'started'
-              const streamKey = liveClass.mux_stream_key?.trim()
-              const isRowBusy =
-                isStarting ||
-                isEnding ||
-                isSaving ||
-                isDeleting ||
-                editingLiveClassId === liveClass.id
+              const isScheduled = getLiveClassStatus(liveClass) === 'scheduled'
 
               return (
                 <li
@@ -823,62 +692,66 @@ export default function AdminLiveClasses() {
                     <p className="text-xs text-muted-foreground">
                       {formatScheduledAt(liveClass.scheduled_at)}
                     </p>
+                    {liveClass.video_url ? (
+                      <a
+                        href={liveClass.video_url}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 text-xs font-semibold text-accent hover:underline"
+                      >
+                        Abrir link
+                        <ExternalLink className="h-3 w-3" aria-hidden />
+                      </a>
+                    ) : null}
                   </div>
                   <div className="flex shrink-0 flex-col items-end justify-center gap-2">
-                    <div className="flex flex-wrap items-center justify-end gap-2">
-                      {canStart ? (
-                        <button
-                          type="button"
-                          onClick={() => setStartTarget(liveClass)}
-                          disabled={isRowBusy}
-                          className="rounded-full border border-chart-2/50 bg-chart-2/10 px-3 py-1.5 text-xs font-semibold text-chart-2 transition-colors hover:bg-chart-2/20 disabled:cursor-not-allowed disabled:opacity-50"
-                        >
-                          Iniciar transmissão
-                        </button>
-                      ) : null}
-                      {isStarted ? (
-                        <>
-                          <button
-                            type="button"
-                            onClick={() => setEndTarget(liveClass)}
-                            disabled={isRowBusy}
-                            className="rounded-full border border-destructive/50 bg-destructive/10 px-3 py-1.5 text-xs font-semibold text-destructive transition-colors hover:bg-destructive/20 disabled:cursor-not-allowed disabled:opacity-50"
-                          >
-                            Finalizar transmissão
-                          </button>
-                          {streamKey ? (
-                            <button
-                              type="button"
-                              onClick={() => void handleCopyStreamKey(streamKey)}
-                              disabled={isRowBusy}
-                              className="inline-flex items-center gap-1.5 rounded-full border border-border px-3 py-1.5 text-xs font-semibold text-foreground transition-colors hover:border-primary/40 hover:bg-muted/40 disabled:cursor-not-allowed disabled:opacity-50"
-                            >
-                              <Copy className="h-3.5 w-3.5" aria-hidden />
-                              Copiar código
-                            </button>
-                          ) : null}
-                        </>
-                      ) : null}
+                    <div className="flex items-center gap-2">
                       <LiveClassKebabMenu
-                        disabled={isRowBusy}
+                        disabled={
+                          isSaving ||
+                          isDeleting ||
+                          editingLiveClassId === liveClass.id
+                        }
                         ariaLabel={`Ações da transmissão: ${liveClass.title ?? 'Sem título'}`}
                         items={[
                           {
                             label: 'Editar',
                             icon: Pencil,
-                            disabled: isRowBusy,
+                            disabled:
+                              isSaving ||
+                              isDeleting ||
+                              editingLiveClassId === liveClass.id,
                             onClick: () => startEditLiveClass(liveClass),
                           },
                           {
                             label: 'Excluir',
                             icon: Trash2,
                             variant: 'destructive',
-                            disabled: isRowBusy,
+                            disabled:
+                              isSaving ||
+                              isDeleting ||
+                              editingLiveClassId === liveClass.id,
                             onClick: () => setDeleteTarget(liveClass),
                           },
                         ]}
                       />
+                      <Switch
+                        checked={isScheduled}
+                        onCheckedChange={(checked) =>
+                          void handleToggleStatus(liveClass.id, checked)
+                        }
+                        disabled={
+                          togglingLiveClassId === liveClass.id ||
+                          editingLiveClassId === liveClass.id ||
+                          isDeleting
+                        }
+                        aria-label={`Status da transmissão: ${liveClass.title ?? 'Sem título'}`}
+                        className="data-checked:bg-chart-2 scale-125"
+                      />
                     </div>
+                    <span className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                      {isScheduled ? 'Programada' : 'Encerrada'}
+                    </span>
                   </div>
                 </li>
               )

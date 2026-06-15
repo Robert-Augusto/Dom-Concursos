@@ -1,42 +1,13 @@
 'use client'
 
 import Image from 'next/image'
-import dynamic from 'next/dynamic'
 import { useEffect, useState } from 'react'
 import { BottomNav } from '@/components/layout/BottomNav'
 import { Sidebar } from '@/components/layout/Sidebar'
-import LiveClassChat from '@/components/shared/LiveClassChat'
-import { isValidMuxPlaybackId } from '@/components/shared/LiveMuxPlayer'
-import {
-  GetScheduledLiveClasses,
-  GetStartedLiveClass,
-} from '@/lib/lib-live-classes'
+import { GetScheduledLiveClasses } from '@/lib/lib-live-classes'
 import type { LiveClasses } from '@/types'
-import {
-  CalendarDays,
-  ChevronLeft,
-  Clock,
-  Radio,
-  Sparkles,
-} from 'lucide-react'
+import { CalendarDays, Clock, Radio, Sparkles, Video, ChevronLeft } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-
-const LiveMuxPlayer = dynamic(
-  () => import('@/components/shared/LiveMuxPlayer'),
-  { ssr: false },
-)
-
-function LivePlayerPlaceholder({ message }: { message: string }) {
-  return (
-    <div className="flex aspect-video flex-col items-center justify-center gap-3 bg-muted/30 px-6 text-center">
-      <Radio className="h-8 w-8 text-muted-foreground" aria-hidden />
-      <p className="text-sm font-semibold text-foreground">
-        Transmissão em preparação
-      </p>
-      <p className="max-w-sm text-xs text-muted-foreground">{message}</p>
-    </div>
-  )
-}
 
 function formatLiveDate(value: string | null) {
   if (!value) return 'Data a definir'
@@ -62,99 +33,24 @@ function formatCountdown(scheduledAt: string, now: number) {
   return `Começa em ${minutes} min`
 }
 
-type UpcomingLiveCardProps = {
-  liveClass: LiveClasses
-  now: number
-}
-
-function UpcomingLiveCard({ liveClass, now }: UpcomingLiveCardProps) {
-  const countdown = liveClass.scheduled_at
-    ? formatCountdown(liveClass.scheduled_at, now)
-    : null
-
-  return (
-    <article className="flex w-full flex-col overflow-hidden rounded-2xl border border-border bg-card transition-colors hover:border-primary/30">
-      <div className="relative aspect-video w-full overflow-hidden bg-muted">
-        {liveClass.thumbnail_url ? (
-          <Image
-            src={liveClass.thumbnail_url}
-            alt=""
-            fill
-            unoptimized
-            className="object-cover"
-          />
-        ) : (
-          <div
-            className="absolute inset-0"
-            style={{
-              background: 'linear-gradient(135deg, #1a0d38, #0d3020)',
-            }}
-          />
-        )}
-        {!liveClass.thumbnail_url ? (
-          <div
-            className="absolute inset-0 flex items-center justify-center font-heading text-lg font-bold tracking-tight text-white sm:text-xl"
-            style={{ textShadow: '0 2px 12px rgba(0,0,0,0.8)' }}
-          >
-            PRÓXIMA AULA AO VIVO
-          </div>
-        ) : null}
-        <div className="live-badge-soon absolute left-3 top-3 flex items-center gap-1.5 rounded-full border border-amber-200/60 bg-gradient-to-r from-amber-500 via-yellow-300 to-amber-500 px-3.5 py-1.5 text-[10px] font-black uppercase tracking-[0.14em] text-amber-950 shadow-[0_0_0_1px_rgba(255,255,255,0.35),0_0_22px_rgba(251,191,36,0.65)]">
-          <Sparkles
-            className="h-3.5 w-3.5 animate-pulse text-amber-900"
-            aria-hidden
-          />
-          Em breve
-        </div>
-      </div>
-
-      <div className="flex flex-col gap-3 p-4">
-        <h3 className="font-heading text-base font-bold leading-snug text-foreground">
-          {liveClass.title ?? 'Aula ao vivo'}
-        </h3>
-
-        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-          <CalendarDays className="h-3.5 w-3.5 shrink-0" />
-          <span>{formatLiveDate(liveClass.scheduled_at)}</span>
-        </div>
-
-        {countdown ? (
-          <div className="flex flex-wrap items-center gap-2">
-            <div className="flex items-center gap-1.5 rounded-full border border-chart-2/30 bg-chart-2/15 px-3 py-1.5 text-xs font-bold text-chart-2">
-              <Clock className="h-3.5 w-3.5" />
-              <span>{countdown}</span>
-            </div>
-          </div>
-        ) : null}
-      </div>
-    </article>
-  )
+function hasLiveStarted(scheduledAt: string | null, now: number) {
+  if (!scheduledAt) return false
+  return new Date(scheduledAt).getTime() <= now
 }
 
 export default function LivePage() {
-  const [activeLive, setActiveLive] = useState<LiveClasses | null>(null)
-  const [upcomingLives, setUpcomingLives] = useState<LiveClasses[]>([])
+  const [liveClasses, setLiveClasses] = useState<LiveClasses[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [now, setNow] = useState(() => Date.now())
 
-  const router = useRouter()
-
   useEffect(() => {
-    async function fetchLiveData() {
-      const [startedRes, scheduledRes] = await Promise.all([
-        GetStartedLiveClass(),
-        GetScheduledLiveClasses(),
-      ])
-
-      if (!startedRes.error) setActiveLive(startedRes.data)
-      if (!scheduledRes.error && scheduledRes.data) {
-        setUpcomingLives(scheduledRes.data)
-      }
-
+    async function fetchLiveClasses() {
+      const { data, error } = await GetScheduledLiveClasses()
+      if (!error && data) setLiveClasses(data)
       setIsLoading(false)
     }
 
-    void fetchLiveData()
+    void fetchLiveClasses()
   }, [])
 
   useEffect(() => {
@@ -162,12 +58,9 @@ export default function LivePage() {
     return () => clearInterval(intervalId)
   }, [])
 
-  const playbackId = activeLive?.mux_playback_id ?? null
-  const canPlayLiveStream = isValidMuxPlaybackId(playbackId)
-  const hasActiveLive = Boolean(activeLive)
-  const showEmptyState = !isLoading && !hasActiveLive && upcomingLives.length === 0
+  const router = useRouter()
 
-  function handleStepBack() {
+  function handleStepBack(){
     router.push('/dashboard')
   }
 
@@ -175,7 +68,8 @@ export default function LivePage() {
     <div className="min-h-screen bg-background">
       <Sidebar />
       <div className="min-h-screen pb-20 lg:ml-[240px] lg:pb-0">
-        <header className="sticky top-0 z-30 mb-3 border-b border-border bg-background/95 backdrop-blur-sm">
+        
+      <header className="sticky top-0 z-30 border-b border-border bg-background mb-3">
           <div className="flex items-center gap-3 px-4 py-3 sm:px-6">
             <button
               type="button"
@@ -185,114 +79,137 @@ export default function LivePage() {
               <ChevronLeft className="h-6 w-6" />
             </button>
             <div className="min-w-0 flex-1">
-              <h1 className="truncate font-heading text-base font-bold text-foreground">
+              <h1 className="font-heading truncate text-base font-bold text-foreground">
                 Aulas ao Vivo
               </h1>
               <p className="text-sm text-muted-foreground">
-                {hasActiveLive
-                  ? 'Assista à transmissão e acompanhe as próximas aulas.'
-                  : 'Confira as próximas transmissões programadas.'}
+                Acesse as aulas que estão acontecendo agora.
               </p>
             </div>
           </div>
         </header>
 
-        <main className="mx-auto max-w-[1280px] px-4 py-5 sm:px-6 sm:py-6">
-          <div className="flex flex-col gap-8 lg:gap-10">
-            {isLoading ? (
-              <div className="flex flex-col gap-6">
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                  {Array.from({ length: 3 }).map((_, index) => (
-                    <div
-                      key={index}
-                      className="aspect-[4/3] animate-pulse rounded-2xl border border-border bg-card"
-                    />
-                  ))}
-                </div>
+        <main className="mx-auto max-w-[1210px] p-6">
+          <div className="flex flex-col gap-8">
+            <section className="flex flex-col gap-4">
+              <div>
+                <h2 className="font-heading text-lg font-semibold text-foreground">
+                  Próxima Aula ao Vivo
+                </h2>
+                <p className="mt-0.5 text-xs text-muted-foreground">
+                  Prepare-se para a próxima transmissão
+                </p>
               </div>
-            ) : null}
 
-            {!isLoading && activeLive ? (
-              <section className="flex flex-col gap-4">
-                <div className="flex flex-wrap items-center gap-3">
-                  <div className="live-badge-live flex items-center gap-2 rounded-full border border-white/20 bg-gradient-to-r from-red-600 via-rose-500 to-red-600 px-3.5 py-1.5 text-[10px] font-black uppercase tracking-[0.14em] text-white shadow-[0_0_0_1px_rgba(255,255,255,0.25),0_0_28px_rgba(239,68,68,0.85)]">
-                    <span className="relative flex h-2.5 w-2.5">
-                      <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-white opacity-80" />
-                      <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-white shadow-[0_0_8px_rgba(255,255,255,0.9)]" />
-                    </span>
-                    Ao vivo agora
-                  </div>
-                  <h2 className="font-heading text-lg font-bold text-foreground sm:text-xl">
-                    {activeLive.title ?? 'Transmissão ao vivo'}
-                  </h2>
+              {isLoading ? (
+                <div className="flex items-center justify-center rounded-2xl border border-border bg-card px-6 py-16">
+                  <p className="text-sm text-muted-foreground">Carregando...</p>
                 </div>
-
-                <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_min(100%,360px)] lg:items-stretch lg:gap-5">
-                  <div className="flex flex-col gap-3">
-                    <div className="overflow-hidden rounded-2xl border border-border bg-black shadow-[0_12px_40px_rgba(0,0,0,0.35)]">
-                      {canPlayLiveStream ? (
-                        <LiveMuxPlayer playbackId={playbackId} />
-                      ) : (
-                        <LivePlayerPlaceholder message="O player será exibido assim que o sinal estiver disponível." />
-                      )}
-                    </div>
-
-                    {activeLive.scheduled_at ? (
-                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                        <CalendarDays className="h-3.5 w-3.5 shrink-0" />
-                        <span>{formatLiveDate(activeLive.scheduled_at)}</span>
-                      </div>
-                    ) : null}
-                  </div>
-
-                  <LiveClassChat liveClassId={activeLive.id} />
-                </div>
-              </section>
-            ) : null}
-
-            {!isLoading && (upcomingLives.length > 0 || showEmptyState) ? (
-              <section className="flex flex-col gap-4">
-                <div>
-                  <h2 className="font-heading text-lg font-semibold text-foreground">
-                    {hasActiveLive
-                      ? 'Próximas transmissões'
-                      : 'Transmissões programadas'}
-                  </h2>
-                  <p className="mt-0.5 text-xs text-muted-foreground">
-                    {hasActiveLive
-                      ? 'Agende-se para as próximas aulas ao vivo.'
-                      : 'Prepare-se para as próximas transmissões.'}
+              ) : liveClasses.length === 0 ? (
+                <div className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-border bg-card px-6 py-16 text-center">
+                  <span className="flex h-12 w-12 items-center justify-center rounded-xl border border-border bg-muted/30">
+                    <Radio className="h-5 w-5 text-muted-foreground" aria-hidden />
+                  </span>
+                  <p className="text-sm font-semibold text-foreground">
+                    Nenhuma aula ao vivo programada
+                  </p>
+                  <p className="max-w-sm text-xs text-muted-foreground">
+                    Volte em breve — novas transmissões aparecerão aqui.
                   </p>
                 </div>
+              ) : (
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                  {liveClasses.map((liveClass) => {
+                    const started = hasLiveStarted(liveClass.scheduled_at, now)
+                    const countdown = liveClass.scheduled_at
+                      ? formatCountdown(liveClass.scheduled_at, now)
+                      : null
 
-                {showEmptyState ? (
-                  <div className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-border bg-card px-6 py-16 text-center">
-                    <span className="flex h-12 w-12 items-center justify-center rounded-xl border border-border bg-muted/30">
-                      <Radio
-                        className="h-5 w-5 text-muted-foreground"
-                        aria-hidden
-                      />
-                    </span>
-                    <p className="text-sm font-semibold text-foreground">
-                      Nenhuma aula ao vivo programada
-                    </p>
-                    <p className="max-w-sm text-xs text-muted-foreground">
-                      Volte em breve — novas transmissões aparecerão aqui.
-                    </p>
-                  </div>
-                ) : (
-                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                    {upcomingLives.map((liveClass) => (
-                      <UpcomingLiveCard
+                    return (
+                      <article
                         key={liveClass.id}
-                        liveClass={liveClass}
-                        now={now}
-                      />
-                    ))}
-                  </div>
-                )}
-              </section>
-            ) : null}
+                        className="flex w-full flex-col overflow-hidden rounded-2xl border border-border bg-card"
+                      >
+                        <div className="relative aspect-video w-full overflow-hidden bg-muted">
+                          {liveClass.thumbnail_url ? (
+                            <Image
+                              src={liveClass.thumbnail_url}
+                              alt=""
+                              fill
+                              unoptimized
+                              className="object-cover"
+                            />
+                          ) : (
+                            <div
+                              className="absolute inset-0"
+                              style={{
+                                background:
+                                  'linear-gradient(135deg, #1a0d38, #0d3020)',
+                              }}
+                            />
+                          )}
+                          {!liveClass.thumbnail_url ? (
+                            <div
+                              className="absolute inset-0 flex items-center justify-center font-heading text-xl font-bold tracking-tight text-white"
+                              style={{ textShadow: '0 2px 12px rgba(0,0,0,0.8)' }}
+                            >
+                              PRÓXIMA AULA AO VIVO
+                            </div>
+                          ) : null}
+                          {started ? (
+                            <div className="live-badge-live absolute left-3 top-3 flex items-center gap-2 rounded-full border border-white/40 bg-gradient-to-r from-red-600 via-rose-500 to-red-600 px-3.5 py-1.5 text-[10px] font-black uppercase tracking-[0.14em] text-white shadow-[0_0_0_1px_rgba(255,255,255,0.25),0_0_28px_rgba(239,68,68,0.85)]">
+                              <span className="relative flex h-2.5 w-2.5">
+                                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-white opacity-80" />
+                                <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-white shadow-[0_0_8px_rgba(255,255,255,0.9)]" />
+                              </span>
+                              Ao vivo agora
+                            </div>
+                          ) : (
+                            <div className="live-badge-soon absolute left-3 top-3 flex items-center gap-1.5 rounded-full border border-amber-200/60 bg-gradient-to-r from-amber-500 via-yellow-300 to-amber-500 px-3.5 py-1.5 text-[10px] font-black uppercase tracking-[0.14em] text-amber-950 shadow-[0_0_0_1px_rgba(255,255,255,0.35),0_0_22px_rgba(251,191,36,0.65)]">
+                              <Sparkles
+                                className="h-3.5 w-3.5 animate-pulse text-amber-900"
+                                aria-hidden
+                              />
+                              Em breve
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="flex flex-col gap-3 p-4">
+                          <h3 className="font-heading text-base font-bold leading-snug text-foreground">
+                            {liveClass.title ?? 'Aula ao vivo'}
+                          </h3>
+
+                          <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                            <CalendarDays className="h-3.5 w-3.5 shrink-0" />
+                            <span>{formatLiveDate(liveClass.scheduled_at)}</span>
+                          </div>
+
+                          {started && liveClass.video_url ? (
+                            <a
+                              href={liveClass.video_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-primary bg-primary py-2.5 text-sm font-bold text-primary-foreground transition-opacity hover:opacity-90"
+                            >
+                              <Video className="h-4 w-4" aria-hidden />
+                              Assistir ao vivo
+                            </a>
+                          ) : countdown ? (
+                            <div className="flex flex-wrap items-center gap-2">
+                              <div className="flex items-center gap-1.5 rounded-full border border-chart-2/30 bg-chart-2/15 px-3 py-1.5 text-xs font-bold text-chart-2">
+                                <Clock className="h-3.5 w-3.5" />
+                                <span>{countdown}</span>
+                              </div>
+                            </div>
+                          ) : null}
+                        </div>
+                      </article>
+                    )
+                  })}
+                </div>
+              )}
+            </section>
           </div>
         </main>
       </div>
