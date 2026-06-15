@@ -64,7 +64,7 @@ export interface LiveClassChatWithProfile {
     live_classes_id: number | string | null
     profile_id: string | null
     message: string | null
-    profile: LiveClassChatProfile | null
+    profile: LiveClassChatProfile | LiveClassChatProfile[] | null
 }
 
 export interface LiveClassChatMessage {

@@ -33,11 +33,15 @@ function getAuthorColor(seed: string) {
 }
 
 function resolveProfile(
-  profile: LiveClassChatWithProfile['profile'],
+  profile: LiveClassChatProfile | LiveClassChatProfile[] | null | undefined,
 ): LiveClassChatProfile | null {
   if (!profile) return null
   if (Array.isArray(profile)) return profile[0] ?? null
   return profile
+}
+
+type LiveClassChatRowInput = Omit<LiveClassChatWithProfile, 'profile'> & {
+  profile?: LiveClassChatProfile | LiveClassChatProfile[] | null
 }
 
 export function formatChatMessageTime(dateString: string) {
@@ -55,7 +59,7 @@ export function formatChatMessageTime(dateString: string) {
 }
 
 export function mapLiveClassChatToMessage(
-  row: LiveClassChatWithProfile,
+  row: LiveClassChatRowInput,
 ): LiveClassChatMessage {
   const profile = resolveProfile(row.profile)
   const authorName = profile?.name?.trim() || 'Usuário'
@@ -86,9 +90,7 @@ export async function GetLiveClassChatMessages(liveClassId: string) {
 
   return {
     data:
-      (data as LiveClassChatWithProfile[] | null)?.map(
-        mapLiveClassChatToMessage,
-      ) ?? [],
+      data?.map((row) => mapLiveClassChatToMessage(row)) ?? [],
     error,
   }
 }
@@ -128,7 +130,7 @@ export async function CreateLiveClassChatMessage(
   }
 
   return {
-    data: mapLiveClassChatToMessage(data as LiveClassChatWithProfile),
+    data: mapLiveClassChatToMessage(data),
     error: null,
   }
 }

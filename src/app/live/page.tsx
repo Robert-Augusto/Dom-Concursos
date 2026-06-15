@@ -1,10 +1,12 @@
 'use client'
 
 import Image from 'next/image'
+import dynamic from 'next/dynamic'
 import { useEffect, useState } from 'react'
 import { BottomNav } from '@/components/layout/BottomNav'
 import { Sidebar } from '@/components/layout/Sidebar'
 import LiveClassChat from '@/components/shared/LiveClassChat'
+import { isValidMuxPlaybackId } from '@/components/shared/LiveMuxPlayer'
 import {
   GetScheduledLiveClasses,
   GetStartedLiveClass,
@@ -18,7 +20,23 @@ import {
   Sparkles,
 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import MuxPlayer from '@mux/mux-player-react'
+
+const LiveMuxPlayer = dynamic(
+  () => import('@/components/shared/LiveMuxPlayer'),
+  { ssr: false },
+)
+
+function LivePlayerPlaceholder({ message }: { message: string }) {
+  return (
+    <div className="flex aspect-video flex-col items-center justify-center gap-3 bg-muted/30 px-6 text-center">
+      <Radio className="h-8 w-8 text-muted-foreground" aria-hidden />
+      <p className="text-sm font-semibold text-foreground">
+        Transmissão em preparação
+      </p>
+      <p className="max-w-sm text-xs text-muted-foreground">{message}</p>
+    </div>
+  )
+}
 
 function formatLiveDate(value: string | null) {
   if (!value) return 'Data a definir'
@@ -144,7 +162,8 @@ export default function LivePage() {
     return () => clearInterval(intervalId)
   }, [])
 
-  const playbackId = activeLive?.mux_playback_id?.trim() ?? null
+  const playbackId = activeLive?.mux_playback_id ?? null
+  const canPlayLiveStream = isValidMuxPlaybackId(playbackId)
   const hasActiveLive = Boolean(activeLive)
   const showEmptyState = !isLoading && !hasActiveLive && upcomingLives.length === 0
 
@@ -182,7 +201,6 @@ export default function LivePage() {
           <div className="flex flex-col gap-8 lg:gap-10">
             {isLoading ? (
               <div className="flex flex-col gap-6">
-                <div className="aspect-video animate-pulse rounded-2xl border border-border bg-card" />
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
                   {Array.from({ length: 3 }).map((_, index) => (
                     <div
@@ -212,27 +230,10 @@ export default function LivePage() {
                 <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_min(100%,360px)] lg:items-stretch lg:gap-5">
                   <div className="flex flex-col gap-3">
                     <div className="overflow-hidden rounded-2xl border border-border bg-black shadow-[0_12px_40px_rgba(0,0,0,0.35)]">
-                      {playbackId ? (
-                        <MuxPlayer
-                          playbackId={playbackId}
-                          streamType="live"
-                          className="aspect-video w-full"
-                          accentColor="#C9A84C"
-                        />
+                      {canPlayLiveStream ? (
+                        <LiveMuxPlayer playbackId={playbackId} />
                       ) : (
-                        <div className="flex aspect-video flex-col items-center justify-center gap-3 bg-muted/30 px-6 text-center">
-                          <Radio
-                            className="h-8 w-8 text-muted-foreground"
-                            aria-hidden
-                          />
-                          <p className="text-sm font-semibold text-foreground">
-                            Transmissão em preparação
-                          </p>
-                          <p className="max-w-sm text-xs text-muted-foreground">
-                            O player será exibido assim que o sinal estiver
-                            disponível.
-                          </p>
-                        </div>
+                        <LivePlayerPlaceholder message="O player será exibido assim que o sinal estiver disponível." />
                       )}
                     </div>
 
