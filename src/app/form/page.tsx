@@ -109,7 +109,7 @@ export default function ApprovedStudentsFormPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const inputBaseClass =
-    'w-full rounded-lg border border-input bg-card px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-ring/40';
+    'w-full rounded-lg border border-input bg-primary-foreground px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-ring/40';
   const textAreaBaseClass = `${inputBaseClass} min-h-32 resize-y`;
 
   const hasErrors = useMemo(() => Object.keys(errors).length > 0, [errors]);

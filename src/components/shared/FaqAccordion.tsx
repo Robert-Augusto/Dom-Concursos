@@ -29,9 +29,6 @@ export function FaqAccordion() {
 
   return (
     <section>
-      <p className="mb-3 text-xs font-black tracking-widest text-muted-foreground uppercase">
-        PERGUNTAS FREQUENTES
-      </p>
 
       {isLoading ? (
         <div className="rounded-xl border border-border bg-card px-5 py-8 text-center">
@@ -51,7 +48,7 @@ export function FaqAccordion() {
             return (
               <div
                 key={item.id}
-                className="overflow-hidden rounded-xl border border-border bg-card transition-all duration-200"
+                className="overflow-hidden rounded-xl border border-foreground/25 bg-card transition-all duration-200"
               >
                 <button
                   type="button"

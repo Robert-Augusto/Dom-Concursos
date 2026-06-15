@@ -354,7 +354,7 @@ export default function CreatePostModal({
             onChange={(event) => setContent(event.target.value)}
             placeholder="Compartilhe algo com a comunidade..."
             rows={4}
-            className="box-border w-full min-w-0 resize-none rounded-xl border border-primary/30 bg-muted/40 px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground outline-none transition-colors focus:border-primary/50"
+            className="box-border w-full min-w-0 resize-none rounded-xl border border-primary/30 bg-primary-foreground px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground outline-none transition-colors focus:border-primary/50"
           />
 
           <input

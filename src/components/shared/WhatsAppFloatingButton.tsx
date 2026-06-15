@@ -1,6 +1,6 @@
 'use client'
 
-import { MessageCircle } from 'lucide-react'
+import { WhatsAppIcon } from '@/components/shared/WhatsAppIcon'
 
 const WHATSAPP_URL = 'https://wa.me/5511971509703'
 const WHATSAPP_MESSAGE = encodeURIComponent(
@@ -20,7 +20,7 @@ export function WhatsAppFloatingButton() {
         className="whatsapp-soft-pulse absolute inset-0 rounded-full bg-chart-2/35"
         aria-hidden
       />
-      <MessageCircle className="relative h-7 w-7" aria-hidden />
+      <WhatsAppIcon className="relative h-7 w-7" />
       <style>{`
         @keyframes whatsapp-soft-pulse {
           0%, 100% { opacity: 0.2; }

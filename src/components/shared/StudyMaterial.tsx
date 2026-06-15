@@ -25,7 +25,7 @@ import type { Questions, StudyAgentHtmlVariant, StudyMaterialsAgent } from '@/ty
 import { toast } from 'sonner'
 
 const textareaClass =
-  'w-full resize-none rounded-xl border border-border bg-background px-3 py-2.5 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-primary/50'
+  'w-full resize-none rounded-xl border border-border bg-primary-foreground px-3 py-2.5 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-primary/50'
 
 export interface StudyMaterialProps {
   subjectId: string

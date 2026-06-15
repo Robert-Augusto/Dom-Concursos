@@ -153,4 +153,10 @@
   body {
     @apply bg-background text-foreground;
   }
+
+  input:not([type='checkbox']):not([type='radio']):not([type='file']):not([type='range']):not([type='color']):not([type='hidden']):not([type='submit']):not([type='button']):not([type='reset']):not([type='image']),
+  textarea,
+  select {
+    @apply bg-primary-foreground text-foreground;
+  }
 }

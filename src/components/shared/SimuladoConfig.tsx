@@ -565,7 +565,7 @@ export default function SimuladoConfig({ onStart }: SimuladoConfigProps) {
 
                 <div
                   className={cn(
-                    'w-full rounded-full border bg-background/60 px-1.5 py-1 text-center text-[9px] leading-snug text-foreground sm:px-2.5 sm:py-1.5 sm:text-[14px]',
+                    'w-full rounded-full border bg-primary-foreground px-1.5 py-1 text-center text-[9px] leading-snug text-foreground sm:px-2.5 sm:py-1.5 sm:text-[14px]',
                     theme.badgeBorder,
                   )}
                 >
@@ -799,7 +799,7 @@ export default function SimuladoConfig({ onStart }: SimuladoConfigProps) {
                         'flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-all',
                         selected
                           ? 'border-accent bg-accent text-accent-foreground'
-                          : 'border-foreground/35 bg-background/60 group-hover:border-accent/60',
+                          : 'border-foreground/35 bg-primary-foreground group-hover:border-accent/60',
                       )}
                       aria-hidden
                     >
@@ -935,7 +935,7 @@ export default function SimuladoConfig({ onStart }: SimuladoConfigProps) {
                         'flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-all',
                         selected
                           ? 'border-chart-2 bg-chart-2 text-chart-2-foreground'
-                          : 'border-foreground/35 bg-background/60 group-hover:border-chart-2/60',
+                          : 'border-foreground/35 bg-primary-foreground group-hover:border-chart-2/60',
                       )}
                       aria-hidden
                     >

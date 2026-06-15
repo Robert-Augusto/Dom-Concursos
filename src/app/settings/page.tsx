@@ -1,11 +1,16 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
+import Image from 'next/image'
 import { BottomNav } from '@/components/layout/BottomNav'
 import { Sidebar } from '@/components/layout/Sidebar'
 import Link from 'next/link'
 import { Camera, ChevronRight, ImageOff, Lock, LogOut, Mail, Save, Star, User, ChevronLeft } from 'lucide-react'
 import { Logout, UpdatePassword } from '@/lib/auth'
+import {
+  getAuthorColorForPreview,
+  getCommunityDefaultHeadline,
+} from '@/lib/lib-community-posts'
 import {
   MAX_HEADLINE_LENGTH,
   UpdateProfileAvatar,
@@ -48,6 +53,12 @@ export default function SettingsPage() {
 
   const displayAvatarUrl =
     previewUrl ?? (avatarCleared ? null : profile?.avatar_url || null)
+
+  const previewName = name.trim() || profile?.name || 'Seu nome'
+  const previewHeadline =
+    headline.trim() || getCommunityDefaultHeadline(profile?.role)
+  const previewAvatarColor = getAuthorColorForPreview(previewName)
+  const previewInitial = previewName.charAt(0).toUpperCase()
 
   useEffect(() => {
     return () => {
@@ -445,7 +456,7 @@ export default function SettingsPage() {
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     placeholder="Seu nome"
-                    className="w-full rounded-xl border border-border bg-background py-3.5 pl-10 pr-4 text-sm text-foreground placeholder:text-muted-foreground outline-none transition-colors focus:border-accent/60"
+                    className="w-full rounded-xl border border-border bg-primary-foreground py-3.5 pl-10 pr-4 text-sm text-foreground placeholder:text-muted-foreground outline-none transition-colors focus:border-accent/60"
                   />
                 </div>
                 <div className="flex flex-col gap-2">
@@ -469,11 +480,64 @@ export default function SettingsPage() {
                     placeholder="Ex.: Concurseiro focado em tribunais"
                     rows={3}
                     maxLength={MAX_HEADLINE_LENGTH}
-                    className="w-full resize-none rounded-xl border border-border bg-background px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground outline-none transition-colors focus:border-accent/60"
+                    className="w-full resize-none rounded-xl border border-border bg-primary-foreground px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground outline-none transition-colors focus:border-accent/60"
                   />
                   <p className="text-right text-xs text-muted-foreground">
                     {headline.length}/{MAX_HEADLINE_LENGTH}
                   </p>
+                  <div className="rounded-xl border border-dashed border-border bg-muted/20 p-4">
+                    <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                      Prévia na comunidade
+                    </p>
+                    <div className="flex min-w-0 items-start gap-3">
+                      <div
+                        className="relative flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full text-sm font-black text-white"
+                        style={
+                          displayAvatarUrl
+                            ? undefined
+                            : { background: previewAvatarColor }
+                        }
+                      >
+                        {displayAvatarUrl ? (
+                          <Image
+                            src={displayAvatarUrl}
+                            alt={previewName ? `Foto de ${previewName}` : 'Foto de perfil'}
+                            fill
+                            className="object-cover"
+                            sizes="40px"
+                          />
+                        ) : (
+                          previewInitial
+                        )}
+                      </div>
+                      <div className="flex min-w-0 flex-col gap-0.5">
+                        <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                          <p className="text-sm font-black text-foreground">
+                            {previewName}
+                          </p>
+                          {profile?.role === 'admin' ? (
+                            <span className="rounded-full bg-chart-5 px-2 py-0.5 text-[10px] font-black text-white">
+                              Admin
+                            </span>
+                          ) : profile?.role === 'teacher' ? (
+                            <span className="rounded-full bg-primary px-2 py-0.5 text-[10px] font-black text-primary-foreground">
+                              Professor
+                            </span>
+                          ) : null}
+                          <p className="text-xs text-muted-foreground">agora</p>
+                        </div>
+                        <p
+                          className={`text-xs leading-snug ${
+                            headline.trim()
+                              ? 'text-muted-foreground'
+                              : 'text-muted-foreground/70 italic'
+                          }`}
+                        >
+                          {previewHeadline}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
                 </div>
                 <button
                   type="button"
@@ -508,7 +572,7 @@ export default function SettingsPage() {
                     onChange={(e) => setNewPassword(e.target.value)}
                     placeholder="Nova senha"
                     autoComplete="new-password"
-                    className="w-full rounded-xl border border-border bg-background py-3.5 pl-10 pr-4 text-sm text-foreground placeholder:text-muted-foreground outline-none transition-colors focus:border-accent/60"
+                    className="w-full rounded-xl border border-border bg-primary-foreground py-3.5 pl-10 pr-4 text-sm text-foreground placeholder:text-muted-foreground outline-none transition-colors focus:border-accent/60"
                   />
                 </div>
                 <div className="relative">
@@ -521,7 +585,7 @@ export default function SettingsPage() {
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     placeholder="Confirmar nova senha"
                     autoComplete="new-password"
-                    className="w-full rounded-xl border border-border bg-background py-3.5 pl-10 pr-4 text-sm text-foreground placeholder:text-muted-foreground outline-none transition-colors focus:border-accent/60"
+                    className="w-full rounded-xl border border-border bg-primary-foreground py-3.5 pl-10 pr-4 text-sm text-foreground placeholder:text-muted-foreground outline-none transition-colors focus:border-accent/60"
                   />
                 </div>
                 <button

@@ -306,8 +306,8 @@ export default function CommunityFeed() {
           onClick={() => setActiveFilter('Todos')}
           className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all border flex-shrink-0 ${
             activeFilter === 'Todos'
-              ? 'bg-accent text-primary-foreground'
-              : 'bg-card text-muted-foreground border-border hover:border-accent/40 hover:text-foreground'
+              ? 'bg-accent text-primary-foregroud'
+              : 'bg-card text-muted-foreground border-foreground/25 hover:border-accent/40 hover:text-foreground'
           }`}
         >
           <LayoutGrid className="h-3.5 w-3.5" />
@@ -326,7 +326,7 @@ export default function CommunityFeed() {
               className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-xs font-bold whitespace-nowrap transition-all border flex-shrink-0 ${
                 isActive
                   ? 'bg-accent text-primary-foreground'
-                  : 'bg-card text-muted-foreground border-border hover:border-accent/40 hover:text-foreground'
+                  : 'bg-card text-muted-foreground border-foreground/25 hover:border-accent/40 hover:text-foreground'
               }`}
             >
               <Icon className="h-3.5 w-3.5" />

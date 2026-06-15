@@ -10,7 +10,6 @@ import {
   ChartNoAxesCombined,
   Home,
   NotebookPen,
-  TvMinimalPlay,
   Users,
   type LucideIcon,
 } from 'lucide-react'
@@ -30,12 +29,6 @@ type NavigationItem = {
 
 const navigationItems: NavigationItem[] = [
   { label: 'Início', href: '/dashboard', icon: Home },
-  {
-    label: 'Cursos',
-    href: '/courses',
-    icon: TvMinimalPlay,
-    comingSoon: true,
-  },
   { label: 'Estudo Inteligente', href: '/study', icon: NotebookPen },
   { label: 'Simulado', href: '/simulado', icon: BookCheck },
   { label: 'Comunidade', href: '/comunity', icon: Users },

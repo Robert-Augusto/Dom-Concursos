@@ -82,11 +82,11 @@ export default function DashboardPage() {
               isAuthenticated={canAccessFeatures}
               onRequireSignup={() => setIsSignupModalOpen(true)}
             />
-            <SearchVideo
+            {/*<SearchVideo
               lessonsData={lessons}
               subjectsData={subjects}
               isAuthenticated={authChecked && isAuthenticated}
-            />
+            />*/}
           </div>
         </main>
       </div>

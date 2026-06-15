@@ -101,7 +101,7 @@ export default function ForgotPasswordPage() {
                 if (error) setError('')
                 if (isSubmitted) setIsSubmitted(false)
               }}
-              className="w-full bg-card border border-border rounded-xl py-3.5 pl-10 pr-4 text-foreground text-sm placeholder:text-muted-foreground outline-none transition-colors focus:border-primary/50"
+              className="w-full bg-primary-foreground border border-border rounded-xl py-3.5 pl-10 pr-4 text-foreground text-sm placeholder:text-muted-foreground outline-none transition-colors focus:border-primary/50"
             />
           </div>
 

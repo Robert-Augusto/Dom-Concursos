@@ -45,7 +45,7 @@ type FormMode =
   | { kind: 'edit'; subject: Subjects }
 
 const inputClass =
-  'w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-chart-5/50'
+  'w-full rounded-lg border border-border bg-primary-foreground px-3 py-2 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-chart-5/50'
 
 export function ModalSubjectPicker({
   open,

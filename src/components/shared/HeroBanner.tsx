@@ -48,7 +48,7 @@ export function HeroBanner() {
   }
 
   return (
-    <div className="relative flex w-full min-h-[260px] items-center gap-5 overflow-hidden rounded-b-2xl px-5 py-5 sm:min-h-[300px] sm:px-8 lg:rounded-2xl md:min-h-[340px] md:px-10">
+    <div className="relative flex w-full min-h-[200px] items-center gap-5 overflow-hidden rounded-b-2xl px-5 py-5 sm:min-h-[300px] sm:px-8 lg:rounded-2xl md:min-h-[340px] md:px-10">
       {heroBackgroundImages.map((imageUrl, index) => (
         <div
           key={imageUrl}
@@ -120,7 +120,7 @@ export function HeroBanner() {
         </div>
 
         <h2
-          className="font-heading text-[26px] font-black leading-[1.08] tracking-tight text-white sm:text-[34px] md:text-[48px]"
+          className="font-heading text-[22px] font-black leading-[1.08] tracking-tight text-white sm:text-[34px] md:text-[48px]"
           style={{ textShadow: '0 2px 12px rgba(0,0,0,0.4)' }}
         >
           Um pouco{' '}

@@ -6,7 +6,6 @@ import { toast } from 'sonner'
 import {
   CircleHelp,
   type LucideIcon,
-  MonitorPlay,
   Settings,
   Video,
 } from 'lucide-react'
@@ -31,14 +30,6 @@ type RedirectButtonItem = {
 }
 
 const redirectButtonItems: RedirectButtonItem[] = [
-  {
-    label: 'Cursos',
-    description: 'Aulas gravadas e trilhas alinhadas ao seu edital.',
-    href: '/courses',
-    Icon: MonitorPlay,
-    colorToken: '--color-accent',
-    comingSoon: true,
-  },
   {
     label: 'Aula ao Vivo',
     description: 'Participe das transmissões ao vivo com a equipe.',

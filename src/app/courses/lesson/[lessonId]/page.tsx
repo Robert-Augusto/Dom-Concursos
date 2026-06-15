@@ -277,7 +277,7 @@ export default function LessonPage() {
                   <textarea
                     value={notes}
                     onChange={(event) => setNotes(event.target.value)}
-                    className="min-h-[200px] w-full resize-none rounded-xl border border-border bg-card p-4 text-sm text-foreground leading-relaxed outline-none transition-colors placeholder:text-muted-foreground focus:border-primary/50"
+                    className="min-h-[200px] w-full resize-none rounded-xl border border-border bg-primary-foreground p-4 text-sm text-foreground leading-relaxed outline-none transition-colors placeholder:text-muted-foreground focus:border-primary/50"
                     placeholder="Escreva suas anotacoes sobre esta aula..."
                   />
 

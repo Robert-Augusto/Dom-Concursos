@@ -59,6 +59,10 @@ function getAuthorColor(seed: string) {
   return AUTHOR_COLORS[index]
 }
 
+export function getAuthorColorForPreview(seed: string) {
+  return getAuthorColor(seed)
+}
+
 function getAuthorHeadline(role?: ProfileRole | null) {
   switch (role) {
     case 'teacher':
@@ -68,6 +72,10 @@ function getAuthorHeadline(role?: ProfileRole | null) {
     default:
       return 'Estudante DOM Concursos'
   }
+}
+
+export function getCommunityDefaultHeadline(role?: ProfileRole | null) {
+  return getAuthorHeadline(role)
 }
 
 export function formatTimeAgo(dateString: string) {

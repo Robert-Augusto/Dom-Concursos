@@ -75,7 +75,7 @@ export function LessonRootSubjectPillFilter({
           value={subjectSearch}
           onChange={(e) => setSubjectSearch(e.target.value)}
           placeholder="Buscar matéria..."
-          className="w-full rounded-full border border-border bg-background py-2.5 pl-10 pr-4 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-primary/50"
+          className="w-full rounded-full border border-border bg-primary-foreground py-2.5 pl-10 pr-4 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-primary/50"
         />
       </div>
 

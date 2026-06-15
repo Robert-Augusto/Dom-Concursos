@@ -188,7 +188,7 @@ export function ModalEditQuestion({
               onChange={(e) => setQuestionText(e.target.value)}
               rows={4}
               disabled={saving}
-              className="resize-y rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-primary/50 disabled:opacity-60"
+              className="resize-y rounded-lg border border-border bg-primary-foreground px-3 py-2 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-primary/50 disabled:opacity-60"
               placeholder="Texto da questão"
             />
           </label>
@@ -216,7 +216,7 @@ export function ModalEditQuestion({
                     onChange={(e) => setOption(key, e.target.value)}
                     rows={2}
                     disabled={saving}
-                    className="resize-y rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-primary/50 disabled:opacity-60"
+                    className="resize-y rounded-lg border border-border bg-primary-foreground px-3 py-2 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-primary/50 disabled:opacity-60"
                     placeholder={`Texto da alternativa ${key}`}
                   />
                 </label>
@@ -235,7 +235,7 @@ export function ModalEditQuestion({
                   setCorrectOption(e.target.value as OptionKey)
                 }
                 disabled={saving}
-                className="rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none transition-colors focus:border-primary/50 disabled:opacity-60"
+                className="rounded-lg border border-border bg-primary-foreground px-3 py-2 text-sm text-foreground outline-none transition-colors focus:border-primary/50 disabled:opacity-60"
               >
                 {OPTION_KEYS.map((k) => (
                   <option key={k} value={k}>
@@ -253,7 +253,7 @@ export function ModalEditQuestion({
                 value={bancaId}
                 onChange={(e) => setBancaId(e.target.value)}
                 disabled={saving || bancas.length === 0}
-                className="rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none transition-colors focus:border-primary/50 disabled:opacity-60"
+                className="rounded-lg border border-border bg-primary-foreground px-3 py-2 text-sm text-foreground outline-none transition-colors focus:border-primary/50 disabled:opacity-60"
               >
                 {bancas.length === 0 ? (
                   <option value="">Nenhuma banca disponível</option>
@@ -277,7 +277,7 @@ export function ModalEditQuestion({
                 value={ano}
                 onChange={(e) => setAno(e.target.value)}
                 disabled={saving}
-                className="rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none transition-colors focus:border-primary/50 disabled:opacity-60"
+                className="rounded-lg border border-border bg-primary-foreground px-3 py-2 text-sm text-foreground outline-none transition-colors focus:border-primary/50 disabled:opacity-60"
               >
                 {Anos.map((k) => (
                   <option key={k} value={k}>
@@ -296,7 +296,7 @@ export function ModalEditQuestion({
                 value={instituicao}
                 onChange={(e) => setInstituicao(e.target.value)}
                 disabled={saving}
-                className="rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-primary/50 disabled:opacity-60"
+                className="rounded-lg border border-border bg-primary-foreground px-3 py-2 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-primary/50 disabled:opacity-60"
                 placeholder="Ex.: TRT, TJ, MP"
               />
             </label>
@@ -337,7 +337,7 @@ export function ModalEditQuestion({
               onChange={(e) => setExplanation(e.target.value)}
               rows={5}
               disabled={saving}
-              className="resize-y rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-primary/50 disabled:opacity-60"
+              className="resize-y rounded-lg border border-border bg-primary-foreground px-3 py-2 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-primary/50 disabled:opacity-60"
               placeholder="Justificativa / comentário da questão"
             />
           </label>

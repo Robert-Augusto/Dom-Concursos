@@ -781,7 +781,7 @@ export default function CommunityPost({
                             setEditingCommentText(event.target.value)
                           }
                           rows={3}
-                          className="w-full min-w-0 resize-none rounded-xl border border-border bg-card px-4 py-3 text-sm text-foreground outline-none transition-colors focus:border-accent/50"
+                          className="w-full min-w-0 resize-none rounded-xl border border-border bg-primary-foreground px-4 py-3 text-sm text-foreground outline-none transition-colors focus:border-accent/50"
                         />
 
                         <div className="flex items-center justify-end gap-2">
@@ -829,7 +829,7 @@ export default function CommunityPost({
               onChange={(event) => setNewCommentText(event.target.value)}
               placeholder="Escreva um comentário..."
               rows={3}
-              className="w-full min-w-0 resize-none rounded-xl border border-border bg-card px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground outline-none transition-colors focus:border-accent/50"
+              className="w-full min-w-0 resize-none rounded-xl border border-border bg-primary-foreground px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground outline-none transition-colors focus:border-accent/50"
             />
 
             <button

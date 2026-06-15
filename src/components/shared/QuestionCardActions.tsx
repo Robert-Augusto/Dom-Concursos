@@ -131,7 +131,7 @@ export function QuestionCardActions({
               onChange={(e) => setReportText(e.target.value)}
               placeholder="Descreva o problema com esta questão..."
               rows={3}
-              className="w-full resize-none rounded-xl border border-amber-500/30 bg-background px-3 py-2.5 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-amber-500/60"
+              className="w-full resize-none rounded-xl border border-amber-500/30 bg-primary-foreground px-3 py-2.5 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-amber-500/60"
             />
             <button
               type="button"

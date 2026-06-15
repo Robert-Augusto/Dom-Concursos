@@ -435,7 +435,7 @@ export function SearchVideo({
                 ? 'Carregando anotação...'
                 : 'Anote os pontos principais desta aula...'
             }
-            className="w-full resize-y rounded-xl border border-border bg-background px-3 py-2.5 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-primary/50 disabled:cursor-wait disabled:opacity-60"
+            className="w-full resize-y rounded-xl border border-border bg-primary-foreground px-3 py-2.5 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-primary/50 disabled:cursor-wait disabled:opacity-60"
           />
           <div className="mt-3 flex justify-end">
             <button
@@ -516,7 +516,7 @@ export function SearchVideo({
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Pesquise aulas, questões..."
-          className="w-full rounded-full border border-border bg-card py-3 pl-11 pr-5 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-primary/50"
+          className="w-full rounded-full border border-border bg-primary-foreground py-3 pl-11 pr-5 text-sm text-foreground outline-none transition-colors placeholder:text-muted-foreground focus:border-primary/50"
         />
       </div>
 
