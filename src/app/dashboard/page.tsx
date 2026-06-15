@@ -73,7 +73,7 @@ export default function DashboardPage() {
         {isAuthenticated ? <Header /> : null}
         <main className="mx-auto max-w-[1210px] px-0 pb-6 pt-0 lg:p-6">
           <HeroBanner />
-          <div className="mt-3 flex flex-col gap-5 px-6 lg:px-0">
+          <div className="mt-5 flex flex-col gap-5 px-6 lg:px-0">
             <RedirectButtonsIcon
               isAuthenticated={canAccessFeatures}
               onRequireSignup={() => setIsSignupModalOpen(true)}
