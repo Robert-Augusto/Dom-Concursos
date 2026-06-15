@@ -352,8 +352,12 @@
 | `title` | `text` |  Nullable |
 | `scheduled_at` | `timestamptz` |  Nullable |
 | `thumbnail_url` | `text` |  Nullable |
-| `video_url` | `text` |  Nullable |
 | `status` | `LIVE_CLASSES_STATUS` |  Nullable |
+| `mux_stream_id` | `text` |  Nullable |
+| `mux_stream_key` | `text` |  Nullable |
+| `mux_rtmp_url` | `text` |  Nullable |
+| `mux_playback_id` | `text` |  Nullable |
+| `mux_asset_id` | `text` |  Nullable |
 
 ## Table `faqs`
 
@@ -365,3 +369,16 @@
 | `created_at` | `timestamptz` |  |
 | `question` | `text` |  Nullable |
 | `answer` | `text` |  Nullable |
+
+## Table `live_classes_chat`
+
+### Columns
+
+| Name | Type | Constraints |
+|------|------|-------------|
+| `id` | `int8` | Primary Identity |
+| `created_at` | `timestamptz` |  |
+| `live_classes_id` | `int8` |  Nullable |
+| `profile_id` | `uuid` |  Nullable |
+| `message` | `text` |  Nullable |
+
