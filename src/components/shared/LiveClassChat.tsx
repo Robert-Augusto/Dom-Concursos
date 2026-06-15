@@ -9,7 +9,7 @@ import {
   useState,
   type FormEvent,
 } from 'react'
-import { Loader2, MessageCircle, Send, Trash2, Users } from 'lucide-react'
+import { Loader2, MessageCircle, Send, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { useProfile } from '@/context/ProfileContext'
