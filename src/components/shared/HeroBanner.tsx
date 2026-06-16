@@ -120,7 +120,7 @@ export function HeroBanner() {
         </div>
 
         <h2
-          className="font-heading text-[22px] font-black leading-[1.08] tracking-tight text-white sm:text-[34px] md:text-[48px]"
+          className="font-heading text-[20px] font-black leading-[1.08] tracking-tight text-white sm:text-[34px] md:text-[48px]"
           style={{ textShadow: '0 2px 12px rgba(0,0,0,0.4)' }}
         >
           Um pouco{' '}
