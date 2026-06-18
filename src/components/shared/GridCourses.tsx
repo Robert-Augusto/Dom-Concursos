@@ -6,7 +6,7 @@ import type { AccessLevel, Courses } from '@/types'
 import { BookOpen, ChevronsRight, Loader2 } from 'lucide-react'
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useState, type ReactNode } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
 
@@ -38,6 +38,37 @@ function accessLevelBadgeClass(level: AccessLevel | null): string {
 
 function getCourseTitle(course: Courses): string {
   return course.title?.trim() || DEFAULT_COURSE_TITLE
+}
+
+const COURSE_CARD_WIDTH = '272px'
+
+type CourseScrollRowProps = {
+  children: ReactNode
+  showPeekHint?: boolean
+}
+
+function CourseScrollRow({
+  children,
+  showPeekHint = false,
+}: CourseScrollRowProps) {
+  return (
+    <div className="relative">
+      <div
+        className="flex gap-4 overflow-x-auto pb-2 scrollbar-none"
+        style={{ scrollPaddingRight: '1rem' }}
+      >
+        {children}
+      </div>
+      {showPeekHint ? (
+        <div
+          className="pointer-events-none absolute right-3 top-1/2 z-20 flex -translate-y-1/2 items-center justify-center rounded-full border border-border bg-card p-1.5 shadow-sm"
+          aria-hidden
+        >
+          <ChevronsRight className="h-4 w-4 text-accent" />
+        </div>
+      ) : null}
+    </div>
+  )
 }
 
 export default function GridCourses() {
@@ -121,8 +152,8 @@ export default function GridCourses() {
         key={course.id}
         type="button"
         onClick={() => router.push(`/courses/${course.id}`)}
-        className="group flex-shrink-0 snap-start overflow-hidden rounded-2xl border border-border bg-card text-left transition-colors hover:border-primary/30"
-        style={{ width: '320px', minWidth: '270px' }}
+        className="group flex-shrink-0 overflow-hidden rounded-2xl border border-border bg-card text-left transition-colors hover:border-primary/30"
+        style={{ width: COURSE_CARD_WIDTH, minWidth: COURSE_CARD_WIDTH }}
       >
         <div
           className="relative w-full overflow-hidden bg-muted"
@@ -181,14 +212,14 @@ export default function GridCourses() {
           </p>
         </div>
 
-        <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-none snap-x snap-mandatory">
+        <CourseScrollRow>
           <div
-            className="flex items-center justify-center rounded-2xl border border-dashed border-border bg-muted/30 px-6 py-10 text-xs text-muted-foreground"
-            style={{ width: '320px', minWidth: '270px' }}
+            className="flex shrink-0 items-center justify-center rounded-2xl border border-dashed border-border bg-muted/30 px-6 py-10 text-xs text-muted-foreground"
+            style={{ width: COURSE_CARD_WIDTH, minWidth: COURSE_CARD_WIDTH }}
           >
             Nenhum curso nesta seção
           </div>
-        </div>
+        </CourseScrollRow>
       </section>
 
       <section className="flex flex-col gap-4">
@@ -207,20 +238,20 @@ export default function GridCourses() {
           </div>
         ) : (
           <>
-            <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-none snap-x snap-mandatory">
+            <CourseScrollRow showPeekHint={courses.length > 1}>
               {courses.length > 0 ? (
                 courses.map((course) => renderCourseCard(course))
               ) : (
                 <div
-                  className="flex items-center justify-center rounded-2xl border border-dashed border-border bg-muted/30 px-6 py-10 text-xs text-muted-foreground"
-                  style={{ width: '320px', minWidth: '270px' }}
+                  className="flex shrink-0 items-center justify-center rounded-2xl border border-dashed border-border bg-muted/30 px-6 py-10 text-xs text-muted-foreground"
+                  style={{ width: COURSE_CARD_WIDTH, minWidth: COURSE_CARD_WIDTH }}
                 >
                   Nenhum curso nesta seção
                 </div>
               )}
-            </div>
+            </CourseScrollRow>
 
-            {courses.length > 0 ? renderScrollHint() : null}
+            {courses.length > 1 ? renderScrollHint() : null}
           </>
         )}
       </section>

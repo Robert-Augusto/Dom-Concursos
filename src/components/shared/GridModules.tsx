@@ -9,6 +9,7 @@ import {
   ReorderCourseSections,
   ReorderSectionModules,
   UpdateCourseModuleThumbnail,
+  UpdateCourseSectionTitle,
 } from '@/lib/lib-courses-sections'
 import {
   DeleteCourseThumbnail,
@@ -166,6 +167,9 @@ export default function GridModules({ courseId }: GridModulesProps) {
   const [reorderingModuleId, setReorderingModuleId] = useState<number | null>(
     null,
   )
+  const [editingSectionId, setEditingSectionId] = useState<number | null>(null)
+  const [draftSectionTitle, setDraftSectionTitle] = useState('')
+  const [savingSectionId, setSavingSectionId] = useState<number | null>(null)
   const silentReloadTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
     null,
   )
@@ -524,6 +528,47 @@ export default function GridModules({ courseId }: GridModulesProps) {
     }
 
     toast.success('Módulo excluído')
+  }
+
+  function startEditSectionTitle(section: SectionItem) {
+    setEditingSectionId(section.id)
+    setDraftSectionTitle(section.title)
+  }
+
+  function cancelEditSectionTitle() {
+    setEditingSectionId(null)
+    setDraftSectionTitle('')
+  }
+
+  async function saveSectionTitle(sectionId: number) {
+    const trimmed = draftSectionTitle.trim()
+
+    if (!trimmed) {
+      toast.error('Informe o nome da seção')
+      return
+    }
+
+    setSavingSectionId(sectionId)
+
+    const { data, error } = await UpdateCourseSectionTitle(sectionId, trimmed)
+
+    setSavingSectionId(null)
+
+    if (error) {
+      toast.error(error.message)
+      return
+    }
+
+    const nextTitle = data?.title?.trim() || trimmed
+
+    setSections((prev) =>
+      prev.map((section) =>
+        section.id === sectionId ? { ...section, title: nextTitle } : section,
+      ),
+    )
+    setEditingSectionId(null)
+    setDraftSectionTitle('')
+    toast.success('Seção atualizada')
   }
 
   async function handleMoveSection(
@@ -961,9 +1006,67 @@ export default function GridModules({ courseId }: GridModulesProps) {
                   </button>
                 </div>
               ) : null}
-              <h2 className="font-heading text-lg font-semibold text-foreground">
-                {section.title}
-              </h2>
+              {isAdmin && editingSectionId === section.id ? (
+                <div className="flex min-w-0 flex-1 flex-col gap-2 sm:flex-row sm:items-center">
+                  <input
+                    type="text"
+                    value={draftSectionTitle}
+                    onChange={(e) => setDraftSectionTitle(e.target.value)}
+                    className="min-w-0 flex-1 rounded-lg border border-border bg-background px-3 py-2 text-sm font-semibold text-foreground"
+                    disabled={savingSectionId === section.id}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault()
+                        void saveSectionTitle(section.id)
+                      }
+                      if (e.key === 'Escape') cancelEditSectionTitle()
+                    }}
+                  />
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      className="inline-flex items-center justify-center gap-1 rounded-lg bg-primary px-3 py-2 text-[10px] font-bold text-primary-foreground disabled:opacity-50"
+                      onClick={() => void saveSectionTitle(section.id)}
+                      disabled={savingSectionId === section.id}
+                    >
+                      {savingSectionId === section.id ? (
+                        <Loader2 className="h-3 w-3 animate-spin" />
+                      ) : (
+                        <Save className="h-3 w-3" />
+                      )}
+                      Salvar
+                    </button>
+                    <button
+                      type="button"
+                      className="inline-flex items-center justify-center rounded-lg border border-border px-2 py-2 text-muted-foreground disabled:opacity-50"
+                      onClick={cancelEditSectionTitle}
+                      disabled={savingSectionId === section.id}
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex min-w-0 items-center gap-2">
+                  <h2 className="font-heading text-lg font-semibold text-foreground">
+                    {section.title}
+                  </h2>
+                  {isAdmin ? (
+                    <button
+                      type="button"
+                      onClick={() => startEditSectionTitle(section)}
+                      disabled={
+                        savingSectionId === section.id ||
+                        reorderingSectionId !== null
+                      }
+                      className="inline-flex shrink-0 items-center justify-center rounded-lg border border-border p-1.5 text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground disabled:opacity-50"
+                      aria-label="Editar nome da seção"
+                    >
+                      <Pencil className="h-3.5 w-3.5" />
+                    </button>
+                  ) : null}
+                </div>
+              )}
             </div>
           </div>
 

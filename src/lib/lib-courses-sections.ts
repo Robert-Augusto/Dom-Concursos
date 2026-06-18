@@ -139,6 +139,21 @@ export async function CreateCourseSection(
   return { data, error }
 }
 
+export async function UpdateCourseSectionTitle(
+  sectionId: number,
+  title: string,
+) {
+  const supabase = createClient()
+  const { data, error } = await supabase
+    .from('courses_sections')
+    .update({ title: title.trim() })
+    .eq('id', sectionId)
+    .select('*')
+    .single()
+
+  return { data, error }
+}
+
 export async function CreateCourseModule(
   sectionId: number,
   thumbnailUrl: string,
