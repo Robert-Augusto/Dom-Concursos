@@ -267,7 +267,7 @@ export function SearchVideo({
         setExistingNoteId(null)
       } else if (noteResult.data) {
         setNoteContent(noteResult.data.content ?? '')
-        setExistingNoteId(noteResult.data.id)
+        setExistingNoteId(String(noteResult.data.id))
       } else {
         setNoteContent('')
         setExistingNoteId(null)
