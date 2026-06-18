@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from "next/navigation"
 import { createClient } from '@/lib/supabase/client'
 import { ModalSignup } from '@/components/shared/ModalSignup'
+import { ChevronRight } from 'lucide-react'
 
 const heroBackgroundImages = [
   'https://tzrcebhmkivfflfosstq.supabase.co/storage/v1/object/public/lesson_thumbnails/banner-images/hero-administrativo.jpg',
@@ -146,45 +147,47 @@ export function HeroBanner() {
         </p>
 
         <div className="mt-2 flex items-center gap-3.5">
-          <button
-            onClick={handleStartNow}
-            type="button"
-            className="relative inline-flex items-center gap-1.5 rounded-full px-4 py-1.5 text-[11px] font-black tracking-wide sm:gap-2 sm:px-5 sm:py-2 sm:text-[12px] md:px-6 md:py-2.5 md:text-[14px]"
-            style={{
-              background: 'linear-gradient(90deg, #C9A84C, #DDA83A)',
-              color: '#0B1220',
-              boxShadow:
-                '0 4px 14px rgba(212,178,84,0.35), inset 0 1px 0 rgba(255,255,255,0.4)',
-            }}
+        <button
+          onClick={handleStartNow}
+          type="button"
+          className="relative inline-flex items-center gap-1.5 rounded-full px-4 py-1.5 text-[11px] font-black tracking-wide sm:gap-2 sm:px-5 sm:py-2 sm:text-[12px] md:px-6 md:py-2.5 md:text-[14px]"
+          style={{
+            background: 'linear-gradient(90deg, #C9A84C, #DDA83A)',
+            color: '#0B1220',
+            boxShadow: '0 4px 14px rgba(212,178,84,0.35), inset 0 1px 0 rgba(255,255,255,0.4)',
+          }}
+        >
+          <span className="flex items-center gap-1 whitespace-nowrap">
+            Comece por aqui
+            <ChevronRight className="h-5 w-5" />
+          </span>
+          <svg
+            viewBox="0 0 64 64"
+            xmlns="http://www.w3.org/2000/svg"
+            className="sp-cta-tap h-[22px] w-[22px] sm:h-[26px] sm:w-[26px]"
           >
-            <span>Começar agora</span>
-            <svg
-              viewBox="0 0 64 64"
-              xmlns="http://www.w3.org/2000/svg"
-              className="sp-cta-tap h-[22px] w-[22px] sm:h-[26px] sm:w-[26px]"
-            >
-              <g stroke="#ffffff" strokeWidth="3.2" strokeLinecap="round" fill="none">
-                <path d="M26 4 L26 11" />
-                <path d="M14 8 L18 14" />
-                <path d="M38 8 L34 14" />
-                <path d="M8 18 L14 21" />
-                <path d="M44 18 L38 21" />
-              </g>
-              <path
-                d="M22 20 C22 17.8 23.8 16 26 16 C28.2 16 30 17.8 30 20 
-                 L30 34 L30 30 C30 28.3 31.3 27 33 27 C34.7 27 36 28.3 36 30 
-                 L36 33 C36 31.3 37.3 30 39 30 C40.7 30 42 31.3 42 33 
-                 L42 36 C42 34.5 43.1 33.4 44.5 33.4 C45.9 33.4 47 34.5 47 36 
-                 L47 44 C47 52 41 58 33 58 L30 58 C26 58 23 56.5 20.5 53.8 
-                 L11 43 C9.6 41.4 9.8 38.9 11.5 37.6 C13 36.4 15.2 36.6 16.5 38 
-                 L22 44 Z"
-                fill="#ffffff"
-                stroke="#0B1220"
-                strokeWidth="2.2"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </button>
+            <g stroke="#ffffff" strokeWidth="3.2" strokeLinecap="round" fill="none">
+              <path d="M26 4 L26 11" />
+              <path d="M14 8 L18 14" />
+              <path d="M38 8 L34 14" />
+              <path d="M8 18 L14 21" />
+              <path d="M44 18 L38 21" />
+            </g>
+            <path
+              d="M22 20 C22 17.8 23.8 16 26 16 C28.2 16 30 17.8 30 20 
+              L30 34 L30 30 C30 28.3 31.3 27 33 27 C34.7 27 36 28.3 36 30 
+              L36 33 C36 31.3 37.3 30 39 30 C40.7 30 42 31.3 42 33 
+              L42 36 C42 34.5 43.1 33.4 44.5 33.4 C45.9 33.4 47 34.5 47 36 
+              L47 44 C47 52 41 58 33 58 L30 58 C26 58 23 56.5 20.5 53.8 
+              L11 43 C9.6 41.4 9.8 38.9 11.5 37.6 C13 36.4 15.2 36.6 16.5 38 
+              L22 44 Z"
+              fill="#ffffff"
+              stroke="#0B1220"
+              strokeWidth="2.2"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </button>
 
           <p
             className="text-[12px] font-bold tracking-widest md:text-[13px]"

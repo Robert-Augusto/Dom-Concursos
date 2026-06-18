@@ -26,13 +26,14 @@
 | `description` | `text` |  Nullable |
 | `video_type` | `LESSONS_TYPE` |  Nullable |
 | `video_url` | `text` |  Nullable |
-| `duration_seconds` | `numeric` |  Nullable |
+| `duration_seconds` | `text` |  Nullable |
 | `access_level` | `USER_ACCESS_LEVEL` |  Nullable |
 | `order` | `numeric` |  Nullable |
 | `is_published` | `bool` |  Nullable |
 | `is_searchable` | `bool` |  Nullable |
 | `subject_id` | `int8` |  Nullable |
 | `thumbnail` | `text` |  Nullable |
+| `courses_modules_id` | `int8` |  Nullable |
 
 ## Table `subjects`
 
@@ -266,6 +267,7 @@
 | `lessons_id` | `int8` |  Nullable |
 | `completed` | `bool` |  Nullable |
 | `saved_for_review` | `bool` |  Nullable |
+| `last_watched_at` | `timestamptz` |  Nullable |
 
 ## Table `lessons_materials`
 
@@ -352,8 +354,13 @@
 | `title` | `text` |  Nullable |
 | `scheduled_at` | `timestamptz` |  Nullable |
 | `thumbnail_url` | `text` |  Nullable |
-| `video_url` | `text` |  Nullable |
 | `status` | `LIVE_CLASSES_STATUS` |  Nullable |
+| `mux_stream_id` | `text` |  Nullable |
+| `mux_stream_key` | `text` |  Nullable |
+| `mux_rtmp_url` | `text` |  Nullable |
+| `mux_playback_id` | `text` |  Nullable |
+| `mux_asset_id` | `text` |  Nullable |
+| `video_url` | `text` |  Nullable |
 
 ## Table `faqs`
 
@@ -365,3 +372,83 @@
 | `created_at` | `timestamptz` |  |
 | `question` | `text` |  Nullable |
 | `answer` | `text` |  Nullable |
+
+## Table `live_classes_chat`
+
+### Columns
+
+| Name | Type | Constraints |
+|------|------|-------------|
+| `id` | `int8` | Primary Identity |
+| `created_at` | `timestamptz` |  |
+| `live_classes_id` | `int8` |  Nullable |
+| `profile_id` | `uuid` |  Nullable |
+| `message` | `text` |  Nullable |
+
+## Table `courses`
+
+### Columns
+
+| Name | Type | Constraints |
+|------|------|-------------|
+| `id` | `int8` | Primary Identity |
+| `created_at` | `timestamptz` |  |
+| `title` | `text` |  Nullable |
+| `description` | `text` |  Nullable |
+| `access_level` | `USER_ACCESS_LEVEL` |  Nullable |
+| `thumbnail_url` | `text` |  Nullable |
+| `is_published` | `bool` |  Nullable |
+
+## Table `courses_purchases`
+
+### Columns
+
+| Name | Type | Constraints |
+|------|------|-------------|
+| `id` | `int8` | Primary Identity |
+| `created_at` | `timestamptz` |  |
+| `courses_id` | `int8` |  Nullable |
+| `buyer_email` | `text` |  Nullable |
+| `profile_id` | `uuid` |  Nullable |
+| `stripe_session_id` | `text` |  Nullable |
+| `stripe_payment_intent_id` | `text` |  Nullable |
+| `status` | `text` |  Nullable |
+| `checkout_token` | `text` |  Nullable |
+
+## Table `courses_enrollments`
+
+### Columns
+
+| Name | Type | Constraints |
+|------|------|-------------|
+| `id` | `int8` | Primary Identity |
+| `created_at` | `timestamptz` |  |
+| `profile_id` | `uuid` |  Nullable |
+| `courses_id` | `int8` |  Nullable |
+
+## Table `courses_sections`
+
+### Columns
+
+| Name | Type | Constraints |
+|------|------|-------------|
+| `id` | `int8` | Primary Identity |
+| `created_at` | `timestamptz` |  |
+| `courses_id` | `int8` |  Nullable |
+| `title` | `text` |  Nullable |
+| `order` | `numeric` |  Nullable |
+
+## Table `courses_modules`
+
+### Columns
+
+| Name | Type | Constraints |
+|------|------|-------------|
+| `id` | `int8` | Primary Identity |
+| `created_at` | `timestamptz` |  |
+| `courses_sections_id` | `int8` |  Nullable |
+| `title` | `text` |  Nullable |
+| `order` | `numeric` |  Nullable |
+| `thumbnail_url` | `text` |  Nullable |
+| `is_published` | `bool` |  Nullable |
+

@@ -1,301 +1,228 @@
 'use client'
 
-import { ChevronsRight, Download, FileText } from 'lucide-react'
+import { useProfile } from '@/context/ProfileContext'
+import { DEFAULT_COURSE_TITLE, GetCourses } from '@/lib/lib-courses'
+import type { AccessLevel, Courses } from '@/types'
+import { BookOpen, ChevronsRight, Loader2 } from 'lucide-react'
+import Image from 'next/image'
 import { useRouter } from 'next/navigation'
+import { useCallback, useEffect, useState } from 'react'
+import { createClient } from '@/lib/supabase/client'
+import { toast } from 'sonner'
 
-type CourseItem = {
-  emoji: string
-  title: string
-  subject: string
-  lessons: string
+function accessLevelLabel(level: AccessLevel | null): string {
+  switch (level) {
+    case 'free':
+      return 'Gratuito'
+    case 'plus':
+      return 'Plus'
+    case 'premium':
+      return 'Premium'
+    default:
+      return 'Sem acesso'
+  }
 }
 
-type MaterialItem = {
-  title: string
-  size: string
-  access: 'free' | 'premium'
+function accessLevelBadgeClass(level: AccessLevel | null): string {
+  switch (level) {
+    case 'free':
+      return 'bg-chart-2/20 text-chart-2'
+    case 'plus':
+      return 'bg-accent/20 text-accent'
+    case 'premium':
+      return 'bg-primary/20 text-primary'
+    default:
+      return 'bg-muted text-muted-foreground'
+  }
 }
 
-const freeCourses: CourseItem[] = [
-  {
-    emoji: '⚖️',
-    title: 'Direito Constitucional - Fundamentos',
-    subject: 'Direito Constitucional',
-    lessons: '32 aulas',
-  },
-  {
-    emoji: '📖',
-    title: 'Portugues para Concursos - Do Zero',
-    subject: 'Lingua Portuguesa',
-    lessons: '28 aulas',
-  },
-  {
-    emoji: '🧩',
-    title: 'Raciocinio Logico - Iniciante',
-    subject: 'Raciocinio Logico',
-    lessons: '20 aulas',
-  },
-]
-
-const premiumCourses: CourseItem[] = [
-  {
-    emoji: '🏥',
-    title: 'Legislacao do SUS - Completo',
-    subject: 'Legislacao SUS',
-    lessons: '20 aulas',
-  },
-  {
-    emoji: '💻',
-    title: 'Nocoes de Informatica - Todas as Bancas',
-    subject: 'Informatica',
-    lessons: '18 aulas',
-  },
-  {
-    emoji: '📐',
-    title: 'Matematica para Concursos - CESPE/FCC',
-    subject: 'Matematica',
-    lessons: '36 aulas',
-  },
-]
-
-const materials: MaterialItem[] = [
-  {
-    title: 'Apostila Legislacao do SUS 2025',
-    size: 'PDF - 3.2 MB',
-    access: 'free',
-  },
-  {
-    title: '1000 Questoes CESPE Comentadas',
-    size: 'PDF - 8.7 MB',
-    access: 'premium',
-  },
-  {
-    title: 'Resumo Direito Constitucional',
-    size: 'PDF - 1.8 MB',
-    access: 'free',
-  },
-]
+function getCourseTitle(course: Courses): string {
+  return course.title?.trim() || DEFAULT_COURSE_TITLE
+}
 
 export default function GridCourses() {
-    const router = useRouter()
+  const router = useRouter()
+  const { loading: profileLoading } = useProfile()
+
+  const [courses, setCourses] = useState<Courses[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+
+  const loadCourses = useCallback(async (options?: { silent?: boolean }) => {
+    if (profileLoading) return
+
+    if (!options?.silent) setIsLoading(true)
+    const { data, error } = await GetCourses()
+
+    if (error) {
+      if (!options?.silent) toast.error(error.message)
+      setCourses([])
+    } else {
+      setCourses(
+        data.filter(
+          (course) =>
+            course.is_published &&
+            (course.access_level === 'plus' || course.access_level === 'premium'),
+        ),
+      )
+    }
+
+    if (!options?.silent) setIsLoading(false)
+  }, [profileLoading])
+
+  useEffect(() => {
+    void loadCourses()
+  }, [loadCourses])
+
+  useEffect(() => {
+    if (profileLoading) return
+
+    const supabase = createClient()
+    const channel = supabase
+      .channel('grid_courses')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'courses' },
+        () => {
+          void loadCourses({ silent: true })
+        },
+      )
+      .subscribe()
+
+    return () => {
+      void supabase.removeChannel(channel)
+    }
+  }, [loadCourses, profileLoading])
+
+  function renderScrollHint() {
+    return (
+      <div className="flex flex-col items-center gap-1 pt-1">
+        <div className="flex items-center justify-center gap-1.5">
+          <div className="h-1 w-6 rounded-full bg-primary" />
+          <div className="h-1 w-3 rounded-full bg-muted" />
+          <div className="h-1 w-3 rounded-full bg-muted" />
+        </div>
+        <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
+          <ChevronsRight className="h-3.5 w-3.5 shrink-0 text-accent" />
+          <span>Deslize para ver mais cursos</span>
+        </div>
+      </div>
+    )
+  }
+
+  function renderCourseCard(course: Courses) {
+    const title = getCourseTitle(course)
+    const thumbnailFallbackClass =
+      course.access_level === 'free'
+        ? 'bg-gradient-to-br from-accent/30 to-background'
+        : 'bg-gradient-to-br from-primary/25 to-background'
+
+    return (
+      <button
+        key={course.id}
+        type="button"
+        onClick={() => router.push(`/courses/${course.id}`)}
+        className="group flex-shrink-0 snap-start overflow-hidden rounded-2xl border border-border bg-card text-left transition-colors hover:border-primary/30"
+        style={{ width: '320px', minWidth: '270px' }}
+      >
+        <div
+          className="relative w-full overflow-hidden bg-muted"
+          style={{ height: '180px' }}
+        >
+          {course.thumbnail_url ? (
+            <Image
+              src={course.thumbnail_url}
+              alt={title}
+              fill
+              className="object-cover"
+            />
+          ) : (
+            <>
+              <div className={`absolute inset-0 ${thumbnailFallbackClass}`} />
+              <div className="absolute inset-0 flex items-center justify-center">
+                <BookOpen className="h-12 w-12 text-muted-foreground/50" />
+              </div>
+            </>
+          )}
+          <span
+            className={`absolute top-2 left-2 rounded-full px-2 py-0.5 text-[9px] font-black uppercase ${accessLevelBadgeClass(course.access_level)}`}
+          >
+            {accessLevelLabel(course.access_level)}
+          </span>
+        </div>
+
+        <div className="space-y-2 p-4">
+          <h3 className="line-clamp-2 font-heading text-sm font-black leading-snug text-foreground">
+            {title}
+          </h3>
+
+          <div>
+            <div className="mb-1 flex justify-between text-[10px] text-muted-foreground">
+              <span>Progresso</span>
+              <span>0%</span>
+            </div>
+            <div className="h-1.5 overflow-hidden rounded-full bg-muted">
+              <div className="h-full w-0 rounded-full bg-chart-2" />
+            </div>
+          </div>
+        </div>
+      </button>
+    )
+  }
 
   return (
     <div className="flex flex-col gap-10">
-      {/* Section 1 - Cursos Gratuitos */}
       <section className="flex flex-col gap-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="font-heading font-black text-lg text-foreground">
-              Cursos Gratuitos
-            </h2>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              Acesso livre para todos os alunos
-            </p>
-          </div>
-        </div>
-        
-        <div className="flex gap-4 overflow-x-auto scrollbar-none snap-x snap-mandatory pb-2">
-          {freeCourses.map((course) => (
-            <div
-              key={course.title}
-              className="group bg-card rounded-2xl overflow-hidden border border-border hover:border-primary/30 transition-colors cursor-pointer"
-              style={{ width: '320px', minWidth: '270px' }}
-              onClick={() => router.push('/courses/xxx')}
-            >
-              <div 
-                className="relative h-36 w-full bg-muted overflow-hidden"
-                style={{ height: '180px' }}
-              >
-                <div
-                  className="absolute inset-0"
-                  style={{
-                    background: 'linear-gradient(135deg, #0d2a40, #1a4060)',
-                  }}
-                />
-                <div className="absolute inset-0 flex items-center justify-center text-4xl">
-                  {course.emoji}
-                </div>
-                <span className="absolute top-2 left-2 rounded-full px-2 py-0.5 text-[9px] font-black uppercase bg-chart-2/20 text-chart-2">
-                  Gratuito
-                </span>
-                <span className="absolute bottom-2 right-2 bg-black/70 text-white text-[10px] rounded px-2 py-0.5">
-                  {course.lessons}
-                </span>
-              </div>
-
-              <div className="p-4 space-y-2">
-                <h3 className="text-sm font-black text-foreground font-heading line-clamp-2 leading-snug">
-                  {course.title}
-                </h3>
-
-                <div>
-                  <div className="flex justify-between text-[10px] text-muted-foreground mb-1">
-                    <span>Progresso</span>
-                    <span>0%</span>
-                  </div>
-                  <div className="h-1.5 rounded-full bg-muted overflow-hidden">
-                    <div className="h-full w-0 rounded-full bg-chart-2" />
-                  </div>
-                </div>
-
-                <button className="invisible group-hover:visible w-full mt-2 py-2 rounded-xl text-xs font-bold bg-muted text-muted-foreground hover:bg-secondary hover:text-foreground transition-colors">
-                  Acessar curso
-                </button>
-              </div>
-            </div>
-          ))}
+        <div>
+          <h2 className="font-heading text-lg font-black text-foreground">
+            Meus cursos
+          </h2>
+          <p className="mt-0.5 text-xs text-muted-foreground">
+            Cursos que você adquiriu ou está estudando
+          </p>
         </div>
 
-        <div className="flex flex-col items-center gap-1 pt-1">
-          <div className="flex items-center justify-center gap-1.5">
-            <div className="h-1 w-6 rounded-full bg-primary" />
-            <div className="h-1 w-3 rounded-full bg-muted" />
-            <div className="h-1 w-3 rounded-full bg-muted" />
-          </div>
-          <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
-            <ChevronsRight className="h-3.5 w-3.5 shrink-0 text-accent" />
-            <span>Deslize para ver mais cursos</span>
+        <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-none snap-x snap-mandatory">
+          <div
+            className="flex items-center justify-center rounded-2xl border border-dashed border-border bg-muted/30 px-6 py-10 text-xs text-muted-foreground"
+            style={{ width: '320px', minWidth: '270px' }}
+          >
+            Nenhum curso nesta seção
           </div>
         </div>
-       
       </section>
 
-      {/* Section 2 - Cursos Exclusivos */}
       <section className="flex flex-col gap-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="font-heading font-black text-lg text-foreground">
-              Cursos Exclusivos
-            </h2>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              Conteudo exclusivo para assinantes
-            </p>
-          </div>
+        <div>
+          <h2 className="font-heading text-lg font-black text-foreground">
+            Cursos Exclusivos
+          </h2>
+          <p className="mt-0.5 text-xs text-muted-foreground">
+            Conteúdo exclusivo para assinantes
+          </p>
         </div>
 
-        <div className="flex gap-4 overflow-x-auto scrollbar-none snap-x snap-mandatory pb-2">
-          {premiumCourses.map((course) => (
-            <div
-              key={course.title}
-              className="group bg-card rounded-2xl overflow-hidden border border-border hover:border-primary/30 transition-colors cursor-pointer"
-              style={{ width: '320px', minWidth: '270px' }}
-            >
-              <div 
-                className="relative h-36 w-full bg-muted overflow-hidden"
-                style={{ height: '180px' }}
-              >
+        {isLoading || profileLoading ? (
+          <div className="flex items-center justify-center py-16">
+            <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+          </div>
+        ) : (
+          <>
+            <div className="flex gap-4 overflow-x-auto pb-2 scrollbar-none snap-x snap-mandatory">
+              {courses.length > 0 ? (
+                courses.map((course) => renderCourseCard(course))
+              ) : (
                 <div
-                  className="absolute inset-0"
-                  style={{
-                    background: 'linear-gradient(135deg, #1a0d38, #3a1878)',
-                  }}
-                />
-                <div className="absolute inset-0 flex items-center justify-center text-4xl">
-                  {course.emoji}
-                </div>
-                <span className="absolute top-2 left-2 rounded-full px-2 py-0.5 text-[9px] font-black uppercase bg-primary/20 text-primary">
-                  Exclusivo
-                </span>
-                <span className="absolute bottom-2 right-2 bg-black/70 text-white text-[10px] rounded px-2 py-0.5">
-                  {course.lessons}
-                </span>
-              </div>
-
-              <div className="p-4 space-y-2">
-                <h3 className="text-sm font-black text-foreground font-heading line-clamp-2 leading-snug">
-                  {course.title}
-                </h3>
-
-                <div>
-                  <div className="flex justify-between text-[10px] text-muted-foreground mb-1">
-                    <span>Progresso</span>
-                    <span>0%</span>
-                  </div>
-                  <div className="h-1.5 rounded-full bg-muted overflow-hidden">
-                    <div className="h-full w-0 rounded-full bg-chart-2" />
-                  </div>
-                </div>
-
-                <button
-                  className="w-full mt-2 py-2 rounded-xl text-xs font-black text-primary-foreground transition-opacity hover:opacity-90"
-                  style={{
-                    background: 'linear-gradient(90deg, #C9A84C, #DDA83A)',
-                  }}
+                  className="flex items-center justify-center rounded-2xl border border-dashed border-border bg-muted/30 px-6 py-10 text-xs text-muted-foreground"
+                  style={{ width: '320px', minWidth: '270px' }}
                 >
-                  Acessar curso
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        <div className="flex flex-col items-center gap-1 pt-1">
-          <div className="flex items-center justify-center gap-1.5">
-            <div className="h-1 w-6 rounded-full bg-primary" />
-            <div className="h-1 w-3 rounded-full bg-muted" />
-            <div className="h-1 w-3 rounded-full bg-muted" />
-          </div>
-          <div className="flex items-center gap-1 text-[10px] text-muted-foreground">
-            <ChevronsRight className="h-3.5 w-3.5 shrink-0 text-accent" />
-            <span>Deslize para ver mais cursos</span>
-          </div>
-        </div>
-      </section>
-
-      {/* Section 3 - Apostilas & PDFs */}
-      <section className="flex flex-col gap-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="font-heading font-black text-lg text-foreground">
-              Apostilas &amp; PDFs
-            </h2>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              Materiais para baixar e estudar offline
-            </p>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {materials.map((material) => (
-            <div
-              key={material.title}
-              className="flex items-center gap-4 bg-card rounded-2xl p-4 border border-border hover:border-accent/30 transition-colors cursor-pointer"
-            >
-              <div
-                className="w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0"
-                style={{
-                  background: 'linear-gradient(135deg, #0d3020, #1a5a38)',
-                }}
-              >
-                <FileText className="h-6 w-6 text-chart-2" />
-              </div>
-
-              <div className="flex-1 min-w-0">
-                <h3 className="text-sm font-bold text-foreground line-clamp-1">
-                  {material.title}
-                </h3>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  {material.size}
-                </p>
-                <div className="flex items-center gap-2 mt-1">
-                  <span
-                    className={
-                      material.access === 'free'
-                        ? 'rounded-full px-2 py-0.5 text-[9px] font-black bg-chart-2/20 text-chart-2'
-                        : 'rounded-full px-2 py-0.5 text-[9px] font-black bg-primary/20 text-primary'
-                    }
-                  >
-                    {material.access === 'free' ? 'Gratis' : 'Premium'}
-                  </span>
+                  Nenhum curso nesta seção
                 </div>
-              </div>
-
-              <button className="flex items-center justify-center w-9 h-9 rounded-xl bg-muted hover:bg-accent hover:text-accent-foreground transition-colors">
-                <Download className="h-4 w-4 text-muted-foreground" />
-              </button>
+              )}
             </div>
-          ))}
-        </div>
+
+            {courses.length > 0 ? renderScrollHint() : null}
+          </>
+        )}
       </section>
     </div>
   )

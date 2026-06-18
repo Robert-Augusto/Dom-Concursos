@@ -1,13 +1,14 @@
 'use client'
 
+import Image from 'next/image'
 import Link from 'next/link'
 import type { MouseEvent } from 'react'
 import { toast } from 'sonner'
 import {
   ChevronRight,
-  CircleHelp,
+  GraduationCap,
+  Info,
   type LucideIcon,
-  Settings,
   Video,
 } from 'lucide-react'
 
@@ -27,55 +28,46 @@ type RedirectButtonItem = {
   href: string
   Icon: LucideIcon
   colorToken: ColorToken
-  badgeCount?: number
+  backgroundImage: string
+  liveBadge?: boolean
   comingSoon?: boolean
   comingSoonMessage?: string
 }
 
 const redirectButtonItems: RedirectButtonItem[] = [
   {
+    label: 'Cursos',
+    description: 'Continue seus estudos.',
+    href: '/courses',
+    Icon: GraduationCap,
+    colorToken: '--color-chart-5',
+    backgroundImage:
+      'https://tzrcebhmkivfflfosstq.supabase.co/storage/v1/object/public/study_materials_images/WhatsApp%20Image%202026-06-16%20at%2010.33.59.jpeg',
+  },
+  {
     label: 'Aula ao Vivo',
-    description: 'Participe das transmissões ao vivo com a equipe.',
+    description: 'Participe das transmissões.',
     href: '/live',
     Icon: Video,
     colorToken: '--color-destructive',
+    backgroundImage:
+      'https://tzrcebhmkivfflfosstq.supabase.co/storage/v1/object/public/study_materials_images/WhatsApp%20Image%202026-06-16%20at%2010.34.36.jpeg',
+    liveBadge: true,
   },
   {
-    label: 'Dúvidas',
-    description: 'Perguntas frequentes e canal de ajuda rápida.',
+    label: 'Informações',
+    description: 'Novidades e avisos importantes.',
     href: '/doubts',
-    Icon: CircleHelp,
-    colorToken: '--color-gold',
-  },
-  {
-    label: 'Configurações',
-    description: 'Gerencie sua conta e preferências.',
-    href: '/settings',
-    Icon: Settings,
-    colorToken: '--color-chart-5',
+    Icon: Info,
+    colorToken: '--color-accent',
+    backgroundImage:
+      'https://tzrcebhmkivfflfosstq.supabase.co/storage/v1/object/public/study_materials_images/WhatsApp%20Image%202026-06-16%20at%2010.37.19.jpeg',
   },
 ]
 
 type RedirectButtonsIconProps = {
   isAuthenticated: boolean
   onRequireSignup: () => void
-}
-
-function cardSurfaceStyle(colorToken: ColorToken) {
-  return {
-    borderColor: `color-mix(in oklab, var(${colorToken}) 42%, transparent)`,
-    background: `linear-gradient(
-      165deg,
-      color-mix(in oklab, var(${colorToken}) 8%, var(--card)) 0%,
-      color-mix(in oklab, var(--card) 92%, black 8%) 55%,
-      color-mix(in oklab, var(${colorToken}) 14%, var(--card)) 100%
-    )`,
-    boxShadow: `
-      0 0 0 1px color-mix(in oklab, var(${colorToken}) 10%, transparent),
-      0 12px 32px color-mix(in oklab, var(${colorToken}) 12%, transparent),
-      inset 0 1px 0 color-mix(in oklab, white 12%, transparent)
-    `,
-  } as const
 }
 
 function iconStyle(colorToken: ColorToken) {
@@ -95,9 +87,12 @@ function iconStyle(colorToken: ColorToken) {
 
 function actionStyle(colorToken: ColorToken) {
   return {
-    background: `color-mix(in oklab, var(${colorToken}) 16%, var(--card))`,
-    border: `1px solid color-mix(in oklab, var(${colorToken}) 38%, transparent)`,
-    boxShadow: `0 4px 14px color-mix(in oklab, var(${colorToken}) 18%, transparent)`,
+    background: `linear-gradient(
+      145deg,
+      color-mix(in oklab, var(${colorToken}) 70%, white 10%),
+      color-mix(in oklab, var(${colorToken}) 90%, black 8%)
+    )`,
+    boxShadow: `0 4px 14px color-mix(in oklab, var(${colorToken}) 30%, transparent)`,
   } as const
 }
 
@@ -125,10 +120,18 @@ export function RedirectButtonsIcon({
 
   return (
     <section>
-      <div className="flex snap-x snap-mandatory gap-3 overflow-x-auto pb-1 scrollbar-none lg:grid lg:grid-cols-3 lg:overflow-visible lg:gap-4 lg:pb-0">
+      <div className="grid grid-cols-3 gap-2 sm:gap-3 lg:gap-4">
         {redirectButtonItems.map((item) => {
-          const { label, description, href, Icon, colorToken, badgeCount, comingSoon } =
-            item
+          const {
+            label,
+            description,
+            href,
+            Icon,
+            colorToken,
+            backgroundImage,
+            liveBadge,
+            comingSoon,
+          } = item
 
           return (
             <Link
@@ -136,74 +139,87 @@ export function RedirectButtonsIcon({
               href={href}
               onClick={(event) => handleFeatureClick(event, item)}
               aria-disabled={comingSoon ? true : undefined}
-              className={`group relative flex min-h-[172px] w-[190px] shrink-0 snap-start flex-col overflow-hidden rounded-3xl border p-4 transition-all duration-300 sm:min-h-[180px] sm:w-[172px] sm:p-[18px] lg:min-h-[192px] lg:w-full lg:max-w-none lg:shrink lg:p-5 ${
+              className={`group relative h-[130px] min-w-0 w-full overflow-hidden rounded-2xl border transition-all duration-300 lg:aspect-square lg:h-[200px] lg:rounded-3xl ${
                 comingSoon
                   ? 'cursor-default opacity-90'
                   : 'hover:-translate-y-1 hover:shadow-lg'
               }`}
-              style={cardSurfaceStyle(colorToken)}
+              style={{
+                borderColor: `color-mix(in oklab, var(${colorToken}) 45%, transparent)`,
+                boxShadow: `0 0 28px color-mix(in oklab, var(${colorToken}) 12%, transparent)`,
+              }}
             >
-              <span
-                className="pointer-events-none absolute -right-8 -top-8 h-28 w-28 rounded-full opacity-30"
+              <Image
+                src={backgroundImage}
+                alt=""
+                fill
+                sizes="(max-width: 1023px) 33vw, 33vw"
+                className="object-cover transition-transform duration-500 group-hover:scale-105"
+              />
+
+              <div
+                className="absolute inset-0 bg-black/55"
+                aria-hidden
+              />
+
+              <div
+                className="absolute inset-0"
                 style={{
-                  background: `radial-gradient(circle, var(${colorToken}) 0%, transparent 70%)`,
+                  background: `linear-gradient(
+                    180deg,
+                    rgba(0,0,0,0.45) 0%,
+                    rgba(0,0,0,0.62) 50%,
+                    rgba(0,0,0,0.88) 100%
+                  )`,
                 }}
                 aria-hidden
               />
 
-              <span
-                className="pointer-events-none absolute inset-x-5 top-0 h-px bg-gradient-to-r from-transparent via-foreground/15 to-transparent"
-                aria-hidden
-              />
-
               {comingSoon ? (
-                <span className="absolute right-3 top-3 z-10 rounded-full border border-primary/40 bg-primary/15 px-2 py-0.5 text-[8px] font-bold uppercase tracking-wide text-primary">
+                <span className="absolute right-3 top-3 z-10 rounded-full border border-primary/40 bg-black/50 px-2 py-0.5 text-[8px] font-bold uppercase tracking-wide text-primary backdrop-blur-sm">
                   Em breve
                 </span>
               ) : null}
 
-              {badgeCount ? (
-                <span className="absolute right-3 top-3 z-10 rounded-full bg-destructive px-1.5 py-0.5 text-[10px] font-bold leading-none text-destructive-foreground shadow-sm">
-                  {badgeCount}
+              {liveBadge ? (
+                <span
+                  className="absolute right-1.5 top-1.5 z-20 flex items-center gap-1 rounded-full border px-1.5 py-1 text-[9px] font-bold uppercase tracking-wide text-white lg:right-3 lg:top-3 lg:px-2 lg:py-0.5"
+                  style={{
+                    borderColor: `color-mix(in oklab, var(${colorToken}) 55%, transparent)`,
+                    background: `color-mix(in oklab, var(${colorToken}) 25%, rgba(0,0,0,0.55))`,
+                  }}
+                >
+                  <span
+                    className="h-1.5 w-1.5 shrink-0 rounded-full"
+                    style={{ background: `var(${colorToken})` }}
+                  />
+                  <span className='text-[8px]'>Ao vivo</span>
                 </span>
               ) : null}
 
-              <span
-                className="relative z-[1] flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-transform duration-300 group-hover:scale-105 sm:h-11 sm:w-11"
-                style={iconStyle(colorToken)}
-              >
-                <Icon className="h-[18px] w-[18px] text-white sm:h-5 sm:w-5" strokeWidth={2.2} />
-              </span>
+              <div className="relative z-10 flex h-full flex-col p-2 lg:p-5">
+                <span
+                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full transition-transform duration-300 group-hover:scale-105 lg:h-11 lg:w-11"
+                  style={iconStyle(colorToken)}
+                >
+                  <Icon className="h-3.5 w-3.5 text-white lg:h-5 lg:w-5" strokeWidth={2.2} />
+                </span>
 
-              <div className="relative z-[1] mt-3 flex min-w-0 flex-1 flex-col pb-12 pr-1">
-                <p className="font-heading line-clamp-2 text-left text-[15px] font-black leading-[1.12] tracking-tight text-foreground sm:text-base lg:text-[17px]">
-                  {label}
-                </p>
-                <p className="mt-2 line-clamp-2 text-left text-[11px] leading-relaxed text-muted-foreground sm:text-xs">
-                  {description}
-                </p>
+                <div className="mt-2 min-w-0 pr-1 lg:mt-3">
+                  <p className="font-heading line-clamp-2 text-left text-[11px] font-black leading-tight tracking-tight text-white lg:text-[17px]">
+                    {label}
+                  </p>
+                  <p className="mt-1 line-clamp-2 text-left text-[9px] leading-snug text-white/80 lg:text-xs lg:leading-relaxed">
+                    {description}
+                  </p>
+                </div>
               </div>
 
               <span
-                className="absolute bottom-4 right-4 z-[1] flex h-10 w-10 items-center justify-center rounded-full transition-all duration-300 group-hover:translate-x-0.5 group-hover:scale-105 sm:bottom-[18px] sm:right-[18px] sm:h-11 sm:w-11 lg:bottom-5 lg:right-5"
+                className="absolute bottom-2 right-2 z-20 flex h-7 w-7 items-center justify-center rounded-full transition-all duration-300 group-hover:translate-x-0.5 group-hover:scale-105 lg:bottom-4 lg:right-4 lg:h-11 lg:w-11"
                 style={actionStyle(colorToken)}
               >
-                <span
-                  className="absolute inset-0 rounded-full opacity-0 transition-opacity duration-300 group-hover:opacity-100"
-                  style={{
-                    background: `linear-gradient(
-                      145deg,
-                      color-mix(in oklab, var(${colorToken}) 70%, white 10%),
-                      var(${colorToken})
-                    )`,
-                  }}
-                  aria-hidden
-                />
-                <ChevronRight
-                  className="relative h-4 w-4 transition-colors duration-300 group-hover:text-white sm:h-5 sm:w-5"
-                  style={{ color: `var(${colorToken})` }}
-                  strokeWidth={2.5}
-                />
+                <ChevronRight className="h-3.5 w-3.5 text-white lg:h-5 lg:w-5" strokeWidth={2.5} />
               </span>
             </Link>
           )

@@ -15,7 +15,6 @@ export default function CoursesPage() {
           <div className="flex flex-col gap-8">
             <HeroBannerCourses />
             <GridCourses/>
-            <GridPricePlans/>
           </div>
         </main>
       </div>

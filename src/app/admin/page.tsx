@@ -10,6 +10,7 @@ import { createClient } from '@/lib/supabase/client'
 import { Lessons, Subjects } from '@/types'
 import EstudoInteligente from '@/components/shared/AdminEstudoInteligente'
 import AdminLiveClasses from '@/components/shared/AdminLiveClasses'
+import AdminCourses from '@/components/shared/AdminCourses'
 import AdminFAQ from '@/components/shared/AdminFAQ'
 import { NotificationsDropdown } from '@/components/shared/NotificationsDropdown'
 import {
@@ -20,6 +21,7 @@ import {
   PlayCircle,
   Radio,
   ChevronLeft,
+  GraduationCap,
   type LucideIcon,
 } from 'lucide-react'
 
@@ -41,6 +43,12 @@ const ADMIN_MENU_OPTIONS = [
     label: 'Questões',
     description: 'Banco de questões e simulados',
     Icon: HelpCircle,
+  },
+  {
+    id: 'courses',
+    label: 'Cursos',
+    description: 'Criar e gerenciar cursos exclusivos',
+    Icon: GraduationCap,
   },
   {
     id: 'live-classes',
@@ -134,6 +142,10 @@ export default function AdminPage() {
       setSelectedSection(null)
     }
 
+    if(selectedSection === 'courses'){
+      setSelectedSection(null)
+    }
+
     if(selectedSection === 'faq'){
       setSelectedSection(null)
     }
@@ -161,6 +173,7 @@ export default function AdminPage() {
                 {selectedSection === 'register-lesson' && 'Vídeos da Home'}
                 {selectedSection === 'smart-study' && 'Estudo Inteligente'}
                 {selectedSection === 'live-classes' && 'Aulas ao Vivo'}
+                {selectedSection === 'courses' && 'Cursos'}
                 {selectedSection === 'faq' && 'FAQ'}
               </h1>
               <p className="text-sm text-muted-foreground">
@@ -169,6 +182,7 @@ export default function AdminPage() {
                 {selectedSection === 'register-lesson' && 'Aulas da tela inicial'}
                 {selectedSection === 'smart-study' && 'Insira os materiais de estudos'}
                 {selectedSection === 'live-classes' && 'Programar transmissões ao vivo'}
+                {selectedSection === 'courses' && 'Gerenciar cursos exclusivos'}
                 {selectedSection === 'faq' && 'Gerenciar perguntas frequentes'}
               </p>
             </div>
@@ -231,6 +245,8 @@ export default function AdminPage() {
                 ) : null}
 
                 {selectedSection === 'live-classes' ? <AdminLiveClasses /> : null}
+
+                {selectedSection === 'courses' ? <AdminCourses /> : null}
 
                 {selectedSection === 'faq' ? <AdminFAQ /> : null}
               </>

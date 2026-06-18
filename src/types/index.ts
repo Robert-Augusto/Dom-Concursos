@@ -267,3 +267,36 @@ export interface Faq {
     question: string | null
     answer: string | null
 }
+
+// courses
+export interface Courses {
+    id: number
+    created_at: string
+    title: string | null
+    description: string | null
+    access_level: AccessLevel | null
+    thumbnail_url: string | null
+    is_published: boolean | null
+}
+
+export interface CoursesSections {
+    id: number
+    created_at: string
+    courses_id: number | null
+    title: string | null
+    order: number | null
+}
+
+export interface CoursesModules {
+    id: number
+    created_at: string
+    courses_sections_id: number | null
+    title: string | null
+    order: number | null
+    thumbnail_url: string | null
+    is_published: boolean | null
+}
+
+export interface CoursesSectionWithModules extends CoursesSections {
+    courses_modules: CoursesModules[] | null
+}

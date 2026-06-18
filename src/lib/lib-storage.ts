@@ -4,6 +4,7 @@ import { CreateLessonMaterials } from '@/lib/lib-lessons'
 const THUMBNAIL_BUCKET = 'lesson_thumbnails'
 const MATERIALS_BUCKET = 'lessons_materials'
 const USER_AVATAR_BUCKET = 'user_avatar'
+const COURSES_FILES_BUCKET = 'courses_files'
 
 export function getLessonMaterialStoragePath(fileUrl: string): string | null {
   const trimmed = fileUrl.trim()
@@ -138,6 +139,75 @@ export async function DeleteUserAvatar(publicUrl: string) {
 
   const supabase = createClient()
   const { error } = await supabase.storage.from(USER_AVATAR_BUCKET).remove([path])
+  return { error }
+}
+
+export function getCourseThumbnailStoragePath(publicUrl: string): string | null {
+  try {
+    const url = new URL(publicUrl)
+    const marker = `/object/public/${COURSES_FILES_BUCKET}/`
+    const idx = url.pathname.indexOf(marker)
+    if (idx === -1) return null
+    return decodeURIComponent(url.pathname.slice(idx + marker.length))
+  } catch {
+    return null
+  }
+}
+
+export async function UploadCourseThumbnail(file: File, courseId: number) {
+  const supabase = createClient()
+  const safeName = file.name.replace(/[^\w.-]/g, '_')
+  const path = `courses/${courseId}/${Date.now()}-${safeName}`
+
+  const { data: uploadData, error: uploadError } = await supabase.storage
+    .from(COURSES_FILES_BUCKET)
+    .upload(path, file, { contentType: file.type })
+
+  if (uploadError) return { uploadError }
+
+  const { data } = supabase.storage
+    .from(COURSES_FILES_BUCKET)
+    .getPublicUrl(uploadData.path)
+
+  return { publicUrl: data.publicUrl, storagePath: uploadData.path }
+}
+
+export async function UploadCourseModuleThumbnail(
+  file: File,
+  courseId: number,
+  sectionId: number,
+) {
+  const supabase = createClient()
+  const safeName = file.name.replace(/[^\w.-]/g, '_')
+  const path = `courses/${courseId}/sections/${sectionId}/modules/${Date.now()}-${safeName}`
+
+  const { data: uploadData, error: uploadError } = await supabase.storage
+    .from(COURSES_FILES_BUCKET)
+    .upload(path, file, { contentType: file.type })
+
+  if (uploadError) return { uploadError }
+
+  const { data } = supabase.storage
+    .from(COURSES_FILES_BUCKET)
+    .getPublicUrl(uploadData.path)
+
+  return { publicUrl: data.publicUrl, storagePath: uploadData.path }
+}
+
+export async function DeleteCourseThumbnail(publicUrl: string) {
+  const path = getCourseThumbnailStoragePath(publicUrl)
+  if (!path) {
+    return {
+      error: {
+        message: 'Não foi possível localizar a thumbnail do curso no storage.',
+      },
+    }
+  }
+
+  const supabase = createClient()
+  const { error } = await supabase.storage
+    .from(COURSES_FILES_BUCKET)
+    .remove([path])
   return { error }
 }
 
