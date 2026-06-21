@@ -3,9 +3,9 @@
 import { useProfile } from '@/context/ProfileContext'
 import { DEFAULT_COURSE_TITLE, GetCourses } from '@/lib/lib-courses'
 import type { AccessLevel, Courses } from '@/types'
-import { BookOpen, ChevronsRight, Loader2 } from 'lucide-react'
+import { BookOpen, ChevronsRight, Loader2, Play } from 'lucide-react'
 import Image from 'next/image'
-import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { useCallback, useEffect, useState, type ReactNode } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { toast } from 'sonner'
@@ -40,7 +40,33 @@ function getCourseTitle(course: Courses): string {
   return course.title?.trim() || DEFAULT_COURSE_TITLE
 }
 
-const COURSE_CARD_WIDTH = '272px'
+const COURSE_THUMBNAIL_WIDTH = 768
+const COURSE_THUMBNAIL_HEIGHT = 432
+const COURSE_CARD_WIDTH_DESKTOP = '384px'
+const COURSE_CARD_IMAGE_HEIGHT_DESKTOP = '216px'
+const COURSE_CARD_WIDTH_MOBILE = '340px'
+const COURSE_CARD_IMAGE_HEIGHT_MOBILE = '191px'
+
+function getCourseCardStyle(isCompact: boolean) {
+  const width = isCompact ? COURSE_CARD_WIDTH_MOBILE : COURSE_CARD_WIDTH_DESKTOP
+
+  return {
+    width,
+    minWidth: width,
+  }
+}
+
+function getCourseImageStyle(isCompact: boolean) {
+  const height = isCompact
+    ? COURSE_CARD_IMAGE_HEIGHT_MOBILE
+    : COURSE_CARD_IMAGE_HEIGHT_DESKTOP
+
+  return {
+    width: '100%',
+    height,
+    aspectRatio: `${COURSE_THUMBNAIL_WIDTH} / ${COURSE_THUMBNAIL_HEIGHT}`,
+  }
+}
 
 type CourseScrollRowProps = {
   children: ReactNode
@@ -54,7 +80,7 @@ function CourseScrollRow({
   return (
     <div className="relative">
       <div
-        className="flex gap-4 overflow-x-auto pb-2 scrollbar-none"
+        className="flex gap-3 overflow-x-auto pb-2 scrollbar-none md:gap-4"
         style={{ scrollPaddingRight: '1rem' }}
       >
         {children}
@@ -72,11 +98,21 @@ function CourseScrollRow({
 }
 
 export default function GridCourses() {
-  const router = useRouter()
   const { loading: profileLoading } = useProfile()
+  const [isCompactCard, setIsCompactCard] = useState(false)
 
   const [courses, setCourses] = useState<Courses[]>([])
   const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(max-width: 767px)')
+    const updateCompactCard = () => setIsCompactCard(mediaQuery.matches)
+
+    updateCompactCard()
+    mediaQuery.addEventListener('change', updateCompactCard)
+
+    return () => mediaQuery.removeEventListener('change', updateCompactCard)
+  }, [])
 
   const loadCourses = useCallback(async (options?: { silent?: boolean }) => {
     if (profileLoading) return
@@ -148,23 +184,22 @@ export default function GridCourses() {
         : 'bg-gradient-to-br from-primary/25 to-background'
 
     return (
-      <button
+      <div
         key={course.id}
-        type="button"
-        onClick={() => router.push(`/courses/${course.id}`)}
         className="group flex-shrink-0 overflow-hidden rounded-2xl border border-border bg-card text-left transition-colors hover:border-primary/30"
-        style={{ width: COURSE_CARD_WIDTH, minWidth: COURSE_CARD_WIDTH }}
+        style={getCourseCardStyle(isCompactCard)}
       >
         <div
-          className="relative w-full overflow-hidden bg-muted"
-          style={{ height: '180px' }}
+          className="relative overflow-hidden bg-muted"
+          style={getCourseImageStyle(isCompactCard)}
         >
           {course.thumbnail_url ? (
             <Image
               src={course.thumbnail_url}
               alt={title}
               fill
-              className="object-cover"
+              sizes="(max-width: 767px) 340px, 384px"
+              className="object-cover transition-transform group-hover:scale-[1.02]"
             />
           ) : (
             <>
@@ -181,8 +216,8 @@ export default function GridCourses() {
           </span>
         </div>
 
-        <div className="space-y-2 p-4">
-          <h3 className="line-clamp-2 font-heading text-sm font-black leading-snug text-foreground">
+        <div className="space-y-1.5 p-3 pb-2 md:space-y-2 md:p-4 md:pb-3">
+          <h3 className="line-clamp-2 font-heading text-xs font-black leading-snug text-foreground md:text-sm">
             {title}
           </h3>
 
@@ -196,7 +231,17 @@ export default function GridCourses() {
             </div>
           </div>
         </div>
-      </button>
+
+        <div className="px-3 pb-3 md:px-4 md:pb-4">
+          <Link
+            href={`/courses/${course.id}`}
+            className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-primary px-3 py-2 text-xs font-bold text-primary-foreground transition-colors hover:bg-primary/90 md:py-2.5"
+          >
+            <Play className="h-3.5 w-3.5 shrink-0 fill-current" />
+            Acessar
+          </Link>
+        </div>
+      </div>
     )
   }
 
@@ -214,10 +259,17 @@ export default function GridCourses() {
 
         <CourseScrollRow>
           <div
-            className="flex shrink-0 items-center justify-center rounded-2xl border border-dashed border-border bg-muted/30 px-6 py-10 text-xs text-muted-foreground"
-            style={{ width: COURSE_CARD_WIDTH, minWidth: COURSE_CARD_WIDTH }}
+            className="flex shrink-0 flex-col overflow-hidden rounded-2xl border border-dashed border-border bg-muted/30"
+            style={getCourseCardStyle(isCompactCard)}
           >
-            Nenhum curso nesta seção
+            <div
+              className="flex items-center justify-center bg-muted/20"
+              style={getCourseImageStyle(isCompactCard)}
+            >
+              <span className="px-6 text-center text-xs text-muted-foreground">
+                Nenhum curso nesta seção
+              </span>
+            </div>
           </div>
         </CourseScrollRow>
       </section>
@@ -243,10 +295,17 @@ export default function GridCourses() {
                 courses.map((course) => renderCourseCard(course))
               ) : (
                 <div
-                  className="flex shrink-0 items-center justify-center rounded-2xl border border-dashed border-border bg-muted/30 px-6 py-10 text-xs text-muted-foreground"
-                  style={{ width: COURSE_CARD_WIDTH, minWidth: COURSE_CARD_WIDTH }}
+                  className="flex shrink-0 flex-col overflow-hidden rounded-2xl border border-dashed border-border bg-muted/30"
+                  style={getCourseCardStyle(isCompactCard)}
                 >
-                  Nenhum curso nesta seção
+                  <div
+                    className="flex items-center justify-center bg-muted/20"
+                    style={getCourseImageStyle(isCompactCard)}
+                  >
+                    <span className="px-6 text-center text-xs text-muted-foreground">
+                      Nenhum curso nesta seção
+                    </span>
+                  </div>
                 </div>
               )}
             </CourseScrollRow>

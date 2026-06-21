@@ -82,6 +82,51 @@ export async function UpdateCourseThumbnail(
   return { data: data as Courses | null, error }
 }
 
+export async function UpdateCourseBanner(
+  courseId: number,
+  bannerUrl: string | null,
+) {
+  const supabase = createClient()
+  const { data, error } = await supabase
+    .from('courses')
+    .update({ banner_url: bannerUrl })
+    .eq('id', courseId)
+    .select('*')
+    .single()
+
+  return { data: data as Courses | null, error }
+}
+
+export async function UpdateCourseMobileBanner(
+  courseId: number,
+  bannerMobileUrl: string | null,
+) {
+  const supabase = createClient()
+  const { data, error } = await supabase
+    .from('courses')
+    .update({ banner_mobile_url: bannerMobileUrl })
+    .eq('id', courseId)
+    .select('*')
+    .single()
+
+  return { data: data as Courses | null, error }
+}
+
+export async function UpdateCourseWhatsappGroup(
+  courseId: number,
+  whatsappGroup: string | null,
+) {
+  const supabase = createClient()
+  const { data, error } = await supabase
+    .from('courses')
+    .update({ whatsapp_group: whatsappGroup })
+    .eq('id', courseId)
+    .select('*')
+    .single()
+
+  return { data: data as Courses | null, error }
+}
+
 export async function UpdateCoursePublished(
   courseId: number,
   isPublished: boolean,

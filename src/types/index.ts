@@ -276,6 +276,9 @@ export interface Courses {
     description: string | null
     access_level: AccessLevel | null
     thumbnail_url: string | null
+    banner_url: string | null
+    banner_mobile_url: string | null
+    whatsapp_group: string | null
     is_published: boolean | null
 }
 

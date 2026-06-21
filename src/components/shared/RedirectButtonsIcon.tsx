@@ -120,7 +120,7 @@ export function RedirectButtonsIcon({
 
   return (
     <section>
-      <div className="grid grid-cols-3 gap-2 sm:gap-3 lg:gap-4">
+      <div className="flex snap-x snap-mandatory gap-3 overflow-x-auto pb-1 scrollbar-none lg:grid lg:grid-cols-3 lg:overflow-visible lg:gap-4 lg:pb-0">
         {redirectButtonItems.map((item) => {
           const {
             label,
@@ -139,7 +139,7 @@ export function RedirectButtonsIcon({
               href={href}
               onClick={(event) => handleFeatureClick(event, item)}
               aria-disabled={comingSoon ? true : undefined}
-              className={`group relative h-[130px] min-w-0 w-full overflow-hidden rounded-2xl border transition-all duration-300 lg:aspect-square lg:h-[200px] lg:rounded-3xl ${
+              className={`redirect-icon-card group relative shrink-0 snap-start overflow-hidden rounded-2xl border transition-all duration-300 lg:min-w-0 lg:w-full lg:rounded-3xl ${
                 comingSoon
                   ? 'cursor-default opacity-90'
                   : 'hover:-translate-y-1 hover:shadow-lg'
@@ -153,12 +153,12 @@ export function RedirectButtonsIcon({
                 src={backgroundImage}
                 alt=""
                 fill
-                sizes="(max-width: 1023px) 33vw, 33vw"
-                className="object-cover transition-transform duration-500 group-hover:scale-105"
+                sizes="(max-width: 1023px) 172px, 33vw"
+                className="object-cover transition-transform duration-50 group-hover:scale-105"
               />
 
               <div
-                className="absolute inset-0 bg-black/55"
+                className="absolute inset-0 bg-black/20"
                 aria-hidden
               />
 
@@ -197,34 +197,49 @@ export function RedirectButtonsIcon({
                 </span>
               ) : null}
 
-              <div className="relative z-10 flex h-full flex-col p-2 lg:p-5">
+              <div className="relative z-10 flex h-full flex-col p-3 lg:p-5">
                 <span
-                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full transition-transform duration-300 group-hover:scale-105 lg:h-11 lg:w-11"
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-transform duration-300 group-hover:scale-105 lg:h-11 lg:w-11"
                   style={iconStyle(colorToken)}
                 >
-                  <Icon className="h-3.5 w-3.5 text-white lg:h-5 lg:w-5" strokeWidth={2.2} />
+                  <Icon className="h-4 w-4 text-white lg:h-5 lg:w-5" strokeWidth={2.2} />
                 </span>
 
                 <div className="mt-2 min-w-0 pr-1 lg:mt-3">
-                  <p className="font-heading line-clamp-2 text-left text-[11px] font-black leading-tight tracking-tight text-white lg:text-[17px]">
+                  <p className="font-heading line-clamp-2 text-left text-[13px] font-black leading-tight tracking-tight text-white lg:text-[17px]">
                     {label}
                   </p>
-                  <p className="mt-1 line-clamp-2 text-left text-[9px] leading-snug text-white/80 lg:text-xs lg:leading-relaxed">
+                  <p className="mt-1 line-clamp-2 text-left text-[10px] leading-snug text-white/80 lg:text-xs lg:leading-relaxed">
                     {description}
                   </p>
                 </div>
               </div>
 
               <span
-                className="absolute bottom-2 right-2 z-20 flex h-7 w-7 items-center justify-center rounded-full transition-all duration-300 group-hover:translate-x-0.5 group-hover:scale-105 lg:bottom-4 lg:right-4 lg:h-11 lg:w-11"
+                className="absolute bottom-3 right-3 z-20 flex h-9 w-9 items-center justify-center rounded-full transition-all duration-300 group-hover:translate-x-0.5 group-hover:scale-105 lg:bottom-4 lg:right-4 lg:h-11 lg:w-11"
                 style={actionStyle(colorToken)}
               >
-                <ChevronRight className="h-3.5 w-3.5 text-white lg:h-5 lg:w-5" strokeWidth={2.5} />
+                <ChevronRight className="h-4 w-4 text-white lg:h-5 lg:w-5" strokeWidth={2.5} />
               </span>
             </Link>
           )
         })}
       </div>
+
+      <style>{`
+        .redirect-icon-card {
+          width: 140px;
+          min-width: 140px;
+          height: 152px;
+        }
+        @media (min-width: 1024px) {
+          .redirect-icon-card {
+            width: 100%;
+            min-width: 0;
+            height: 200px;
+          }
+        }
+      `}</style>
     </section>
   )
 }

@@ -80,6 +80,18 @@ type GridModulesProps = {
   courseId: number
 }
 
+const MODULE_THUMBNAIL_WIDTH = 1000
+const MODULE_THUMBNAIL_HEIGHT = 1500
+const MODULE_CARD_WIDTH = '250px'
+
+function getModuleCardStyle() {
+  return {
+    width: MODULE_CARD_WIDTH,
+    minWidth: MODULE_CARD_WIDTH,
+    aspectRatio: `${MODULE_THUMBNAIL_WIDTH} / ${MODULE_THUMBNAIL_HEIGHT}`,
+  }
+}
+
 function mapSectionsFromDb(
   rows: Awaited<ReturnType<typeof GetCourseSectionsWithModules>>['data'],
 ): SectionItem[] {
@@ -690,19 +702,20 @@ export default function GridModules({ courseId }: GridModulesProps) {
       return (
         <div
           key={module.id}
-          className="relative shrink-0 overflow-hidden rounded-2xl border border-border bg-card"
-          style={{ width: '220px', height: '280px', minWidth: '220px' }}
+          className="relative shrink-0 overflow-hidden rounded-2xl border border-border bg-muted"
+          style={getModuleCardStyle()}
         >
           <Image
             src={pendingModuleEdit.previewUrl}
             alt=""
             fill
             unoptimized
-            className="object-cover"
+            sizes="250px"
+            className="object-contain"
           />
           <div className="absolute inset-x-0 bottom-0 space-y-2 bg-black/75 p-3">
             <p className="text-[10px] text-white/80">
-              Nova imagem selecionada — salve para aplicar
+              Nova imagem selecionada — salve para aplicar (1000×1500 px)
             </p>
             <div className="flex gap-2">
               <button
@@ -735,8 +748,8 @@ export default function GridModules({ courseId }: GridModulesProps) {
     return (
       <div
         key={module.id}
-        className="group relative cursor-pointer overflow-hidden rounded-2xl border border-border bg-chart-5 transition-colors hover:border-primary/30"
-        style={{ width: '220px', height: '280px', minWidth: '220px' }}
+        className="group relative shrink-0 cursor-pointer overflow-hidden rounded-2xl border border-border bg-muted transition-colors hover:border-primary/30"
+        style={getModuleCardStyle()}
         onClick={() => router.push(`/courses/lesson/${module.id}`)}
       >
         {module.thumbnailUrl ? (
@@ -745,7 +758,8 @@ export default function GridModules({ courseId }: GridModulesProps) {
             alt=""
             fill
             unoptimized={module.thumbnailUrl.startsWith('blob:')}
-            className="object-cover"
+            sizes="250px"
+            className="object-contain"
           />
         ) : null}
 
@@ -853,19 +867,20 @@ export default function GridModules({ courseId }: GridModulesProps) {
 
     return (
       <div
-        className="relative shrink-0 overflow-hidden rounded-2xl border border-border bg-card"
-        style={{ width: '220px', height: '280px', minWidth: '220px' }}
+        className="relative shrink-0 overflow-hidden rounded-2xl border border-border bg-muted"
+        style={getModuleCardStyle()}
       >
         <Image
           src={pendingModule.previewUrl}
           alt=""
           fill
           unoptimized
-          className="object-cover"
+          sizes="250px"
+          className="object-contain"
         />
         <div className="absolute inset-x-0 bottom-0 space-y-2 bg-black/75 p-3">
           <p className="text-[10px] text-white/80">
-            Nova imagem selecionada — salve para aplicar
+            Nova imagem selecionada — salve para aplicar (1000×1500 px)
           </p>
           <div className="flex gap-2">
             <button
@@ -904,12 +919,15 @@ export default function GridModules({ courseId }: GridModulesProps) {
       <button
         type="button"
         className="flex shrink-0 flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-border bg-muted/30 text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground"
-        style={{ width: '220px', height: '280px', minWidth: '220px' }}
+        style={getModuleCardStyle()}
         onClick={() => openModuleImagePicker(sectionId)}
       >
         <ImagePlus className="h-8 w-8" />
         <span className="px-4 text-center text-[10px] font-bold">
           Enviar imagem do módulo
+        </span>
+        <span className="px-4 text-center text-[9px] text-muted-foreground">
+          1000×1500 px
         </span>
       </button>
     )

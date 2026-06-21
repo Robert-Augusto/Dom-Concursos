@@ -6,6 +6,30 @@ const MATERIALS_BUCKET = 'lessons_materials'
 const USER_AVATAR_BUCKET = 'user_avatar'
 const COURSES_FILES_BUCKET = 'courses_files'
 
+export function sanitizeStorageFileName(fileName: string): string {
+  const withoutAccents = fileName
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+
+  const trimmed = withoutAccents.trim()
+  if (!trimmed) return 'arquivo'
+
+  const lastDot = trimmed.lastIndexOf('.')
+  const hasExtension = lastDot > 0 && lastDot < trimmed.length - 1
+  const base = hasExtension ? trimmed.slice(0, lastDot) : trimmed
+  const extension = hasExtension ? trimmed.slice(lastDot) : ''
+
+  const safeBase =
+    base
+      .replace(/[^\w.-]/g, '_')
+      .replace(/_+/g, '_')
+      .replace(/^[_.-]+|[_.-]+$/g, '') || 'arquivo'
+
+  const safeExtension = extension.toLowerCase().replace(/[^\w.]/g, '').slice(0, 21)
+
+  return `${safeBase}${safeExtension}`
+}
+
 export function getLessonMaterialStoragePath(fileUrl: string): string | null {
   const trimmed = fileUrl.trim()
   if (!trimmed) return null
@@ -116,7 +140,8 @@ export function getUserAvatarStoragePath(publicUrl: string): string | null {
 
 export async function UploadUserAvatar(file: File, userId: string) {
   const supabase = createClient()
-  const path = `${userId}/${Date.now()}-${file.name}`
+  const safeName = sanitizeStorageFileName(file.name)
+  const path = `${userId}/${Date.now()}-${safeName}`
 
   const { data: uploadData, error: uploadError } = await supabase.storage
     .from(USER_AVATAR_BUCKET)
@@ -156,8 +181,44 @@ export function getCourseThumbnailStoragePath(publicUrl: string): string | null 
 
 export async function UploadCourseThumbnail(file: File, courseId: number) {
   const supabase = createClient()
-  const safeName = file.name.replace(/[^\w.-]/g, '_')
+  const safeName = sanitizeStorageFileName(file.name)
   const path = `courses/${courseId}/${Date.now()}-${safeName}`
+
+  const { data: uploadData, error: uploadError } = await supabase.storage
+    .from(COURSES_FILES_BUCKET)
+    .upload(path, file, { contentType: file.type })
+
+  if (uploadError) return { uploadError }
+
+  const { data } = supabase.storage
+    .from(COURSES_FILES_BUCKET)
+    .getPublicUrl(uploadData.path)
+
+  return { publicUrl: data.publicUrl, storagePath: uploadData.path }
+}
+
+export async function UploadCourseBanner(file: File, courseId: number) {
+  const supabase = createClient()
+  const safeName = sanitizeStorageFileName(file.name)
+  const path = `courses/${courseId}/banner/${Date.now()}-${safeName}`
+
+  const { data: uploadData, error: uploadError } = await supabase.storage
+    .from(COURSES_FILES_BUCKET)
+    .upload(path, file, { contentType: file.type })
+
+  if (uploadError) return { uploadError }
+
+  const { data } = supabase.storage
+    .from(COURSES_FILES_BUCKET)
+    .getPublicUrl(uploadData.path)
+
+  return { publicUrl: data.publicUrl, storagePath: uploadData.path }
+}
+
+export async function UploadCourseMobileBanner(file: File, courseId: number) {
+  const supabase = createClient()
+  const safeName = sanitizeStorageFileName(file.name)
+  const path = `courses/${courseId}/banner-mobile/${Date.now()}-${safeName}`
 
   const { data: uploadData, error: uploadError } = await supabase.storage
     .from(COURSES_FILES_BUCKET)
@@ -178,7 +239,7 @@ export async function UploadCourseModuleThumbnail(
   sectionId: number,
 ) {
   const supabase = createClient()
-  const safeName = file.name.replace(/[^\w.-]/g, '_')
+  const safeName = sanitizeStorageFileName(file.name)
   const path = `courses/${courseId}/sections/${sectionId}/modules/${Date.now()}-${safeName}`
 
   const { data: uploadData, error: uploadError } = await supabase.storage
@@ -215,9 +276,12 @@ export async function UploadLessonMaterials(files: File[], lessonId: number) {
   const supabase = createClient()
 
   try {
+    const uploadedAt = Date.now()
+
     const records = await Promise.all(
-      files.map(async (file) => {
-        const path = `lessons/${lessonId}/${Date.now()}-${file.name}`
+      files.map(async (file, index) => {
+        const safeName = sanitizeStorageFileName(file.name)
+        const path = `lessons/${lessonId}/${uploadedAt}-${index}-${safeName}`
 
         const { data, error } = await supabase.storage
           .from(MATERIALS_BUCKET)

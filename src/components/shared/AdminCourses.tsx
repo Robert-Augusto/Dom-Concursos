@@ -24,6 +24,7 @@ import {
   UpdateCoursePublished,
   UpdateCourseThumbnail,
   UpdateCourseTitle,
+  UpdateCourseWhatsappGroup,
 } from '@/lib/lib-courses'
 import {
   DeleteCourseThumbnail,
@@ -153,6 +154,7 @@ export default function AdminCourses() {
 
   const [title, setTitle] = useState('')
   const [accessLevel, setAccessLevel] = useState<AccessLevel>('free')
+  const [whatsappGroup, setWhatsappGroup] = useState('')
   const [thumbnailFile, setThumbnailFile] = useState<File | null>(null)
   const [savedThumbnailUrl, setSavedThumbnailUrl] = useState<string | null>(null)
   const [thumbnailRemoved, setThumbnailRemoved] = useState(false)
@@ -236,6 +238,7 @@ export default function AdminCourses() {
     setEditingCourseId(null)
     setTitle('')
     setAccessLevel('free')
+    setWhatsappGroup('')
     setThumbnailFile(null)
     setSavedThumbnailUrl(null)
     setThumbnailRemoved(false)
@@ -247,6 +250,7 @@ export default function AdminCourses() {
     setEditingCourseId(course.id)
     setTitle(getCourseTitle(course))
     setAccessLevel(course.access_level ?? 'free')
+    setWhatsappGroup(course.whatsapp_group ?? '')
     setSavedThumbnailUrl(course.thumbnail_url)
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
@@ -346,6 +350,19 @@ export default function AdminCourses() {
       }
     }
 
+    const trimmedWhatsappGroup = whatsappGroup.trim()
+    if (trimmedWhatsappGroup) {
+      const { data: updated, error: whatsappError } =
+        await UpdateCourseWhatsappGroup(data.id, trimmedWhatsappGroup)
+
+      if (whatsappError) {
+        toast.error(whatsappError.message)
+        return
+      }
+
+      if (updated) finalCourse = updated
+    }
+
     setCourses((prev) => [finalCourse, ...prev])
     setPublishedState((prev) => ({ ...prev, [finalCourse.id]: false }))
     resetForm()
@@ -399,6 +416,17 @@ export default function AdminCourses() {
 
     if (accessError) {
       toast.error(accessError.message)
+      return
+    }
+
+    const trimmedWhatsappGroup = whatsappGroup.trim()
+    const { error: whatsappError } = await UpdateCourseWhatsappGroup(
+        editingCourseId,
+        trimmedWhatsappGroup || null,
+      )
+
+    if (whatsappError) {
+      toast.error(whatsappError.message)
       return
     }
 
@@ -612,6 +640,25 @@ export default function AdminCourses() {
                 </option>
               ))}
             </select>
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <label htmlFor="course-whatsapp-group" className={fieldLabelClass}>
+              Grupo do WhatsApp (opcional)
+            </label>
+            <input
+              id="course-whatsapp-group"
+              type="url"
+              value={whatsappGroup}
+              onChange={(e) => setWhatsappGroup(e.target.value)}
+              placeholder="https://chat.whatsapp.com/..."
+              className={inputClass}
+              disabled={isSaving}
+            />
+            <p className="text-xs text-muted-foreground">
+              Link do grupo exibido na página do curso. Deixe em branco para
+              ocultar o botão.
+            </p>
           </div>
 
           <div className="flex flex-col gap-3">

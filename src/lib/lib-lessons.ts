@@ -292,6 +292,38 @@ export async function GetLessonProgress(profileId: string, lessonId: number) {
   return { data: data as LessonProgress | null, error }
 }
 
+export async function GetLessonsProgressByLessonIds(
+  profileId: string,
+  lessonIds: number[],
+) {
+  const supabase = createClient()
+
+  if (lessonIds.length === 0) {
+    return {
+      data: [] as Pick<
+        LessonProgress,
+        'lessons_id' | 'completed' | 'last_watched_at'
+      >[],
+      error: null,
+    }
+  }
+
+  const { data, error } = await supabase
+    .from('lessons_progress')
+    .select('lessons_id, completed, last_watched_at')
+    .eq('profile_id', profileId)
+    .in('lessons_id', lessonIds)
+
+  return {
+    data:
+      (data as Pick<
+        LessonProgress,
+        'lessons_id' | 'completed' | 'last_watched_at'
+      >[] | null) ?? [],
+    error,
+  }
+}
+
 export async function RecordLessonWatch(profileId: string, lessonId: number) {
   const { data: existing, error: fetchError } = await GetLessonProgress(
     profileId,

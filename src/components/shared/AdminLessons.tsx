@@ -29,6 +29,7 @@ import {
   DeleteLessonThumbnail,
   UploadLessonMaterials,
   UploadLessonThumbnail,
+  sanitizeStorageFileName,
 } from '@/lib/lib-storage'
 import { Switch } from '@/components/ui/switch'
 import { cn } from '@/lib/utils'
@@ -453,7 +454,7 @@ export default function AdminLessons({
       if (thumbnailFile) {
         const { publicUrl, uploadError } = await UploadLessonThumbnail(
           thumbnailFile,
-          `lessons/${Date.now()}-${thumbnailFile.name}`,
+          `lessons/${Date.now()}-${sanitizeStorageFileName(thumbnailFile.name)}`,
         )
 
         if (uploadError || !publicUrl) {
@@ -514,7 +515,7 @@ export default function AdminLessons({
       } else if (thumbnailFile) {
         const { publicUrl, uploadError } = await UploadLessonThumbnail(
           thumbnailFile,
-          `lessons/${Date.now()}-${thumbnailFile.name}`,
+          `lessons/${Date.now()}-${sanitizeStorageFileName(thumbnailFile.name)}`,
         )
 
         if (uploadError || !publicUrl) {

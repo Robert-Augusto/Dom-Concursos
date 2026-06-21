@@ -1,6 +1,7 @@
 'use client'
 
 import {
+  DeleteLesson,
   DeleteLessonMaterials,
   GetLessonMaterials,
   UpdateCourseModuleLesson,
@@ -11,7 +12,7 @@ import {
   UploadLessonMaterials,
 } from '@/lib/lib-storage'
 import type { LessonMaterials, VideoType } from '@/types'
-import { FileUp, Loader2, X } from 'lucide-react'
+import { FileUp, Loader2, Trash2, TriangleAlert, X } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 
@@ -35,6 +36,7 @@ type ModalEditCourseLessonProps = {
   lesson: CourseLesson | null
   onClose: () => void
   onUpdated: (lesson: CourseLesson) => void
+  onDeleted?: (lessonId: number) => void
 }
 
 function isAcceptedMaterialFile(file: File): boolean {
@@ -47,6 +49,7 @@ export function ModalEditCourseLesson({
   lesson,
   onClose,
   onUpdated,
+  onDeleted,
 }: ModalEditCourseLessonProps) {
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -64,6 +67,8 @@ export function ModalEditCourseLesson({
   const [pendingNewFiles, setPendingNewFiles] = useState<File[]>([])
   const [isLoadingMaterials, setIsLoadingMaterials] = useState(false)
   const [isSaving, setIsSaving] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
 
   const keptExistingMaterials = useMemo(
     () => existingMaterials.filter((m) => !removedMaterialIds.has(m.id)),
@@ -80,6 +85,7 @@ export function ModalEditCourseLesson({
     setDuration(lesson.duration_seconds ?? '')
     setRemovedMaterialIds(new Set())
     setPendingNewFiles([])
+    setShowDeleteConfirm(false)
     if (fileInputRef.current) fileInputRef.current.value = ''
 
     void loadExistingMaterials(lesson.id)
@@ -109,8 +115,9 @@ export function ModalEditCourseLesson({
   }
 
   function handleClose() {
-    if (isSaving) return
+    if (isSaving || isDeleting) return
     resetMaterialState()
+    setShowDeleteConfirm(false)
     onClose()
   }
 
@@ -210,6 +217,27 @@ export function ModalEditCourseLesson({
     toast.success('Aula atualizada com sucesso')
     onUpdated(data)
     resetMaterialState()
+    onClose()
+  }
+
+  async function handleDeleteLesson() {
+    if (!lesson) return
+
+    setIsDeleting(true)
+
+    const { error } = await DeleteLesson(String(lesson.id))
+
+    setIsDeleting(false)
+
+    if (error) {
+      toast.error(error.message)
+      return
+    }
+
+    toast.success('Aula excluída com sucesso')
+    onDeleted?.(lesson.id)
+    resetMaterialState()
+    setShowDeleteConfirm(false)
     onClose()
   }
 
@@ -391,13 +419,69 @@ export function ModalEditCourseLesson({
               </p>
             ) : null}
           </div>
+
+          {showDeleteConfirm ? (
+            <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-4">
+              <div className="flex items-start gap-3">
+                <div className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-destructive/15 text-destructive">
+                  <TriangleAlert className="h-4 w-4" aria-hidden />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-bold text-foreground">
+                    Excluir esta aula?
+                  </p>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    Esta ação é permanente e remove a aula{' '}
+                    <span className="font-semibold text-foreground">
+                      {title.trim() || lesson.title || 'Sem título'}
+                    </span>
+                    .
+                  </p>
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      onClick={() => void handleDeleteLesson()}
+                      disabled={isDeleting || isSaving}
+                      className="inline-flex items-center gap-2 rounded-lg bg-destructive px-4 py-2 text-sm font-bold text-destructive-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
+                    >
+                      {isDeleting ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Trash2 className="h-4 w-4" />
+                      )}
+                      Confirmar exclusão
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setShowDeleteConfirm(false)}
+                      disabled={isDeleting || isSaving}
+                      className="rounded-lg border border-border px-4 py-2 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground disabled:opacity-50"
+                    >
+                      Cancelar
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : null}
         </div>
 
-        <div className="flex flex-wrap items-center justify-end gap-2 border-t border-border p-4 md:p-6">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-t border-border p-4 md:p-6">
+          <button
+            type="button"
+            onClick={() => setShowDeleteConfirm(true)}
+            disabled={isSaving || isDeleting || isLoadingMaterials}
+            className="inline-flex items-center gap-2 rounded-lg border border-destructive/40 bg-destructive/10 px-4 py-2 text-sm font-semibold text-destructive transition-colors hover:bg-destructive/20 disabled:opacity-50"
+          >
+            <Trash2 className="h-4 w-4" />
+            Excluir aula
+          </button>
+
+          <div className="flex flex-wrap items-center justify-end gap-2">
           <button
             type="button"
             onClick={handleClose}
-            disabled={isSaving}
+            disabled={isSaving || isDeleting}
             className="rounded-lg border border-border px-4 py-2 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground disabled:opacity-50"
           >
             Cancelar
@@ -405,7 +489,7 @@ export function ModalEditCourseLesson({
           <button
             type="button"
             onClick={() => void handleSubmit()}
-            disabled={isSaving || isLoadingMaterials}
+            disabled={isSaving || isDeleting || isLoadingMaterials}
             className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-bold text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
           >
             {isSaving ? (
@@ -413,6 +497,7 @@ export function ModalEditCourseLesson({
             ) : null}
             Salvar alterações
           </button>
+          </div>
         </div>
       </div>
     </div>

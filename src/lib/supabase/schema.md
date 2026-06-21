@@ -397,6 +397,9 @@
 | `description` | `text` |  Nullable |
 | `access_level` | `USER_ACCESS_LEVEL` |  Nullable |
 | `thumbnail_url` | `text` |  Nullable |
+| `banner_url` | `text` |  Nullable |
+| `banner_mobile_url` | `text` |  Nullable |
+| `whatsapp_group` | `text` |  Nullable |
 | `is_published` | `bool` |  Nullable |
 
 ## Table `courses_purchases`
