@@ -2,9 +2,9 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from "next/navigation"
-import { createClient } from '@/lib/supabase/client'
 import { ModalSignup } from '@/components/shared/ModalSignup'
 import { ChevronRight } from 'lucide-react'
+import { useProfile } from '@/context/ProfileContext'
 
 const heroBackgroundImages = [
   'https://tzrcebhmkivfflfosstq.supabase.co/storage/v1/object/public/lesson_thumbnails/banner-images/hero-administrativo.jpg',
@@ -18,15 +18,16 @@ const heroBackgroundImages = [
 const heroImageIntervalMs = 6000
 
 const heroBackgroundGradient = `linear-gradient(100deg, 
-          rgba(5,6,9,0.96) 0%, 
-          rgba(10,12,20,0.78) 38%, 
-          rgba(10,12,20,0.45) 62%, 
-          rgba(10,12,20,0.65) 100%)`
+  rgba(5,6,9,0.96) 0%, 
+  rgba(10,12,20,0.78) 38%, 
+  rgba(10,12,20,0.45) 62%, 
+  rgba(10,12,20,0.65) 100%)`
 
 export function HeroBanner() {
   const router = useRouter()
   const [openSignupModal, setOpenSignupModal] = useState(false)
   const [activeImageIndex, setActiveImageIndex] = useState(0)
+  const {isAuthenticated, loading} = useProfile()
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -36,11 +37,11 @@ export function HeroBanner() {
     return () => clearInterval(interval)
   }, [])
 
-  async function handleStartNow() {
-    const supabase = createClient()
-    const { data } = await supabase.auth.getUser()
+  function handleStartNow() {
+    
+    if (loading) return
 
-    if (!data.user) {
+    if (!isAuthenticated) {
       setOpenSignupModal(true)
       return
     }

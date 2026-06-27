@@ -1,3 +1,4 @@
+import { createBrowserClient } from "@supabase/ssr";
 import { createClient } from "./supabase/client";
 
 // login
@@ -46,4 +47,27 @@ export async function UpdatePassword(password: string) {
     }
 
     return { error: null }
+}
+
+// send reset password email
+export async function SendPasswordEmail(email: string) {
+    const supabase = createClient()
+    const {error} = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: "http://localhost:3000/auth/reset-password"
+    })
+
+    if(error) return {error: error.message}
+    
+    return {error: null}
+}
+
+// reset password
+export async function ResetPassword(newPassword: string) {
+    const supabase = createClient()
+    const {error} = await supabase.auth.updateUser({
+        password: newPassword
+    })
+    
+    if (error) return {error: error.message}
+    return {error: null}
 }

@@ -6,7 +6,7 @@ import { BottomNav } from '@/components/layout/BottomNav'
 import { Sidebar } from '@/components/layout/Sidebar'
 import Link from 'next/link'
 import { Camera, ChevronRight, ImageOff, Lock, LogOut, Mail, Save, Star, User, ChevronLeft } from 'lucide-react'
-import { Logout, UpdatePassword } from '@/lib/auth'
+import { Logout, UpdatePassword } from '@/lib/lib-auth'
 import {
   getAuthorColorForPreview,
   getCommunityDefaultHeadline,

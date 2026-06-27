@@ -11,6 +11,9 @@ import {
   type LucideIcon,
   Video,
 } from 'lucide-react'
+import { ModalSignup } from '@/components/shared/ModalSignup'
+import { useProfile } from '@/context/ProfileContext'
+import { useState } from 'react'
 
 type ColorToken =
   | '--color-accent'
@@ -65,11 +68,6 @@ const redirectButtonItems: RedirectButtonItem[] = [
   },
 ]
 
-type RedirectButtonsIconProps = {
-  isAuthenticated: boolean
-  onRequireSignup: () => void
-}
-
 function iconStyle(colorToken: ColorToken) {
   return {
     background: `linear-gradient(
@@ -96,13 +94,14 @@ function actionStyle(colorToken: ColorToken) {
   } as const
 }
 
-export function RedirectButtonsIcon({
-  isAuthenticated,
-  onRequireSignup,
-}: RedirectButtonsIconProps) {
+export function RedirectButtonsIcon() {
+  const [openSignupModal, setOpenSignupModal] = useState(false)
+  const { loading, isAuthenticated } = useProfile()
+
   const handleFeatureClick = (
     event: MouseEvent<HTMLAnchorElement>,
     item: RedirectButtonItem,
+    href: string
   ) => {
     if (item.comingSoon) {
       event.preventDefault()
@@ -113,9 +112,17 @@ export function RedirectButtonsIcon({
       return
     }
 
-    if (isAuthenticated) return
-    event.preventDefault()
-    onRequireSignup()
+    if (loading) {
+      event.preventDefault()
+      return
+    }
+
+    if (!isAuthenticated){
+      event.preventDefault()
+      setOpenSignupModal(true)
+      return
+    }
+    
   }
 
   return (
@@ -137,7 +144,7 @@ export function RedirectButtonsIcon({
             <Link
               key={label}
               href={href}
-              onClick={(event) => handleFeatureClick(event, item)}
+              onClick={(event) => handleFeatureClick(event, item, href)}
               aria-disabled={comingSoon ? true : undefined}
               className={`redirect-icon-card group relative shrink-0 snap-start overflow-hidden rounded-2xl border transition-all duration-300 lg:min-w-0 lg:w-full lg:rounded-3xl ${
                 comingSoon
@@ -224,6 +231,7 @@ export function RedirectButtonsIcon({
             </Link>
           )
         })}
+        <ModalSignup open={openSignupModal} onClose={() => setOpenSignupModal(false)} />
       </div>
 
       <style>{`

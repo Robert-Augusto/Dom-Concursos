@@ -7,7 +7,7 @@ import { useProfile } from '@/context/ProfileContext'
 
 export function Header() {
   const router = useRouter();
-  const { profile, loading } = useProfile()
+  const { profile } = useProfile()
 
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center justify-between border-b border-border bg-background px-6">
@@ -44,12 +44,26 @@ export function Header() {
         </div>
 
         <div className="flex flex-col">
-          <h1 className="text-base font-black text-foreground font-heading">
-            Olá, {profile?.name} 👋
-          </h1>
-          <p className="text-xs text-muted-foreground">
-            Bons estudos, rumo à aprovação!
-          </p>
+          {profile ? (
+            <h1 className="text-base font-black text-foreground font-heading">
+              Olá, {profile?.name} 👋
+            </h1>
+          ):(
+            <h1 className="text-base font-black text-foreground font-heading">
+              Olá👋
+            </h1>
+          )}
+
+          { profile ? (
+            <p className="text-xs text-muted-foreground">
+              Bons estudos, rumo à aprovação!
+            </p>
+          ):(
+            <p className="text-xs text-muted-foreground">
+              Crie sua conta gratuita e comece a estudar.
+            </p>
+          )}
+
         </div>
       </div>
 

@@ -16,6 +16,11 @@ export function ModalSignup({ open, onClose }: ModalSignupProps) {
     router.push('/auth/signup')
   }
 
+  function handleLoginRedirect() {
+    onClose()
+    router.push('auth/login')
+  }
+
   if (!open) return null
 
   return (
@@ -64,6 +69,15 @@ export function ModalSignup({ open, onClose }: ModalSignupProps) {
           >
             Criar conta grátis
           </button>
+          
+          <button
+            type="button"
+            onClick={handleLoginRedirect}
+            className="rounded-full border border-primary bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground transition-colors hover:opacity-90"
+          >
+            Já tenho conta
+          </button>
+
           <button
             type="button"
             onClick={onClose}

@@ -11,7 +11,7 @@ import {
   MessageCircleQuestionMark,
 } from 'lucide-react'
 import { ModalSignup } from '@/components/shared/ModalSignup'
-import { createClient } from '@/lib/supabase/client'
+import { useProfile } from '@/context/ProfileContext'
 
 const navigationItems = [
   { label: 'Início', href: '/dashboard', icon: Home, center: false },
@@ -23,25 +23,22 @@ const navigationItems = [
 
 export function BottomNav() {
   const pathname = usePathname()
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
-  const [isModalOpen, setIsModalOpen] = useState(false)
-
-  useEffect(() => {
-    const supabase = createClient()
-
-    async function checkAuth() {
-      const { data } = await supabase.auth.getUser()
-      setIsAuthenticated(Boolean(data.user))
-    }
-
-    checkAuth()
-  }, [])
+  const { loading, isAuthenticated } = useProfile()
+  const [ isModalOpen, setIsModalOpen ] = useState(false)
 
   function handleNavClick(event: MouseEvent<HTMLAnchorElement>) {
-    if (isAuthenticated) return
+    
+    if (loading) {
+      event.preventDefault()
+      return
+    }
 
-    event.preventDefault()
-    setIsModalOpen(true)
+    if (!isAuthenticated) {
+      event.preventDefault()
+      setIsModalOpen(true)
+      return
+    }
+
   }
 
   return (

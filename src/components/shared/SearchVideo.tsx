@@ -26,6 +26,7 @@ import {
 } from '@/lib/lib-lessons'
 import { GetLessonMaterialSignedUrl } from '@/lib/lib-storage'
 import { useProfile } from '@/context/ProfileContext'
+import { ModalSignup } from '@/components/shared/ModalSignup'
 
 const THUMBNAIL_PLACEHOLDER_COLORS = [
   'bg-accent/30',
@@ -34,18 +35,6 @@ const THUMBNAIL_PLACEHOLDER_COLORS = [
 ] as const
 
 const QUESTOES_BANCAS_LABEL = 'Questões de Bancas'
-
-function formatDuration(secondsValue: string): string {
-  const totalSeconds = Number.parseInt(secondsValue, 10)
-  if (Number.isNaN(totalSeconds) || totalSeconds <= 0) return '--:--'
-  const hours = Math.floor(totalSeconds / 3600)
-  const minutes = Math.floor((totalSeconds % 3600) / 60)
-  const seconds = totalSeconds % 60
-  if (hours > 0) {
-    return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
-  }
-  return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
-}
 
 function getYoutubeEmbedUrl(url: string): string | null {
   try {
@@ -90,68 +79,11 @@ function getLessonEmbedUrl(videoType: VideoType, videoUrl: string): string | nul
 type SearchVideoProps = {
   lessonsData?: Lessons[] | null
   subjectsData?: Subjects[] | null
-  isAuthenticated?: boolean
-}
-
-function SignupLessonPrompt({ onClose }: { onClose: () => void }) {
-  return (
-    <section className="flex flex-col gap-4">
-      <div className="flex justify-end">
-        <button
-          type="button"
-          onClick={onClose}
-          className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-border text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground"
-          aria-label="Voltar para a lista de aulas"
-        >
-          <X className="h-4 w-4" aria-hidden />
-        </button>
-      </div>
-
-      <div className="relative overflow-hidden rounded-2xl border border-primary/25 bg-gradient-to-br from-primary/[0.12] via-card to-card px-6 py-12 text-center shadow-lg shadow-primary/10 ring-1 ring-primary/10 md:px-10 md:py-14">
-        <div
-          className="pointer-events-none absolute -right-12 -top-12 h-40 w-40 rounded-full bg-primary/25 blur-3xl"
-          aria-hidden
-        />
-        <div
-          className="pointer-events-none absolute -bottom-16 -left-12 h-44 w-44 rounded-full bg-primary/15 blur-3xl"
-          aria-hidden
-        />
-        <div className="relative mx-auto flex max-w-lg flex-col items-center gap-5">
-          <div className="inline-flex h-14 w-14 items-center justify-center rounded-2xl border border-primary/30 bg-primary/15 shadow-inner shadow-primary/20">
-            <Sparkles
-              className="h-7 w-7 text-primary drop-shadow-md"
-              aria-hidden
-            />
-          </div>
-          <div className="space-y-2">
-            <p className="bg-gradient-to-r from-foreground via-primary to-foreground bg-clip-text text-xl font-black tracking-tight text-transparent md:text-2xl">
-              Desbloqueie todas as aulas
-            </p>
-            <p className="text-sm leading-relaxed text-muted-foreground md:text-base">
-              Crie sua conta em poucos segundos e comece a estudar com vídeos,
-              filtros por matéria e muito mais.
-            </p>
-          </div>
-          <Link
-            href="/auth/signup"
-            className="group inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-primary to-primary/90 px-6 py-3 text-sm font-bold text-primary-foreground shadow-lg shadow-primary/35 ring-2 ring-primary/25 ring-offset-2 ring-offset-background transition-transform hover:scale-[1.03] hover:shadow-xl hover:shadow-primary/45 active:scale-[0.98]"
-          >
-            Criar conta grátis
-            <ArrowRight
-              className="h-4 w-4 transition-transform group-hover:translate-x-0.5"
-              aria-hidden
-            />
-          </Link>
-        </div>
-      </div>
-    </section>
-  )
 }
 
 export function SearchVideo({
   lessonsData = [],
   subjectsData = [],
-  isAuthenticated = true,
 }: SearchVideoProps) {
   const { profile } = useProfile()
   const [search, setSearch] = useState('')
@@ -166,7 +98,8 @@ export function SearchVideo({
   const [openingMaterialId, setOpeningMaterialId] = useState<string | null>(
     null,
   )
-  const [showSignupPrompt, setShowSignupPrompt] = useState(false)
+  const [openSignupModal, setOpenSignupModal] = useState(false)
+  const { loading, isAuthenticated } = useProfile()
 
   const subjectNameById = useMemo(() => {
     const map = new Map<string, string>()
@@ -285,8 +218,10 @@ export function SearchVideo({
   }, [selectedLesson, profile?.id])
 
   function handleSelectLesson(lesson: Lessons) {
+    if (loading) return
+
     if (!isAuthenticated) {
-      setShowSignupPrompt(true)
+      setOpenSignupModal(true)
       return
     }
     setSelectedLesson(lesson)
@@ -367,10 +302,6 @@ export function SearchVideo({
   const selectedLessonEmbedUrl = selectedLesson
     ? getLessonEmbedUrl(selectedLesson.video_type, selectedLesson.video_url)
     : null
-
-  if (showSignupPrompt) {
-    return <SignupLessonPrompt onClose={() => setShowSignupPrompt(false)} />
-  }
 
   if (selectedLesson) {
     const subjectName =
@@ -580,7 +511,7 @@ export function SearchVideo({
                     </div>
                   )}
                   <span className="pointer-events-none absolute bottom-1.5 right-1.5 rounded bg-black/80 px-1.5 py-0.5 text-[10px] font-bold text-white">
-                    {formatDuration(video.duration_seconds)}
+                    {video.duration_seconds !== null ? (video.duration_seconds):('--:--')}
                   </span>
                 </div>
 
@@ -600,6 +531,7 @@ export function SearchVideo({
           })}
         </div>
       )}
+      <ModalSignup open={openSignupModal} onClose={() => setOpenSignupModal(false)} />
     </section>
   )
 }

@@ -7,31 +7,42 @@ import {
   Eye,
   EyeOff,
   Lock,
-  Mail,
-  Smile,
 } from 'lucide-react'
-import {Login} from '@/lib/lib-auth'
+import { ResetPassword } from '@/lib/lib-auth'
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
-  const [email, setEmail] = useState('')
+  const [showCofirmPassword, setShowConfirmPassword] = useState(false)
   const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
   const [error, setError] = useState('')
   const router = useRouter()
   const [isloading, setIsloading] = useState(false)
+  const masLenght = 100
 
-  async function handleLogin(event: React.FormEvent) {
+  async function handleUpdatePassword(event: React.FormEvent) {
     event.preventDefault()
 
-    if (!email || !password) {
-      setError('Preencha e-mail e senha para continuar.')
-      return
+    if(!password || !confirmPassword) {
+        setError("Preencha todos os inputs")
+        return
     }
+
+    if(password.length < 8){
+        setError("A senha deve ter no mínimo 8 caracteres.")
+        return
+    }
+
+    if(password !== confirmPassword){
+        setError("As senhas não coinscidem.")
+        return
+    }
+
     setIsloading(true)
     setError('')
-
-    const {error} = await Login(email, password)
     
+    const {error} = await ResetPassword(password)
+
     if (error) {
       setError(error)
       setIsloading(false)
@@ -41,7 +52,7 @@ export default function LoginPage() {
     setIsloading(false)
 
     router.refresh()
-    router.push('/dashboard')
+
   }
 
   return (
@@ -50,31 +61,16 @@ export default function LoginPage() {
       <div className="text-center mb-4">
         <div className="flex items-center justify-center gap-1.5">
           <h1 className="font-heading text-lg font-black text-foreground">
-            Bem-vindo de volta!
+            Redefinir senha
           </h1>
-          <Smile className="h-4 w-4 text-primary" />
         </div>
         <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
-          Faça login para continuar seus estudos<br />e conquistar sua aprovação
+          Insira sua nova senha de acesso
         </p>
       </div>
 
       {/* Form */}
       <div className={`flex flex-col gap-2.5 w-full max-w-sm mx-auto`}>
-
-        {/* Email */}
-        <div className="relative">
-          <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground">
-            <Mail className="h-4 w-4" />
-          </div>
-          <input
-            type="email"
-            placeholder="Seu e-mail"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full bg-primary-foreground border border-border rounded-xl py-3.5 pl-10 pr-4 text-foreground text-sm placeholder:text-muted-foreground outline-none transition-colors focus:border-primary/50"
-          />
-        </div>
 
         {/* Password */}
         <div className="relative">
@@ -83,7 +79,8 @@ export default function LoginPage() {
           </div>
           <input
             type={showPassword ? 'text' : 'password'}
-            placeholder="Sua senha"
+            placeholder="Sua nova senha"
+            maxLength={masLenght}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             className="w-full bg-primary-foreground border border-border rounded-xl py-3.5 pl-10 pr-10 text-foreground text-sm placeholder:text-muted-foreground outline-none transition-colors focus:border-primary/50"
@@ -94,6 +91,28 @@ export default function LoginPage() {
             className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground text-sm cursor-pointer"
           >
             {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+          </button>
+        </div>
+
+        {/* Confirm Password */}
+        <div className="relative">
+          <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground">
+            <Lock className="h-4 w-4" />
+          </div>
+          <input
+            type={showCofirmPassword ? 'text' : 'password'}
+            placeholder="Confirme a nova senha"
+            maxLength={masLenght}
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            className="w-full bg-primary-foreground border border-border rounded-xl py-3.5 pl-10 pr-10 text-foreground text-sm placeholder:text-muted-foreground outline-none transition-colors focus:border-primary/50"
+          />
+          <button
+            type="button"
+            onClick={() => setShowConfirmPassword(!showCofirmPassword)}
+            className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground text-sm cursor-pointer"
+          >
+            {showCofirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
           </button>
         </div>
 
@@ -111,7 +130,7 @@ export default function LoginPage() {
 
         {/* Login button */}
         <button
-          onClick={handleLogin}
+          onClick={handleUpdatePassword}
           disabled={isloading}
           className="w-full py-4 rounded-xl text-sm font-black tracking-wide text-primary-foreground cursor-pointer transition-all active:scale-95"
           style={{
@@ -119,7 +138,7 @@ export default function LoginPage() {
             boxShadow: '0 8px 24px color-mix(in oklab, var(--color-primary) 35%, transparent)',
           }}
           >
-            Entrar na Plataforma
+            Atualizar senha
         </button>
 
         <div className="relative z-10 flex flex-col items-center gap-2 px-7 pb-8 pt-4">

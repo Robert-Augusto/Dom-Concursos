@@ -14,7 +14,7 @@ import {
   type LucideIcon,
 } from 'lucide-react'
 import { ModalSignup } from '@/components/shared/ModalSignup'
-import { createClient } from '@/lib/supabase/client'
+import { useProfile } from '@/context/ProfileContext'
 
 const LOGO_URL =
   'https://tzrcebhmkivfflfosstq.supabase.co/storage/v1/object/public/study_materials_images/Logo%20Dom%20Concursos%20_20260121_075709_0000.png'
@@ -37,19 +37,9 @@ const navigationItems: NavigationItem[] = [
 
 export function Sidebar() {
   const pathname = usePathname()
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const { loading, isAuthenticated } = useProfile()
   const [isModalOpen, setIsModalOpen] = useState(false)
 
-  useEffect(() => {
-    const supabase = createClient()
-
-    async function checkAuth() {
-      const { data } = await supabase.auth.getUser()
-      setIsAuthenticated(Boolean(data.user))
-    }
-
-    checkAuth()
-  }, [])
 
   function handleNavClick(
     event: MouseEvent<HTMLAnchorElement>,
@@ -63,11 +53,17 @@ export function Sidebar() {
       )
       return
     }
+    
+    if (loading) {
+      event.preventDefault()
+      return
+    }
 
-    if (isAuthenticated) return
-
-    event.preventDefault()
-    setIsModalOpen(true)
+    if (!isAuthenticated) {
+      event.preventDefault()
+      setIsModalOpen(true)
+      return
+    }
   }
 
   return (

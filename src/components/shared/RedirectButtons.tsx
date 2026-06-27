@@ -10,6 +10,9 @@ import {
 } from 'lucide-react'
 import type { MouseEvent } from 'react'
 import { toast } from 'sonner'
+import { ModalSignup } from '@/components/shared/ModalSignup'
+import { useProfile } from '@/context/ProfileContext'
+import { useState } from 'react'
 
 type ColorToken =
   | '--color-accent'
@@ -57,15 +60,10 @@ const redirectButtonItems: RedirectButtonItem[] = [
   },
 ]
 
-type RedirectButtonsProps = {
-  isAuthenticated: boolean
-  onRequireSignup: () => void
-}
+export function RedirectButtons() {
+  const [openSignupModal, setOpenSignupModal] = useState(false)
+  const { loading, isAuthenticated } = useProfile()
 
-export function RedirectButtons({
-  isAuthenticated,
-  onRequireSignup,
-}: RedirectButtonsProps) {
   const handleFeatureClick = (
     event: MouseEvent<HTMLAnchorElement>,
     item: RedirectButtonItem,
@@ -79,9 +77,17 @@ export function RedirectButtons({
       return
     }
 
-    if (isAuthenticated) return
-    event.preventDefault()
-    onRequireSignup()
+    if (loading) {
+      event.preventDefault()
+      return
+    }
+
+    if (!isAuthenticated){
+      event.preventDefault()
+      setOpenSignupModal(true)
+      return
+    }
+
   }
 
   return (
@@ -143,6 +149,7 @@ export function RedirectButtons({
         </Link>
         )
       })}
+      <ModalSignup open={openSignupModal} onClose={() => setOpenSignupModal(false)} />
     </section>
   )
 }
